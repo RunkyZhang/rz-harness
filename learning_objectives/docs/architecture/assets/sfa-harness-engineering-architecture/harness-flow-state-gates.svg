@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760">
+  <defs>
+    <style>
+      .bg { fill:#f8fbff; }
+      .title { font:700 30px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill:#153a73; }
+      .sub { font:14px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill:#607084; }
+      .phase { fill:#fff; stroke:#7ca7e8; stroke-width:2; rx:14; }
+      .gate { fill:#fff2ec; stroke:#e58e6e; stroke-width:2; rx:14; }
+      .test { fill:#effaf3; stroke:#72bb89; stroke-width:2; rx:14; }
+      .review { fill:#f4efff; stroke:#9d86dc; stroke-width:2; rx:14; }
+      .head { font:700 15px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill:#183b73; }
+      .text { font:12px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill:#26364a; }
+      .small { font:11px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill:#5d6a7b; }
+      .arrow { stroke:#5677aa; stroke-width:2; fill:none; marker-end:url(#arrow); }
+      .danger { fill:#ffe8e8; stroke:#d86a6a; stroke-width:2; rx:12; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#5677aa"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1280" height="760"/>
+  <text class="title" x="640" y="48" text-anchor="middle">状态文件驱动的端到端交付流程</text>
+  <text class="sub" x="640" y="76" text-anchor="middle">主线以 changes/&lt;change-id&gt;/harness-status.md 为用户可见状态卡；每个高风险阶段都有 gate 停止点</text>
+
+  <rect class="phase" x="36" y="122" width="132" height="98"/>
+  <text class="head" x="102" y="148" text-anchor="middle">0 需求进入</text>
+  <text class="text" x="54" y="176">change-id</text><text class="text" x="54" y="196">spec / status</text>
+
+  <rect class="gate" x="198" y="122" width="132" height="98"/>
+  <text class="head" x="264" y="148" text-anchor="middle">1 事实闸门</text>
+  <text class="text" x="216" y="176">FACT / ASSUMP</text><text class="text" x="216" y="196">confidence</text>
+
+  <rect class="phase" x="360" y="122" width="132" height="98"/>
+  <text class="head" x="426" y="148" text-anchor="middle">2 契约冻结</text>
+  <text class="text" x="378" y="176">contract.md</text><text class="text" x="378" y="196">allowed paths</text>
+
+  <rect class="gate" x="522" y="122" width="132" height="98"/>
+  <text class="head" x="588" y="148" text-anchor="middle">3 方案确认</text>
+  <text class="text" x="540" y="176">tech solution</text><text class="text" x="540" y="196">Feishu sync</text>
+
+  <rect class="test" x="684" y="122" width="132" height="98"/>
+  <text class="head" x="750" y="148" text-anchor="middle">4 测试计划</text>
+  <text class="text" x="702" y="176">AI test plan</text><text class="text" x="702" y="196">verify map</text>
+
+  <rect class="gate" x="846" y="122" width="132" height="98"/>
+  <text class="head" x="912" y="148" text-anchor="middle">5 开工门禁</text>
+  <text class="text" x="864" y="176">branch</text><text class="text" x="864" y="196">paths gate</text>
+
+  <rect class="phase" x="1008" y="122" width="132" height="98"/>
+  <text class="head" x="1074" y="148" text-anchor="middle">6 实现</text>
+  <text class="text" x="1026" y="176">Main Agent</text><text class="text" x="1026" y="196">narrow checks</text>
+
+  <path class="arrow" d="M168 171 L198 171"/><path class="arrow" d="M330 171 L360 171"/>
+  <path class="arrow" d="M492 171 L522 171"/><path class="arrow" d="M654 171 L684 171"/>
+  <path class="arrow" d="M816 171 L846 171"/><path class="arrow" d="M978 171 L1008 171"/>
+
+  <rect class="test" x="126" y="330" width="176" height="114"/>
+  <text class="head" x="214" y="358" text-anchor="middle">7 常规验证</text>
+  <text class="text" x="150" y="388">compile / target test</text>
+  <text class="text" x="150" y="408">lint / build / smoke</text>
+
+  <rect class="test" x="360" y="330" width="176" height="114"/>
+  <text class="head" x="448" y="358" text-anchor="middle">8 Test Agent</text>
+  <text class="text" x="384" y="388">GOAL_ACHIEVED</text>
+  <text class="text" x="384" y="408">or BLOCKED</text>
+
+  <rect class="gate" x="594" y="330" width="176" height="114"/>
+  <text class="head" x="682" y="358" text-anchor="middle">9 测试报告</text>
+  <text class="text" x="618" y="388">ai-test-report-gate</text>
+  <text class="text" x="618" y="408">测试/预发前确认</text>
+
+  <rect class="review" x="828" y="330" width="176" height="114"/>
+  <text class="head" x="916" y="358" text-anchor="middle">10 Reviewer</text>
+  <text class="text" x="852" y="388">read-only review</text>
+  <text class="text" x="852" y="408">high_risk_count = 0</text>
+
+  <rect class="phase" x="1062" y="330" width="176" height="114"/>
+  <text class="head" x="1150" y="358" text-anchor="middle">11 人工收口</text>
+  <text class="text" x="1086" y="388">human review / PR</text>
+  <text class="text" x="1086" y="408">SIT / retro / archive</text>
+
+  <path class="arrow" d="M1074 220 C1074 284 214 274 214 330"/>
+  <path class="arrow" d="M302 387 L360 387"/>
+  <path class="arrow" d="M536 387 L594 387"/>
+  <path class="arrow" d="M770 387 L828 387"/>
+  <path class="arrow" d="M1004 387 L1062 387"/>
+
+  <rect class="danger" x="70" y="548" width="340" height="118"/>
+  <text class="head" x="240" y="578" text-anchor="middle">停止点 A：业务事实不清</text>
+  <text class="text" x="96" y="610">未确认字段、状态、权限、错误码、回滚</text>
+  <text class="small" x="96" y="636">处理：写 QUESTION，等待确认</text>
+
+  <rect class="danger" x="470" y="548" width="340" height="118"/>
+  <text class="head" x="640" y="578" text-anchor="middle">停止点 B：工程边界不安全</text>
+  <text class="text" x="496" y="610">主分支、dirty diff、DB/配置写入</text>
+  <text class="small" x="496" y="636">处理：补 gate 证据、二次确认、回滚计划</text>
+
+  <rect class="danger" x="870" y="548" width="340" height="118"/>
+  <text class="head" x="1040" y="578" text-anchor="middle">停止点 C：验证证据不足</text>
+  <text class="text" x="896" y="610">Test Agent / Reviewer / E2E 缺失</text>
+  <text class="small" x="896" y="636">处理：补验证；无法验证则写 BLOCKED</text>
+</svg>

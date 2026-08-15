@@ -1,0 +1,54 @@
+---
+description: SFA iOS Objective-C 规则，适用于 sfa-ios
+globs:
+  - "**/*.m"
+  - "**/*.mm"
+  - "**/*.h"
+  - "**/*.swift"
+  - "**/*.xib"
+  - "**/*.storyboard"
+alwaysApply: false
+---
+
+# iOS 端规则
+
+## 适用范围
+
+适用于 `$SFA_REPO_MOBILE_SFA_IOS` / `sfa-ios`。
+
+给人工 review 的说明默认中文；类名、方法名、接口路径、字段名、target、scheme 和命令保持原样。
+
+## 变更前必须确认
+
+- 先读 `changes/<change-id>/spec.md`、`plan.md`、`docs/contracts/<change-id>-api.md` 和 `docs/baseline/mobile-sfa-ios.md`。
+- iOS 字段、状态、上限、错误态必须以后端 contract 和 PRD 为准，不在端上自行推导业务规则。
+- `[ASSUMP]` 和阻塞性 `[QUESTION]` 不得进入实现。
+- 修改路径必须落在 spec 的 `allowed_paths` 内。
+- 不得修改签名、证书、bundle id、工程文件、Pods 或 Fastlane，除非 spec 明确列入 allowed paths 并有人工确认。
+
+## 架构边界
+
+- Controller / View 只负责页面生命周期、展示、输入校验和用户交互，不直接拼 URL 或创建网络 client。
+- 新增或变更接口调用必须走项目既有 API / service / manager 层；不得在 Controller / View 内直接使用 `AFHTTPSessionManager`、`NSURLSession`、`NSURLConnection` 或 `URLSession`。
+- Model 字段必须和 contract 逐字段核对，兼容历史字段时写清楚来源和兜底策略。
+- 图片、定位、手机号、门店信息等敏感数据只做必要展示和传递，不写入 harness evidence、截图说明或长期记忆。
+
+## 注释、日志和可维护性
+
+- 复杂页面方法、状态流转、上传队列、历史字段兼容、失败重试和第 N 张上限拦截必须写业务原因注释。
+- 禁止提交 `NSLog`、Swift `print()`、临时 debug flag、硬编码 `http://` / `https://`。
+- 合并前运行：
+
+```bash
+scripts/diff-hygiene-gate.sh <repo-root> [--base <ref>] <changed-mobile-files...>
+scripts/mobile-mechanical-quality.sh <repo-root> <changed-mobile-files...>
+scripts/architecture-drift-gate.sh <repo-root> <changed-mobile-files...>
+scripts/temp-hardcode-scan.sh <changed-mobile-files...>
+```
+
+- 提交 review 前必须消除和业务无关的空白 diff，尤其不要把原文件空白行里的空格批量改成空行。
+
+## 推荐验证
+
+- 优先用 Xcode 编译受影响 target / scheme。
+- 涉及相机、相册、定位、真机安装、离线上传或系统权限时，必须记录真机 / SIT 人工确认；无法执行时写 `BLOCKED`，不得声称 iOS smoke 通过。

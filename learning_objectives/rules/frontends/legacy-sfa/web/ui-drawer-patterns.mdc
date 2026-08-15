@@ -1,0 +1,535 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# 抽屉组件UI开发规范
+
+## 概述
+
+本规范基于异常稽核模块的抽屉组件设计，定义了抽屉类UI组件的标准布局、样式和交互模式。
+
+
+## 抽屉组件基础配置
+
+### 1. 抽屉容器配置
+
+```vue
+<el-drawer
+  :visible.sync="drawer"
+  direction="rtl"
+  size="68%"
+  :show-close="false"
+  :wrapperClosable="false">
+  <template #title>
+    <div class="header-title">{{ title }}</div>
+  </template>
+</el-drawer>
+```
+
+**配置说明：**
+- `direction="rtl"`：从右侧滑出
+- `size="68%"`：标准宽度为68%
+- `show-close="false"`：隐藏默认关闭按钮
+- `wrapperClosable="false"`：禁止点击遮罩关闭
+
+### 2. 标题样式规范
+
+```scss
+.header-title {
+  color: #374151;
+  font-size: 16px;
+  font-weight: bold;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #F8FAFE;
+}
+```
+
+## 抽屉内容布局结构
+
+### 1. 整体容器布局
+
+```vue
+<div class="drawer-container">
+  <div class="information-body">
+    <!-- 信息展示区域 -->
+  </div>
+  <div class="audit-confirm">
+    <!-- 操作确认区域 -->
+  </div>
+</div>
+```
+
+```scss
+.drawer-container {
+  display: flex;
+  padding: 0 10px 0 20px;
+  flex-direction: column;
+  background-color: #fff;
+  height: calc(100vh - 54px);
+}
+```
+
+### 2. 信息展示区域
+
+```scss
+.information-body {
+  max-height: calc(100% - 368px);
+  overflow-y: auto;
+
+  // 自定义滚动条样式
+  &::-webkit-scrollbar {
+    width: 4px;
+    background-color: #F8FAFE;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #E5E9F2;
+    border-radius: 6px;
+  }
+}
+```
+
+### 3. 主标题样式
+
+```scss
+.body-title {
+  font-size: 20px;
+  font-weight: 500;
+  color: #4B5563;
+  margin-top: 20px;
+}
+```
+
+## 双栏布局规范
+
+### 1. 左右分栏结构
+
+```vue
+<div class="body-content">
+  <div class="left-section">
+    <!-- 左侧信息区域 -->
+  </div>
+  <div class="right-section">
+    <!-- 右侧内容区域 -->
+  </div>
+</div>
+```
+
+```scss
+.body-content {
+  display: flex;
+
+  .left-section {
+    width: 45%;
+  }
+
+  .right-section {
+    width: 55%;
+  }
+}
+```
+
+### 2. 信息项展示规范
+
+```vue
+<div class="info-section">
+  <div class="section-title">{{ sectionName }}</div>
+  <div class="info-item">
+    <span class="left-label">{{ label }}</span>
+    <span class="right-value">{{ value }}</span>
+  </div>
+</div>
+```
+
+```scss
+.info-section {
+  margin-bottom: 20px;
+
+  .info-item {
+    display: flex;
+    font-size: 14px;
+    line-height: 22px;
+    align-items: left;
+    margin-bottom: 12px;
+
+    .left-label {
+      width: 80px;
+      color: #6B7280;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .right-value {
+      color: #374151;
+      margin-right: 8px;
+      word-break: break-all;
+    }
+  }
+}
+```
+
+## 区块标题规范
+
+### 1. 标准区块标题
+
+```vue
+<div class="section-title">
+  {{ title }}
+  <span class="link-text" @click="handleAction">{{ linkText }}</span>
+</div>
+```
+
+```scss
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #4B5563;
+  margin: 20px 0 16px;
+  padding-left: 10px;
+  line-height: 22px;
+  border-left: 2px solid #416FFC;
+}
+
+.link-text {
+  font-size: 14px;
+  color: #0071F3;
+  margin-left: 12px;
+  font-weight: 400;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+```
+
+## 图片展示组件规范
+
+### 1. 图片网格布局
+
+```vue
+<div class="photo-body">
+  <div class="photo-item" v-for="(photo, index) in photos" :key="index">
+    <div class="photo-placeholder" :class="{ auto: photo.autoSize }">
+      <viewer v-if="photo.src">
+        <img class="photo-img" :src="photo.src" alt="">
+      </viewer>
+      <div v-else class="no-image">暂无图片</div>
+    </div>
+    <div class="photo-label">{{ photo.label }}</div>
+  </div>
+</div>
+```
+
+```scss
+.photo-body {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  .photo-item {
+    text-align: center;
+    width: calc((100% - 54px) / 4);
+
+    .photo-placeholder {
+      width: 100%;
+      background: #f0f0f0;
+      height: calc(100% - 26px);
+
+      .photo-img {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: fill;
+      }
+
+      .no-image {
+        font-size: 14px;
+        color: #4B5563;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        aspect-ratio: 1;
+      }
+
+      &.auto {
+        margin-right: 6px;
+      }
+    }
+
+    .photo-label {
+      font-size: 14px;
+      color: #4B5563;
+      line-height: 22px;
+      margin-top: 4px;
+    }
+  }
+}
+```
+
+## 状态标签规范
+
+### 1. 相似度显示
+
+```vue
+<span class="similarity" :class="similarity > 80 ? 'high' : 'low'">
+  {{ similarity }}%
+</span>
+```
+
+```scss
+.similarity {
+  font-size: 14px;
+  font-weight: bold;
+  margin-left: 16px;
+}
+
+.high { color: #10B981; }
+.low { color: #EF4444; }
+```
+
+### 2. 异常程度标签
+
+```vue
+<span class="tag-value" :class="degreeColorEnum[degree]">
+  {{ degreeText }}
+</span>
+```
+
+```scss
+.tag-value {
+  padding: 0 6px;
+  font-size: 14px;
+  line-height: 22px;
+  border-radius: 4px;
+}
+
+.normal {
+  color: #10B981;
+  background: #E8F8F3;
+}
+
+.warning {
+  color: #F59E0B;
+  background: #FEF6D5;
+}
+
+.serious {
+  color: #EF4444;
+  background: #FEEDED;
+}
+```
+
+## 底部操作区域规范
+
+### 1. 单栏操作区域
+
+```vue
+<div class="audit-confirm">
+  <div class="confirm-result">
+    <!-- 结果展示区域 -->
+  </div>
+  <div class="audit-form">
+    <!-- 表单区域 -->
+  </div>
+  <div class="body-sender">
+    <!-- 按钮区域 -->
+  </div>
+</div>
+```
+
+```scss
+.audit-confirm {
+  width: calc(100% + 30px);
+  min-height: 368px;
+  flex: 1;
+  margin: 0 -10px 0 -20px;
+  background: #FFFFFF;
+  box-shadow: 0px -2px 12px 0px rgba(0,0,0,0.16);
+
+  .audit-form {
+    padding: 20px 20px 0;
+  }
+
+  .body-sender {
+    margin: 0 0 20px 102px;
+  }
+}
+```
+
+### 2. 双栏操作区域（复核模式）
+
+```vue
+<div class="confirm-result">
+  <div class="result-left">
+    <!-- 左侧稽核结果 -->
+  </div>
+  <div class="result-right">
+    <!-- 右侧复核表单 -->
+    <div class="body-sender">
+      <!-- 按钮区域 -->
+    </div>
+  </div>
+</div>
+```
+
+```scss
+.confirm-result {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+
+  .result-left {
+    width: 45%;
+  }
+
+  .result-right {
+    width: 55%;
+
+    .body-sender {
+      margin: 0 0 20px 82px;
+    }
+  }
+}
+```
+
+## 结果展示组件规范
+
+### 1. 带图标的结果展示
+
+```vue
+<div class="confirm-result">
+  <i class="icon" :class="result === '正常' ? 'el-icon-success' : 'el-icon-error'" />
+  <span class="result-title">比对结果:
+    <span :class="result === '正常' ? 'high' : 'low'">
+      {{ result }}
+    </span>
+  </span>
+  <span class="sub-result">{{ detailText }}</span>
+</div>
+```
+
+```scss
+.confirm-result {
+  height: 54px;
+  border-radius: 6px;
+  line-height: 54px;
+  font-size: 14px;
+  color: #4B5563;
+  justify-content: flex-start;
+  background-color: #F0F4FD;
+  margin: 12px 20px 0;
+  width: calc(100% - 80px);
+
+  .result-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #4B5563;
+  }
+
+  .sub-result {
+    margin-left: 20px;
+  }
+}
+
+.el-icon-success {
+  margin: 0 10px 0 16px;
+  color: rgb(19, 182, 19);
+  font-size: 20px;
+}
+
+.el-icon-error {
+  margin: 0 16px;
+  color: red;
+  font-size: 20px;
+}
+```
+
+## 表单样式规范
+
+### 1. 表单项样式
+
+```scss
+::v-deep .el-form-item__label {
+  color: #6B7280;
+  font-weight: 400;
+}
+
+::v-deep .el-select {
+  width: 90%;
+}
+
+::v-deep .el-textarea {
+  width: 90%;
+}
+```
+
+### 2. 单选按钮样式
+
+```scss
+/deep/ .el-radio__input.is-checked .el-radio__inner {
+  border-color: #416FFC;
+  background: #416FFC;
+}
+
+/deep/ .el-radio__input.is-checked+.el-radio__label {
+  color: #416FFC;
+}
+```
+
+## 信息卡片规范
+
+### 1. 信息卡片样式
+
+```vue
+<div class="comparison-footer">
+  {{ employeeName }} {{ organizationType ? '- ' + organizationType : ''}}
+  <span style="margin-left: 10px">{{ relationship }}</span>
+  <span style="margin-left: 10px">{{ organizationName }}</span>
+</div>
+```
+
+```scss
+.comparison-footer {
+  padding: 10px 20px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #4B5563;
+  line-height: 20px;
+  border-radius: 6px;
+  background-color: #F0F4FD;
+  width: fit-content;
+  max-width: 90%;
+}
+```
+
+## 通用文本样式
+
+```scss
+.content-text {
+  color: #374151;
+  line-height: 22px;
+  width: 380px;
+}
+```
+
+## 抽屉组件开发最佳实践
+
+### 1. 响应式设计
+- 使用百分比宽度进行布局
+- 设置合适的最小宽度和最大高度
+- 考虑内容溢出时的滚动处理
+
+### 2. 交互体验
+- 禁用默认的关闭行为，使用自定义按钮
+- 提供明确的操作反馈
+- 合理的加载状态管理
+
+### 3. 视觉层次
+- 使用一致的间距系统（12px、16px、20px）
+- 明确的颜色语义（成功、警告、错误）
+- 合理的字体大小层级（14px、16px、20px）
+
+### 4. 内容组织
+- 左侧展示基础信息，右侧展示核心内容
+- 底部固定操作区域
+- 使用区块标题分组相关信息

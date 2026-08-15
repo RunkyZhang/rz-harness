@@ -1,0 +1,19 @@
+# Harness generated local routing for <change-id>.
+# Prefer generating this file with scripts/generate-local-routing.sh from
+# templates/local-backend-services.yml instead of editing it by hand.
+
+change_id: <change-id>
+frontend_repo: frontend-map-system
+fallback_base_url: https://test-api.example.com
+proxy_listen:
+  host: 127.0.0.1
+  port: 19080
+routes:
+  - id: backend-sales-management-service
+    frontend_prefix: /sfa/salesmanagement
+    strip_prefix: /sfa/salesmanagement
+    backend_prefix: /
+    backend_repo: backend-sales-management
+    local_target: http://127.0.0.1:31010
+    source_contract: docs/contracts/<change-id>-api.md
+    reason: backend-sales-management is active for this smoke run

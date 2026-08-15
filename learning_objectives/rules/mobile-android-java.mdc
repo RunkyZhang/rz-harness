@@ -1,0 +1,53 @@
+---
+description: SFA Android Java/XML 规则，适用于 sfa-android
+globs:
+  - "**/*.java"
+  - "**/*.kt"
+  - "**/*.xml"
+  - "**/build.gradle"
+  - "**/AndroidManifest.xml"
+alwaysApply: false
+---
+
+# Android 端规则
+
+## 适用范围
+
+适用于 `$SFA_REPO_MOBILE_SFA_ANDROID` / `sfa-android`。
+
+给人工 review 的说明默认中文；类名、方法名、layout id、接口路径、字段名、Gradle task 和命令保持原样。
+
+## 变更前必须确认
+
+- 先读 `changes/<change-id>/spec.md`、`plan.md`、`docs/contracts/<change-id>-api.md` 和 `docs/baseline/mobile-sfa-android.md`。
+- Android 字段、状态、上限、错误态必须以后端 contract 和 PRD 为准，不在端上自行推导业务规则。
+- `[ASSUMP]` 和阻塞性 `[QUESTION]` 不得进入实现。
+- 修改路径必须落在 spec 的 `allowed_paths` 内。
+- 不得修改 `local.properties`、签名文件、`gradle.properties`、构建产物或发布配置，除非 spec 明确列入 allowed paths 并有人工确认。
+
+## 架构边界
+
+- Activity / Fragment / Adapter / ViewHolder 只负责页面展示、输入校验和交互，不直接创建网络 client。
+- 新增或变更接口调用必须走项目既有 API / repository / service 层；不得在 Activity / Adapter / ViewHolder 中直接使用 `OkHttpClient`、`HttpURLConnection`、`Retrofit.Builder`、`Volley` 或 `AsyncHttpClient`。
+- 离线 / 弱网 / 上传队列必须保持现有队列语义；多图、重试、清理和失败状态需要有可追踪证据。
+- Layout XML 只承载展示结构，不写接口 URL、token、账号、环境 host 或临时 mock 数据。
+
+## 注释、日志和可维护性
+
+- 复杂页面方法、保存校验、上传队列、历史字段兼容、失败重试和第 N 张上限拦截必须写业务原因注释。
+- 禁止提交 `System.out` / `System.err`、`printStackTrace()`、`Log.d` / `Log.v`、硬编码 `http://` / `https://`。
+- 合并前运行：
+
+```bash
+scripts/diff-hygiene-gate.sh <repo-root> [--base <ref>] <changed-mobile-files...>
+scripts/mobile-mechanical-quality.sh <repo-root> <changed-mobile-files...>
+scripts/architecture-drift-gate.sh <repo-root> <changed-mobile-files...>
+scripts/temp-hardcode-scan.sh <changed-mobile-files...>
+```
+
+- 提交 review 前必须消除和业务无关的空白 diff，尤其不要批量改动空白行、缩进或 XML 格式。
+
+## 推荐验证
+
+- 优先用 Android Studio / Gradle 编译受影响 flavor 或 variant。
+- 涉及相机、定位、离线队列、推送、地图、安装包或系统权限时，必须记录真机 / SIT 人工确认；无法执行时写 `BLOCKED`，不得声称 Android smoke 通过。

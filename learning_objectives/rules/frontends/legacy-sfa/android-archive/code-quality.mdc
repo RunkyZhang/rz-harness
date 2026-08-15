@@ -1,0 +1,155 @@
+---
+description: 代码质量和最佳实践规范
+---
+
+# 代码质量规范
+
+## 命名约定
+
+### 常量定义
+```kotlin
+// 正确：全大写下划线分隔
+companion object {
+    const val MAX_RETRY_COUNT = 3
+    const val DEFAULT_TIMEOUT = 5000L
+    const val ORDER_PENDING_REVIEW = 1
+    const val ORDER_APPROVED = 2
+}
+
+// 错误：小写或驼峰命名
+const val maxRetryCount = 3  // ❌
+const val orderPendingReview = 1  // ❌
+```
+
+### 资源命名
+- **布局**: `activity_`, `fragment_`, `dialog_`, `item_`
+- **ID**: 功能_控件类型 (`tv_user_name`, `btn_submit`)
+- **图片**: 功能描述 (`icon_user_avatar`, `bg_main_header`)
+- **颜色**: 使用语义化命名 (`color_text_primary`)
+
+## 避免常见问题
+
+### 内存泄漏预防
+```kotlin
+// 正确：使用弱引用
+class MyManager(context: Context) {
+    private val contextRef = WeakReference(context)
+}
+
+// 正确：生命周期感知
+class MyActivity : AppCompatActivity() {
+    override fun onDestroy() {
+        super.onDestroy()
+        // 清理资源
+        disposable?.dispose()
+        job?.cancel()
+    }
+}
+```
+
+### 空安全处理
+```kotlin
+// 正确：使用安全调用
+user?.name?.let { name ->
+    updateUI(name)
+}
+
+// 正确：提供默认值
+val userName = user?.name ?: "未知用户"
+
+// 避免：强制解包（除非确定非空）
+val name = user!!.name  // ❌ 可能导致崩溃
+```
+
+### 线程安全
+```kotlin
+// 正确：UI 更新在主线程
+scope.launch {
+    val data = withContext(Dispatchers.IO) {
+        // 后台操作
+        loadData()
+    }
+    // 自动回到主线程
+    updateUI(data)
+}
+
+// 错误：后台线程更新 UI
+Thread {
+    val data = loadData()
+    textView.text = data  // ❌ 崩溃风险
+}.start()
+```
+
+## 性能优化
+
+### RecyclerView 优化
+```kotlin
+// 设置固定大小（当数据变化不影响大小时）
+recyclerView.setHasFixedSize(true)
+
+// 嵌套滚动控制
+recyclerView.isNestedScrollingEnabled = false
+
+// ViewHolder 复用
+class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    // 缓存 findViewById 结果
+    private val textView: TextView = view.findViewById(R.id.tv_text)
+}
+```
+
+### 图片加载优化
+```kotlin
+// 使用项目的 GlideLoader
+GlideLoader.displayImageView(context, imageUrl, imageView)
+
+// 避免：直接使用 Glide（不统一）
+Glide.with(context).load(imageUrl).into(imageView)  // ❌
+```
+
+## 错误处理
+
+### 统一异常处理
+```kotlin
+try {
+    riskyOperation()
+} catch (e: CancellationException) {
+    // 协程取消，不处理
+    throw e
+} catch (e: Exception) {
+    Log.e(TAG, "操作失败", e)
+    "操作失败，请重试".showToast()
+}
+```
+
+### 用户友好提示
+```kotlin
+// 正确：用户能理解的提示
+"网络连接失败，请检查网络设置".showToast()
+
+// 错误：技术性错误信息
+"SocketTimeoutException: timeout".showToast()  // ❌
+```
+
+## 代码组织
+
+### 文件结构
+- 一个文件一个公共类
+- 相关的内部类放在同一文件
+- 扩展函数放在独立的 Extensions.kt 文件
+
+### 函数设计
+- 单个函数不超过 30 行
+- 参数不超过 5 个
+- 使用数据类传递多个参数
+
+### 注释规范
+```kotlin
+/**
+ * 获取用户信息
+ * @param userId 用户ID
+ * @return 用户信息，失败时返回null
+ */
+suspend fun getUserInfo(userId: String): UserBean? {
+    // 实现逻辑
+}
+```

@@ -1,0 +1,91 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Vue 和 Element UI 模式
+
+## Element UI 实现
+本应用程序使用 Element UI 2.12.0 版本，采用标准化方法：
+
+- 全局大小配置可通过 `$globalSearchConfig.size` 获取，默认值为 'small'
+- Element UI 在 [src/main.js](mdc:src/main.js) 中导入和配置
+
+## 常见组件模式
+
+### 搜索表单
+搜索表单通常遵循以下模式：
+```vue
+<div class="new-header-wrapper">
+  <div class="new-header-max-width">
+    <div class="new-search-wrapper">
+      <!-- 组织选择器 -->
+      <div class="new-search-box">
+        <div class="new-search-label">组织</div>
+        <el-cascader
+          v-model="orgValue"
+          :options="orgOptions"
+          :props="cascaderConfig"
+          :size="$globalSearchConfig.size"
+          @change="handleChange"
+        />
+      </div>
+
+      <!-- 日期选择器 -->
+      <div class="new-search-box">
+        <div class="new-search-label">时间</div>
+        <el-date-picker
+          v-model="dateValue"
+          type="month"
+          :size="$globalSearchConfig.size"
+          @change="handleChange"
+        />
+      </div>
+
+      <!-- 稽核日期 -->
+      <div class="new-search-box">
+        <div class="new-search-label">稽核日期</div>
+        <el-radio-group v-model="auditTimeTab" @input="inputTime" size="small">
+          <el-radio-button :label="1">昨日</el-radio-button>
+          <el-radio-button :label="2">今日</el-radio-button>
+          <el-radio-button :label="3">
+            自定义
+            <el-date-picker
+              @focus="auditFocusTimer"
+              @blur="auditTimeTab = auditCustomizeTime.length ? '3' : ''"
+              @change="auditChangeTimer"
+              v-model="auditCustomizeTime"
+              value-format="yyyy-MM-dd"
+              type="daterange"
+              range-separator="~"
+            />
+          </el-radio-button>
+        </el-radio-group>
+        <span style="display: inline-block;margin-left: 10px;">
+          <span>{{ auditStartTime }}</span>
+          <span v-if="auditTimeTab == '3' && auditEndTime" >~</span>
+          <span v-if="auditTimeTab == '3'" >{{ auditEndTime }}</span>
+        </span>
+      </div>
+
+      <!-- 自定义时间选择器 -->
+      <div class="new-search-box" v-if="timeType === 'custom'">
+        <div class="new-search-label"></div>
+        <el-date-picker
+          v-model="customTime"
+          type="date"
+          size="medium"
+          placeholder="请选择时间"
+          value-format="yyyy-MM-dd"
+        />
+      </div>
+
+      <!-- 搜索按钮 -->
+      <div class="new-search-but">
+        <el-button type="primary" :size="$globalSearchConfig.size" @click="search">查询</el-button>
+        <el-button :size="$globalSearchConfig.size" @click="reset">重置</el-button>
+      </div>
+    </div>
+  </div>
+</div>
+```

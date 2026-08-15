@@ -1,0 +1,279 @@
+---
+globs: *.xml,*.kt,*.java
+description: Android UI 开发规范和语义化设计令牌
+---
+
+# Android UI 开发规范
+
+## 语义化设计令牌
+
+### 颜色使用 ([colors_semantic.xml](mdc:app/src/main/res/values/colors_semantic.xml))
+
+**通用规则**
+- 始终使用语义化颜色，禁止在 XML 或 Kotlin 中硬编码十六进制值
+- XML 中使用：`@color/<name>`
+- Kotlin 中使用：`ContextCompat.getColor(context, R.color.<name>)`
+- 优先使用语义化令牌而非传统调色板；添加新令牌而非硬编码
+
+**颜色令牌**
+- `color_brand`: 品牌主色（CTA按钮、选中状态、链接）
+- `color_brand_tint`: 品牌色调背景（芯片、徽章）
+- `color_error`: 品牌异常色（异常情况）
+- `color_bg_page`: 页面背景（根容器）
+- `color_bg_section`: 区块/卡片背景
+- `color_bg_disabled`: 禁用状态背景（非文本）
+- `color_text_primary`: 默认正文文本
+- `color_text_secondary`: 次要/元数据文本
+- `color_text_title`: 标题/标题文本
+- `color_text_assist`: 辅助/说明文本
+- `color_text_disabled`: 禁用状态文本
+- `color_text_hint`: 输入提示/占位符
+- `color_text_inverse`: 深色/品牌背景上的文本
+- `color_divider_line`: 分割线/边框
+- `color_divider_shadow`: 阴影分隔符（谨慎使用）
+- `color_overlay_55`: 中等遮罩（对话框/底表）
+- `color_overlay_75`: 强遮罩（关键模态框）
+
+**Do/Don't 规则**
+- ✅ 在深色/品牌背景上使用 `color_text_inverse`
+- ❌ 不要在代码中调整透明度；使用预定义的遮罩
+
+**使用示例**
+```xml
+<!-- XML 示例 -->
+<TextView
+    android:background="@color/color_bg_page"
+    android:textColor="@color/color_text_primary" />
+```
+
+```kotlin
+// Kotlin 示例
+textView.setTextColor(ContextCompat.getColor(ctx, R.color.color_text_secondary))
+```
+
+### 阴影 ([colors_shadow.xml](mdc:app/src/main/res/values/colors_shadow.xml))
+
+**通用规则**
+- 使用阴影令牌，禁止硬编码 ARGB 或透明度
+- XML 中使用：`@color/color_shadow_*`
+- Kotlin 中使用：`ContextCompat.getColor(context, R.color.color_shadow_*)`
+
+**阴影令牌**
+- `color_shadow_low`: 轻微层级（芯片、小卡片）
+- `color_shadow_mid`: 中等层级（卡片、底表）
+- `color_shadow_high`: 强层级、模态遮罩
+
+**Do/Don't 规则**
+- ✅ 与背景颜色叠加以保持对比度
+- ❌ 不要与非语义化透明度混合
+
+### 图标尺寸 ([dimens_icons.xml](mdc:app/src/main/res/values/dimens_icons.xml))
+
+**通用规则**
+- 使用语义化图标尺寸，禁止硬编码 dp
+- XML 中使用：`@dimen/icon_size_*`
+- Kotlin 中使用：`resources.getDimensionPixelSize(R.dimen.icon_size_*)`
+
+**尺寸令牌**
+- `icon_size_xxl` (64dp): 英雄/空状态图标
+- `icon_size_xl` (56dp): 区块/标题图标
+- `icon_size_lg` (48dp): 主要卡片/瓦片图标
+- `icon_size_md` (36dp): 标准列表/网格图标
+
+**使用示例**
+```xml
+<!-- 宽度和高度使用相同尺寸 -->
+<ImageView
+    android:layout_width="@dimen/icon_size_md"
+    android:layout_height="@dimen/icon_size_md" />
+```
+
+### 圆角半径 ([dimens_radius.xml](mdc:app/src/main/res/values/dimens_radius.xml))
+
+**通用规则**
+- 使用语义化半径，禁止硬编码 dp
+- 在 drawable XML 中使用：`@dimen/radius_*`
+
+**半径令牌**
+- `radius_xs` (3dp): 输入框、小徽章
+- `radius_sm` (6dp): 按钮、小卡片、芯片
+- `radius_md` (18dp): 标准卡片、底表
+- `radius_lg` (200dp): 大容器、模态框
+
+**使用示例**
+```xml
+<!-- Drawable 中使用 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="@dimen/radius_sm" />
+</shape>
+```
+
+### 分割线高度 ([dimens_divider.xml](mdc:app/src/main/res/values/dimens_divider.xml))
+
+**通用规则**
+- 使用语义化分割线高度，禁止硬编码 dp
+- XML 中使用：`@dimen/divider_height_*`
+- Kotlin 中使用：`resources.getDimensionPixelSize(R.dimen.divider_height_*)`
+
+**高度令牌**
+- `divider_height_thin` (1dp): 模块、元素间分割线（细分割线）
+- `divider_height_thick` (8dp): 卡片间分割线（粗分割线）
+
+**使用场景**
+- **细分割线** (1dp): 列表项之间、输入框分组、菜单项分割
+- **粗分割线** (8dp): 卡片组件间距、页面区块分离、内容模块分割
+
+**使用示例**
+```xml
+<!-- 列表项间的细分割线 -->
+<View
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/divider_height_thin"
+    android:background="@color/color_divider_line" />
+
+<!-- 卡片间的粗分割线 -->
+<View
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/divider_height_thick"
+    android:background="@color/color_bg_page" />
+```
+
+**RecyclerView 中使用**
+```kotlin
+// ItemDecoration 中使用语义化高度
+class DividerItemDecoration : RecyclerView.ItemDecoration() {
+    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+        val thinDivider = view.context.resources.getDimensionPixelSize(R.dimen.divider_height_thin)
+        val thickDivider = view.context.resources.getDimensionPixelSize(R.dimen.divider_height_thick)
+
+        // 根据需要选择合适的分割线高度
+        outRect.bottom = thinDivider // 或 thickDivider
+    }
+}
+```
+
+### 文本行间距 ([dimens_spacing.xml](mdc:app/src/main/res/values/dimens_spacing.xml))
+
+**通用规则**
+- 使用语义化行间距，禁止硬编码 dp 值
+- XML 中使用：`@dimen/line_spacing_*`
+- Kotlin 中使用：`resources.getDimensionPixelSize(R.dimen.line_spacing_*)`
+- 行高倍数使用：`@dimen/line_height_multiplier`
+
+**行间距令牌**
+- `line_spacing_normal` (8dp): 多行文本标准行间距
+- `line_height_multiplier` (1.5): 标准行高倍数
+
+**使用场景**
+- **多行文本**: 段落文本、描述信息、长文本内容
+- **标准行高**: 保持1.5倍行高以提高可读性
+- **列表文本**: RecyclerView 或 ListView 中的多行条目
+
+**使用示例**
+```xml
+<!-- 多行 TextView 使用标准行间距和行高 -->
+<TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:lineSpacingExtra="@dimen/line_spacing_normal"
+    android:lineSpacingMultiplier="@dimen/line_height_multiplier"
+    android:textColor="@color/color_text_primary"
+    android:text="这是一段多行文本内容\n使用标准的行间距规范\n提高文本可读性" />
+```
+
+```kotlin
+// Kotlin 代码中使用
+textView.apply {
+    setLineSpacing(
+        resources.getDimensionPixelSize(R.dimen.line_spacing_normal).toFloat(),
+        resources.getFloat(R.dimen.line_height_multiplier)
+    )
+}
+```
+
+**设计原则**
+- 基于1.5倍行高提供舒适的阅读体验
+- 8dp行间距适用于大部分中文字体场景
+- 保持多行文本的视觉层次和节奏感
+- 确保在不同字体大小下的一致性
+
+### 页面间距 ([dimens_gap.xml](mdc:app/src/main/res/values/dimens_gap.xml))
+
+**通用规则**
+- 使用语义化页面间距，禁止硬编码 dp 值
+- XML 中使用：`@dimen/page_*_gap`
+- Kotlin 中使用：`resources.getDimensionPixelSize(R.dimen.page_*_gap)`
+- 确保所有页面保持一致的边距规范
+
+**页面间距令牌**
+- `page_horizontal_gap` (16dp): Activity/Fragment 的水平内边距
+
+**使用场景**
+- **页面边距**: Activity 和 Fragment 的左右边距
+- **内容区域**: 主要内容区域的水平约束
+- **卡片布局**: 卡片与屏幕边缘的间距
+- **列表边距**: RecyclerView 的左右边距
+
+**使用示例**
+```xml
+<!-- Activity/Fragment 根布局使用标准水平边距 -->
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingHorizontal="@dimen/page_horizontal_gap">
+
+    <!-- 内容区域 -->
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="页面内容"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+```kotlin
+// Kotlin 代码中使用
+val horizontalGap = resources.getDimensionPixelSize(R.dimen.page_horizontal_gap)
+rootLayout.setPadding(horizontalGap, 0, horizontalGap, 0)
+
+// 或者在 RecyclerView 中设置边距
+recyclerView.addItemDecoration(object : RecyclerView.ItemDecoration() {
+    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+        outRect.left = horizontalGap
+        outRect.right = horizontalGap
+    }
+})
+```
+
+**设计原则**
+- 16dp 水平边距提供舒适的阅读体验
+- 确保内容不会贴边显示，提高可读性
+- 在不同屏幕尺寸下保持一致的视觉比例
+- 与 Material Design 规范保持一致
+
+## 布局规范
+- **优先使用**: `ConstraintLayout` 替代嵌套布局
+- **ViewBinding**: 新组件必须使用 ViewBinding 或 Data Binding
+- **RecyclerView**: 设置 `tools:listitem` 和 `tools:itemCount`
+- **无障碍**: 添加 `contentDescription` 给图片和图标
+
+## 兼容性要求
+
+### Android 版本兼容
+- 所有 UI 组件必须在 Android API 19+ 上正常显示和工作
+- 确保 UI 在不同 Android 版本上的兼容性
+- 使用 AndroidX 支持库以实现向后兼容
+
+### 屏幕适配
+- 在不同屏幕尺寸和密度上测试布局
+- 使用 dp/sp 单位而非 px
+- 支持横屏和竖屏布局
+- 考虑可折叠设备和平板电脑的适配
+
+### 性能优化
+- 避免阻塞主线程的 UI 操作
+- 优化 RecyclerView 性能（使用 ViewHolder 模式）
+- 合理使用图片加载和缓存

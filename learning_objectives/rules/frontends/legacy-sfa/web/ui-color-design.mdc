@@ -1,0 +1,361 @@
+---
+alwaysApply: false
+---
+# UI页面颜色设计规范
+
+## 主色系统
+
+### 主色状态
+- **默认态**: `#416FFC` - 用于按钮、主要操作
+- **悬停态**: `#2D52D6` - 鼠标悬停反馈
+- **按钮/激活态**: `#1C37B0` - 按钮点击状态
+
+### 次级色状态
+- **默认态**: `#E5E9F2` - 适用于次要按钮或边框样式
+- **悬停态**: `#D1D7E6` - 次级元素悬停状态
+- **按钮/激活态**: `#BBC2D9` - 次级元素激活状态
+
+### 禁用状态
+- **禁用色**: `#D1D5DE` - 不可交互元素，禁用状态图标/文字
+
+## 反馈色系统
+
+### 错误状态
+- **默认态**: `#EF4444` - 错误提示、危险操作
+- **悬停态**: `#DC2626` - 错误按钮悬停状态
+- **背景提示**: `#FEE2E2` - 错误信息背景色
+
+### 成功状态
+- **默认态**: `#10B981` - 成功提示、确认操作
+- **悬停态**: `#0D986C` - 成功按钮悬停状态
+- **背景提示**: `#D1FAE5` - 成功信息背景色
+
+## 分割线&结构元素
+
+### 分割线
+- **常规分割线**: `#E5E9F2` - 用于内容区域分割
+- **强调分割线**: `#000000` (Alpha: 14) - 需要强调的分割
+
+### 蒙层
+- **轻度蒙层**: `#FFFFFF` (Alpha: 0.55) - 轻度遮罩效果
+- **标准蒙层**: `#FFFFFF` (Alpha: 0.75) - 标准遮罩效果
+
+## 背景色系统
+
+### 页面背景
+- **页面背景色**: `#F4F5FA` - 用于页面主背景
+
+### 卡片背景
+- **卡片背景、禁用背景色**: `#F5F7FD` - 用于卡片背景、禁用状态背景
+
+### 悬停背景
+- **悬停背景色**: `#ECF0FF` - 用于悬停状态背景
+
+### 分割线和边框
+- **边框、分割线、表头颜色**: `#EAEDF5` - 用于主要分割线、表头背景
+- **边框、分割线**: `#DFE3F0` - 用于次要分割线、边框
+
+## 层级色彩体系（参考）
+
+### 背景层级 (50-200) - 旧版参考
+- **50级**: `#F8FAFE` (1.2:1) - 浅背景、卡片悬浮态
+- **100级**: `#F0F4FD` (1.5:1) - 次级背景、分割区域
+- **200级**: `#E5E9F2` (3:1) - 分割线、边框
+
+### 文字层级
+- **标题、强调文字**: `#0D1632` - 页面标题、重要标题文字
+- **正文主要文字、重点ICON**: `#252D46` - 主要内容文字、重要图标
+- **正文次要文字/常规ICON**: `#59627D` - 次要内容文字、常规图标
+- **注释、辅助信息**: `#8891AF` - 提示文字、辅助说明
+- **禁用状态ICON/文字**: `#D1D5E0` - 禁用状态的文字和图标
+
+## 字重规范
+
+### 字重等级
+- **细体 (Light)**: `font-weight: 300` - 用于辅助信息、次要内容
+- **常规 (Regular)**: `font-weight: 400` - 用于正文内容、基础文字
+- **中黑 (Medium)**: `font-weight: 500` - 用于重要信息、小标题
+- **中粗 (Semibold)**: `font-weight: 600` - 用于标题、强调文字
+
+### 字重选择原则
+- 字重的选择同样基于核心、稳定、克制的原则
+- 多数情况下，只出现 `regular` 以及 `medium` 的两种字体重量，分别对应代码中的 `400` 和 `500`
+- 少数字体加粗的情况下，会采用 `semibold` 的字体重量，对应代码中的 `600`
+
+## 行高规范
+
+### 多行文案行高
+- **标准行高**: `line-height: 1.5` (1.5倍行高)
+- 适用于多行文本内容，确保良好的阅读体验和视觉层次
+
+## 中文字体规范
+
+| 字号 | 字重 | 行高 | 应用场景 | 色值 |
+|------|------|------|----------|------|
+| 20px | Semibold | 28px | 一级标题 | `#0D1632` |
+| 16px | Semibold | 24px | 二级标题 | `#0D1632` |
+| 14px | Regular | 22px | 主要文字 | `#252D46` |
+| 14px | Regular | 22px | 次要文字 | `#59627D` |
+| 14px | Regular | 22px | 辅助说明信息 | `#8891AF` |
+| 14px | Regular | 22px | 暗提示 | `#252D46` |
+| 14px | Regular | 22px | 禁用文字 | `#D1D5E0` |
+
+## 容器间距规范
+
+### 默认间距
+- **容器四边间距**: `16px` - 页面内容区域的默认内边距
+- **组件间距**: `16px` - 组件之间的标准间距
+- **元素间距**: `8px` - 小元素之间的间距
+
+### 间距应用
+```css
+/* 容器默认内边距 */
+.container {
+  padding: 16px;
+}
+
+/* 组件间距 */
+.component + .component {
+  margin-top: 16px;
+}
+
+/* 元素间距 */
+.element + .element {
+  margin-top: 8px;
+}
+```
+
+## 使用指南
+
+### CSS变量定义建议
+```css
+:root {
+  /* 主色系 */
+  --primary-default: #416FFC;
+  --primary-hover: #2D52D6;
+  --primary-active: #1C37B0;
+
+  /* 次级色系 */
+  --secondary-default: #E5E9F2;
+  --secondary-hover: #D1D7E6;
+  --secondary-active: #BBC2D9;
+
+  /* 反馈色 */
+  --error-default: #EF4444;
+  --error-hover: #DC2626;
+  --error-bg: #FEE2E2;
+
+  --success-default: #10B981;
+  --success-hover: #0D986C;
+  --success-bg: #D1FAE5;
+
+  --warning-default: #F59E0B;
+
+  /* 文字层级 */
+  --text-title: #0D1632;         /* 标题、强调文字 */
+  --text-primary: #252D46;       /* 正文主要文字、重点ICON */
+  --text-secondary: #59627D;     /* 正文次要文字/常规ICON */
+  --text-auxiliary: #8891AF;     /* 注释、辅助信息 */
+  --text-disabled: #D1D5E0;      /* 禁用状态ICON/文字 */
+
+  /* 背景系统 */
+  --bg-page: #F4F5FA;            /* 页面背景色 */
+  --bg-card: #F5F7FD;            /* 卡片背景、禁用背景色 */
+  --bg-hover: #ECF0FF;           /* 悬停背景色 */
+  --border-primary: #EAEDF5;     /* 边框、分割线、表头颜色 */
+  --border-secondary: #DFE3F0;   /* 边框、分割线 */
+
+  /* 字重 */
+  --font-weight-light: 300;      /* 细体 */
+  --font-weight-regular: 400;    /* 常规 */
+  --font-weight-medium: 500;     /* 中黑 */
+  --font-weight-semibold: 600;   /* 中粗 */
+
+  /* 行高 */
+  --line-height-standard: 1.5;   /* 标准行高 */
+
+  /* 间距 */
+  --spacing-container: 16px;     /* 容器四边间距 */
+  --spacing-component: 16px;     /* 组件间距 */
+  --spacing-element: 8px;        /* 元素间距 */
+
+  /* 字体规范 */
+  --font-size-h1: 20px;          /* 一级标题 */
+  --font-size-h2: 16px;          /* 二级标题 */
+  --font-size-body: 14px;        /* 正文 */
+
+  --line-height-h1: 28px;        /* 一级标题行高 */
+  --line-height-h2: 24px;        /* 二级标题行高 */
+  --line-height-body: 22px;      /* 正文行高 */
+}
+```
+
+### Element UI按钮样式应用
+```vue
+<!-- 主要操作按钮 -->
+<el-button type="primary" size="medium">主要操作</el-button>
+
+<!-- 次要操作按钮 -->
+<el-button size="medium">次要操作</el-button>
+
+<!-- 危险操作按钮 -->
+<el-button type="danger" size="medium">删除</el-button>
+
+<!-- 成功操作按钮 -->
+<el-button type="success" size="medium">确认</el-button>
+```
+
+### 字体和排版应用
+```css
+/* 一级标题 */
+.title-h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-h1);
+  color: var(--text-title);
+}
+
+/* 二级标题 */
+.title-h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-h2);
+  color: var(--text-title);
+}
+
+/* 正文主要文字 */
+.body-text {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  color: var(--text-primary);
+}
+
+/* 次要文字 */
+.secondary-text {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  color: var(--text-secondary);
+}
+
+/* 辅助说明信息 */
+.auxiliary-text {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  color: var(--text-auxiliary);
+}
+
+/* 禁用状态文字 */
+.disabled-text {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  color: var(--text-disabled);
+}
+
+/* 多行文案 */
+.multiline-text {
+  line-height: var(--line-height-standard);
+}
+```
+
+### 容器和间距应用
+```vue
+<template>
+  <!-- 页面容器 -->
+  <div class="page-container">
+    <!-- 内容区块 -->
+    <div class="content-section">
+      <div class="section-title">标题</div>
+      <div class="form-group">
+        <label class="form-label">表单项</label>
+        <el-input class="form-input"></el-input>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+/* 页面容器 */
+.page-container {
+  padding: var(--spacing-container);
+  background: var(--bg-page);
+}
+
+/* 卡片容器 */
+.card-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 4px;
+  padding: var(--spacing-container);
+}
+
+/* 悬停状态 */
+.hover-container:hover {
+  background: var(--bg-hover);
+}
+
+/* 内容区块间距 */
+.content-section + .content-section {
+  margin-top: var(--spacing-component);
+}
+
+/* 表单元素间距 */
+.form-group + .form-group {
+  margin-top: var(--spacing-component);
+}
+
+.form-label + .form-input {
+  margin-top: var(--spacing-element);
+}
+
+/* 标题样式 */
+.section-title {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-h1);
+  color: var(--text-title);
+  margin-bottom: var(--spacing-component);
+}
+
+/* 表头样式 */
+.table-header {
+  background: var(--border-primary);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+  border-bottom: 1px solid var(--border-secondary);
+}
+</style>
+```
+
+## 重要注意事项
+
+### 颜色使用
+1. **文字层级**: 严格按照标题、主要文字、次要文字、辅助信息、禁用状态的优先级使用
+2. **背景层级**: 页面背景、卡片背景、悬停背景有明确的层次关系
+3. **边框分级**: 主要边框和次要边框用于不同重要程度的分割
+4. **对比度要求**: 确保文字与背景达到良好的对比度要求
+5. **一致性原则**: 同一页面中相同功能的元素应使用相同的颜色规范
+6. **可访问性**: 遵循WCAG对比度标准，确保视觉可访问性
+
+### 字重使用
+7. **字重克制**: 多数情况下只使用 `regular` (400) 和 `medium` (500) 两种字重
+8. **标题强调**: 标题类文字使用 `semibold` (600) 字重进行强调
+9. **避免过度**: 不要在同一区域使用过多不同字重，保持视觉统一
+
+### 行高和间距
+10. **多行文本**: 统一使用1.5倍行高，确保良好的阅读体验
+11. **容器间距**: 默认使用16px作为容器内边距和组件间距
+12. **层次清晰**: 通过间距营造清晰的信息层次，避免元素过于拥挤
+13. **响应式**: 在小屏设备上可适当调整间距，但需保持比例关系
+
+### 中文字体适配
+14. **字号选择**: 中文内容最小使用14px字号，确保良好的可读性
+15. **行高匹配**: 中文文本行高需要考虑汉字特点，建议使用22px或以上
+16. **字重适配**: 中文字体的字重表现与英文不同，需要实际测试效果
+
+## 示例参考
+
+项目中按钮使用示例可参考：[expenseList.vue](mdc:src/views/businessTrip/expenseList.vue)

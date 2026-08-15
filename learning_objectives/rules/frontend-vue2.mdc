@@ -1,0 +1,156 @@
+---
+description: SFA Vue2 前端规则，适用于 mapSystem 和 sign-up
+globs:
+  - "**/*.vue"
+  - "**/*.js"
+  - "**/package.json"
+  - "**/vue.config.js"
+  - "**/.env*"
+alwaysApply: false
+---
+
+# Vue2 前端规则
+
+## 适用范围
+
+适用于：
+
+- `$SFA_REPO_FRONTEND_MAP_SYSTEM` / `mapSystem`
+- `$SFA_REPO_FRONTEND_SIGN_UP` / `sign-up`
+
+给人工 review 的说明默认中文；组件名、路由名、API path、字段名、命令、环境变量 key 保持原样。
+
+## Rule Profile
+
+- `frontend-map-system` 默认启用 `rules/frontends/legacy-sfa/manifest.yml` 中的 `legacy-sfa-web` profile。修改 `mapSystem` 页面、API、列表、详情、按钮、颜色或图表交互前，必须读取 `rules/frontends/legacy-sfa/web/*.mdc` 中相关规则。
+- `frontend-sign-up` 默认不启用 `legacy-sfa-web`。该仓是 H5 / 移动端 Vue2 项目，只使用本文件的轻量 Vue2/H5 规则；除非后续 spec 明确 opt in，不得套用 `mapSystem` 管理后台样式规则。
+- `rules/frontends/legacy-sfa/ios-archive/` 和 `rules/frontends/legacy-sfa/android-archive/` 只是归档材料。没有新的 App lane、repo registry 和用户确认前，不得用于 Web 需求。
+
+## 变更前必须确认
+
+- 先读 `changes/<change-id>/spec.md`、`plan.md` 和 `docs/contracts/<change-id>-api.md`。
+- 前端字段必须以后端 contract 为准。
+- `[ASSUMP]` 和阻塞性 `[QUESTION]` 不得进入实现。
+- 修改路径必须落在 spec 的 `allowed_paths` 内。
+- 不得绕过 `src/api` 直接在页面中硬编码后端 URL。
+- 按 `docs/architecture/repo-registry.md` 的 `rule_profile` 加载对应规则；如果 registry、baseline 和本地仓事实冲突，先更新 harness 事实再实现。
+- 修改 `mapSystem` 前必须读取 `docs/baseline/frontend-map-system.md`，默认使用 Node `14.21.3` 和 `scripts/frontend-dev-server.sh frontend-map-system 9527` 启动；不得直接用高版本 Node 失败后才排查。
+- 新增 `mapSystem` 页面必须先检查并接入临时路由菜单；本地 smoke 中目标 route 跳到 `HomeIndex` 时按路由失败处理。
+- `mapSystem` 登录 smoke 必须走真实账号输入、blur 触发 `/sfa/backend/employee/organizationFor123`、选择/等待第一个产品组、再点击登录；登录凭据只能来自 ignored local config、Keychain 或已有浏览器会话。
+
+## 复杂 UI 原型确认门禁
+
+- 满足任一条件时，视为复杂 UI：新增或重写完整页面、详情页、抽屉、弹窗流程、分步表单、批量操作流；页面同时包含列表 / 表单 / 详情 / 图表 / 上传 / 联动筛选 / 状态切换中的三类及以上；交互影响业务确认、审核、状态流转、权限展示或错误恢复；或用户 / Reviewer Agent / Orchestrator 明确标记为复杂 UI。
+- 复杂 UI 在正式 Vue 实现前，必须先由 AI 生成一个可交互 HTML 原型，用 mock 数据或 contract 样例覆盖核心布局、主路径交互、空态 / 错误态和关键状态反馈。
+- HTML 原型必须存放在当前 change 下，例如 `changes/<change-id>/prototype/frontend-ui-prototype.html`，并在 `plan.md` 写明打开方式、覆盖交互点、参考页面和人工确认人。
+- 人工 / 工人确认原型没有阻塞问题前，Frontend Agent 不得开始正式页面实现；可先补 contract、mock 数据、样板分析和原型本身。
+- 确认结论必须写入 `changes/<change-id>/evidence.md` 或同 change 的原型确认记录；如果无法生成或无法确认，记录为 `BLOCKED`，不得声称复杂 UI 已准备进入开发。
+- 复杂 PC 页面没有跑起来给人工确认前，不得在 final、review 或 evidence 中写“UI 通过”；PC E2E smoke 不能替代人工 UI 确认。
+- 原型不得接入真实后端、生产配置、登录态、token、个人信息或敏感数据。
+
+## 页面与 API 结构
+
+- 页面优先放在既有 `src/views/<domain>/` 下。
+- API 方法优先放在对应 `src/api/*.js`，页面只调用 API 封装。
+- 列表页必须显式处理 loading、空态、错误态、分页或无分页说明。
+- 表单页必须显式处理校验、提交中状态、失败提示、成功后刷新/返回行为。
+- 不新增全局状态或公共组件，除非 spec 明确需要。
+
+## 注释与日志
+
+- 必须读取 `docs/standards/comment-logging.md`，并按本次 diff 自查注释和日志。
+- `src/api/*.js` 中新增或变更的导出 API 方法必须有 JSDoc 或等价注释，说明接口用途、关键参数、返回结构、错误 / 空态或分页行为。
+- 复杂页面方法必须有注释说明业务意图：提交、保存、审核、状态切换、批量操作、导入导出、组合查询、详情回填、枚举映射、按钮权限和兼容旧字段。
+- 注释解释“为什么这样处理”和业务边界，不重复代码语句；简单点击处理、纯赋值和样板生命周期不强制。
+- 业务前端代码禁止提交 `console.*`、`debugger` 和临时 `[DEBUG-...]` 标记。用户可见错误使用项目已有 Message / toast / error handler；如需埋点或错误上报，必须使用项目已有封装并在 spec/contract 说明。
+
+## mapSystem 管理后台页面样式约束
+
+- 本节是 `legacy-sfa-web` profile 的入口摘要；细则以 `rules/frontends/legacy-sfa/web/` 为准。
+- UI 参考优先级必须明确：用户在当前需求中提供的 URL、截图、页面路径或明确口头指定的参考页面，优先级高于本文件中的默认样板清单；默认样板只在用户未指定 UI 参考页时作为兜底。
+- 用户已指定 UI 参考页时，spec / plan / evidence 必须记录“用户指定参考页”和“实际复用的骨架/class”；Agent 不得改用自己认为更合适的默认样板。
+- 新增或重写 Vue2 管理后台页面前，必须先抽样 2-3 个同模块或相邻模块页面，并在 spec / plan 中写明参考路径。
+- 列表页按目标模块样板选择骨架：客户管理类优先复用 `customerlist` / `customerlist-content` / `new-header-wrapper` / `new-search-wrapper` / `customerlist-table` / `all-el-pagination`；临时路由、审核/运营类后台页可优先复用 `specialAudit-container` / `new-header-wrapper` / `new-search-wrapper` / `el-table` / `all-el-pagination`。
+- 搜索区使用 `new-search-box`、`new-search-label`、`new-search-but` 和 `$globalSearchConfig.size`；不得自行发明新的搜索表单网格。
+- 表格使用现有 `el-table` 约定：蓝色表头、`border`、`align="left"`、`all-empty-data` 空态、操作列使用 `all-table-blue-but`。
+- 详情页按目标模块样板选择骨架：客户管理类优先复用 `details add-post-details` / `all-back-btn` / `details__box` / `all-content-header` / `all-content-body` / `content-body-item`；临时路由、审核/运营类后台页可优先复用 `specialDetail-container` / `back-btn` / `content-container` / `content-header` / `content-body` / `content-body-item`。
+- 详情字段优先使用 `OverflowTooltip` 或 `content-body-item-content not-wrap-text` 处理长文本；不得裸排大段字段导致页面像未套系统样式。
+- 只有在同模块样板无法覆盖业务形态时，才允许新增局部样式；新增样式必须说明为什么不能复用现有 class。
+
+### 本次失败复盘规则
+
+- 如果页面“功能可用但视觉不像系统”，优先检查是否没有遵守用户指定 UI 参考页，而不是继续调整局部 CSS。
+- Agent 在实现前必须从参考页提炼结构约束，而不是只看字段和接口：外层容器、搜索区结构、表格 class、空态、分页、返回按钮、详情分组、字段宽度、长文本处理。
+- Reviewer Agent 必须检查“用户指定 UI 参考页是否被实际消费”；如果只消费了 harness 默认样板，必须列为人工 review 风险。
+
+## 验证命令
+
+进入真实试点前先确认依赖安装方式。
+
+`mapSystem` 当前没有 lockfile，候选：
+
+```bash
+npm install
+npm run lint
+npm run build:test
+```
+
+`sign-up` 有 `package-lock.json`，候选：
+
+```bash
+npm ci
+npm run lint
+npm run build:test
+```
+
+当前 baseline 已知：
+
+- 两个前端仓当前都缺 `node_modules`。
+- `mapSystem` 的 `npm run lint` 使用 `eslint --fix`，会修改文件；运行前必须明确允许自动修复，或先补只检查不修复的命令。
+- 本机 Node 是 `v22.22.2`，Vue CLI 3 / node-sass 可能存在兼容风险。
+
+## 样板优先
+
+`mapSystem` 首个 CRUD 试点优先参考：
+
+- `src/views/audit/rectification/list.vue`
+- `src/views/audit/rectification/detail.vue`
+- `src/views/customermanagement/customer_list/index.vue`
+- `src/views/customermanagement/customer_list/detail.vue`
+- `src/views/customermanagement/list/index.vue`
+- `src/views/customermanagement/customer_audit/index.vue`
+- `src/views/customermanagement/customer_audit/detail.vue`
+- `src/views/customermanagement/customer_changeInfo/index.vue`
+- `src/views/audit/distributionAuditList.vue`
+- `src/api/customermanagement.js`
+- `src/api/customer-audit.js`
+
+`sign-up` 后续 H5 试点可参考：
+
+- `src/views/visit/`
+- `src/views/visit/visit-product-select.vue`
+- `src/api/interface.js`
+- `src/api/sales.js`
+
+## 禁止默认修改
+
+- `.env.production`
+- `.env.staging`
+- `.env.test`
+- `.env.development`
+- `vue.config.js`
+- `package-lock.json`（除非依赖变更已获确认）
+- `public/**` 发布资源
+
+如确需修改，必须在 spec 中列为 `[FACT]` 并由用户确认。
+
+## Pre-PR 自查
+
+- 运行 `scripts/confidence-gate.sh`。
+- 运行 `scripts/assumption-leak-gate.sh`。
+- 运行 `scripts/allowed-paths.sh`。
+- 运行 `scripts/code-comment-log-quality.sh` 检查本次 Vue / JS 改动的注释与日志。
+- 运行 `scripts/architecture-drift-gate.sh` 检查页面是否绕过 `src/api` 或硬编码请求。
+- 运行 `scripts/temp-hardcode-scan.sh <changed-files...>`，检查 `CODX` / `smoke` / `mock` / `localhost` / `token` / `password` / `TODO` / `FIXME`。
+- 记录 npm 命令和结果到 `evidence.md`。
+- Reviewer Agent 审查后，再由用户人工 review。

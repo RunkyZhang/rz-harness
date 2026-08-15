@@ -1,0 +1,284 @@
+---
+alwaysApply: false
+---
+# API接口规范
+
+## API文件结构
+
+### 通用API文件
+
+- **通用API**: [api/api.js](mdc:src/api/api.js) - 包含通用的HTTP请求方法
+- **账号API**: [api/account.js](mdc:src/api/account.js) - 账号相关接口
+
+### 业务模块API
+
+- **出差申请**: [api/businessTrip.js](mdc:src/api/businessTrip.js) - 出差业务API
+- **客户管理**: [api/customermanagement.js](mdc:src/api/customermanagement.js) - 客户管理API
+- **日常记录**: [api/dailyRecords.js](mdc:src/api/dailyRecords.js) - 日常记录API
+- **造旺模块**: [api/zw/](mdc:src/api/zw/) - 造旺相关API集合
+
+## 标准请求方法
+
+### 基础请求方法
+
+所有API请求都应该使用 [api/api.js](mdc:src/api/api.js) 中定义的标准方法：
+
+```javascript
+// GET请求
+export function getBackendApi(url, params) {
+  return request({
+    url: url,
+    method: 'get',
+    params
+  })
+}
+
+// POST请求
+export function postBackendApi(url, data) {
+  return request({
+    url: url,
+    method: 'post',
+    data
+  })
+}
+
+// 文件导出
+export function getExportApi(url, params) {
+  return request({
+    url: url,
+    method: 'get',
+    params,
+    responseType: 'blob'
+  })
+}
+```
+
+### 使用示例
+
+```javascript
+// 获取列表数据
+export function getDataList(params) {
+  return getBackendApi('/api/data/list', params)
+}
+
+// 提交表单数据
+export function submitForm(data) {
+  return postBackendApi('/api/data/submit', data)
+}
+
+// 导出Excel
+export function exportExcel(params) {
+  return getExportApi('/api/data/export', params)
+}
+```
+
+## 错误处理规范
+
+### 统一错误处理
+
+```javascript
+// 在组件中调用API
+fetchData() {
+  const params = {
+    page: this.currentPage,
+    size: this.pageSize
+  }
+
+  getDataList(params).then(res => {
+    if (res.code === 0) {
+      this.tableData = res.data.records
+      this.total = res.data.total
+    } else {
+      this.$message.error(res.msg)
+    }
+  }).catch(err => {
+    this.$message.error('网络错误，请稍后再试')
+  })
+}
+```
+
+### 响应数据结构
+
+标准的API响应格式：
+
+```javascript
+{
+  "code": 0,           // 状态码，0表示成功
+  "msg": "success",    // 响应消息
+  "data": {            // 响应数据
+    "records": [],     // 列表数据
+    "total": 0,        // 总数
+    "current": 1,      // 当前页
+    "size": 10         // 每页数量
+  }
+}
+```
+
+## FormData处理
+
+### 文件上传
+
+```javascript
+// 文件上传示例
+uploadFile(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('userId', localStorage.getItem('loginForm'))
+
+  return postBackendApi('/api/upload', formData)
+}
+```
+
+### 表单提交
+
+```javascript
+// 表单数据提交
+submitForm(formData) {
+  const data = new FormData()
+  Object.keys(formData).forEach(key => {
+    data.append(key, formData[key])
+  })
+
+  return postBackendApi('/api/form/submit', data)
+}
+```
+
+## 权限相关API
+
+### 获取菜单权限
+
+```javascript
+// 获取用户菜单权限
+export function getMenuPermission() {
+  return getBackendApi('/api/menu/permission')
+}
+
+// 获取用户信息
+export function getUserInfo() {
+  return getBackendApi('/api/user/info')
+}
+```
+
+### 权限验证
+
+```javascript
+// 验证用户权限
+export function checkPermission(permission) {
+  return postBackendApi('/api/permission/check', { permission })
+}
+```
+
+## 文件下载处理
+
+### Excel导出
+
+```javascript
+// Excel导出处理
+exportExcel(params) {
+  getExportApi('/api/export/excel', params).then(res => {
+    const blob = new Blob([res], { type: 'application/octet-stream' })
+    const objectUrl = URL.createObjectURL(blob)
+    const suffix = '.xlsx'
+    FileSaver.saveAs(objectUrl, '导出数据' + suffix)
+  })
+}
+```
+
+### 文件下载
+
+```javascript
+// 通用文件下载
+downloadFile(url, fileName) {
+  getExportApi(url).then(res => {
+    const blob = new Blob([res])
+    const objectUrl = URL.createObjectURL(blob)
+    FileSaver.saveAs(objectUrl, fileName)
+  })
+}
+```
+
+## 分页处理
+
+### 分页参数
+
+```javascript
+// 标准分页参数
+const paginationParams = {
+  page: 1,        // 当前页
+  size: 10,       // 每页数量
+  sortField: '',  // 排序字段
+  sortOrder: ''   // 排序方式
+}
+```
+
+### 分页组件配置
+
+```vue
+<el-pagination
+  :current-page="currentPage"
+  :page-size="pageSize"
+  :total="total"
+  :page-sizes="[10, 20, 50, 100]"
+  layout="total, sizes, prev, pager, next, jumper"
+  @size-change="handleSizeChange"
+  @current-change="handleCurrentChange"
+/>
+```
+
+## 请求拦截器
+
+### 全局请求配置
+
+请求拦截器应该在 [utils/request.js](mdc:src/utils/request.js) 中配置：
+
+```javascript
+// 请求拦截器
+request.interceptors.request.use(
+  config => {
+    // 添加token
+    if (getToken()) {
+      config.headers['Authorization'] = getToken()
+    }
+    return config
+  },
+  error => {
+    return Promise.reject(error)
+  }
+)
+
+// 响应拦截器
+request.interceptors.response.use(
+  response => {
+    const res = response.data
+    // 处理响应数据
+    return res
+  },
+  error => {
+    // 处理错误
+    return Promise.reject(error)
+  }
+)
+```
+
+## 开发最佳实践
+
+### API文件组织
+
+1. 按业务模块分类API文件
+2. 每个API文件export相关的接口方法
+3. 使用统一的命名规范
+4. 添加必要的注释说明
+
+### 错误处理
+
+1. 统一使用封装的请求方法
+2. 在组件中进行业务逻辑错误处理
+3. 使用Element UI的Message组件显示错误信息
+4. 记录必要的错误日志
+
+### 性能优化
+
+1. 合理使用缓存
+2. 避免重复请求
+3. 使用Loading状态
+4. 实现请求取消机制

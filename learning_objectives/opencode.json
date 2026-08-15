@@ -1,0 +1,74 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENTS.md",
+    "README.md",
+    "docs/onboarding.md",
+    "docs/README.md",
+	    "docs/architecture/repo-registry.md",
+	    "docs/architecture/changes-retention-policy.md",
+	    "docs/decision-log/2026-05-19-language-policy.md",
+	    "docs/decision-log/2026-05-19-pilot-selection.md",
+	    "rules/backend-java.mdc",
+	    "rules/frontend-vue2.mdc",
+	    "lanes/fullstack-crud.md",
+	    "lanes/pc-e2e-smoke.md",
+	    "templates/spec-tier-m.md",
+	    "templates/api-contract.md",
+	    "templates/plan-tier-m.md"
+  ],
+  "permission": {
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "**/.env*": "deny"
+    },
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "edit": {
+      "*": "ask",
+      "**/.env*": "deny",
+      "**/application-prod.yml": "deny",
+      "**/bootstrap-prod.yml": "deny",
+      "**/k8s/prod/**": "deny",
+      "**/db/migration/**": "deny"
+    },
+    "bash": {
+      "*": "ask",
+      "pwd": "allow",
+      "ls *": "allow",
+      "find *": "allow",
+      "rg *": "allow",
+      "grep *": "allow",
+      "sed *": "allow",
+      "cat *": "allow",
+      "wc *": "allow",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "git branch*": "allow",
+	      "scripts/confidence-gate.sh *": "allow",
+	      "scripts/assumption-leak-gate.sh *": "allow",
+	      "scripts/contract-delta-gate.sh *": "allow",
+	      "scripts/allowed-paths.sh *": "allow",
+	      "scripts/harness-sensor-runner.sh *": "allow",
+      "scripts/harness-self-audit.sh": "allow",
+      "bash -n scripts/*": "allow",
+      "rm *": "deny",
+      "rm -rf *": "deny",
+      "git reset *": "deny",
+      "git checkout *": "deny",
+      "git push *": "ask",
+      "git commit *": "ask"
+    },
+    "webfetch": "ask",
+    "websearch": "ask",
+    "task": {
+      "*": "ask",
+      "sfa-harness-explorer": "allow",
+      "sfa-harness-reviewer": "ask"
+    }
+  }
+}

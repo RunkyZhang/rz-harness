@@ -1,0 +1,46 @@
+name: legacy-sfa-frontend
+description: Legacy SFA frontend rule pack imported from user-provided 大前端 rules.
+default_activation: explicit-profile-only
+profiles:
+  legacy-sfa-web:
+    status: active
+    applies_to:
+      repo_ids:
+        - frontend-map-system
+      path_env:
+        - SFA_REPO_FRONTEND_MAP_SYSTEM
+      stack:
+        - Vue 2.6.10
+        - Vue CLI 3.6
+        - Element UI 2.12
+    rules:
+      - web/project-architecture.mdc
+      - web/api-guidelines.mdc
+      - web/ui-search-list-layout.mdc
+      - web/ui-details-patterns.mdc
+      - web/ui-search-patterns.mdc
+      - web/ui-drawer-patterns.mdc
+      - web/ui-standards.mdc
+      - web/button-standards.mdc
+      - web/ui-color-design.mdc
+      - web/common-patterns.mdc
+    non_default_rules:
+      - web/effort-estimation.mdc
+    activation_notes:
+      - Load before implementing mapSystem Web UI changes.
+      - Do not load for frontend-sign-up unless a later spec explicitly opts in.
+      - User-provided page, URL, screenshot, or module sample has higher priority than default examples in the pack.
+  legacy-sfa-ios-archive:
+    status: archived
+    applies_to:
+      repo_ids: []
+    rules_dir: ios-archive
+    activation_notes:
+      - Archived only. Requires new App lane and user confirmation before use.
+  legacy-sfa-android-archive:
+    status: archived
+    applies_to:
+      repo_ids: []
+    rules_dir: android-archive
+    activation_notes:
+      - Archived only. Requires new App lane and user confirmation before use.

@@ -1,0 +1,121 @@
+version: 1
+agents:
+  - agent_id: sfa-harness-orchestrator
+    display_name: SFA Harness Orchestrator
+    kind: coordinator
+    adoption_level: active
+    role_type: orchestrator
+    source: local
+    source_files: [AGENTS.md, docs/architecture/agent-handoff-contract.md, docs/skills-routing.md]
+    runtime_targets: [codex_main_session]
+    permission: orchestrator_write
+    trigger_stage: intake_to_closeout
+    input_artifacts: [user_request, spec.md, technical-solution.md, evidence.md]
+    output_artifacts: [harness-status.md, decisions.md, evidence.md]
+    output_contract: orchestration_status
+    required_gates: [scripts/change-artifacts-gate.sh, scripts/business-code-start-gate.sh, scripts/reviewer-gate.sh]
+    gate_consumers: [scripts/harness-self-audit.sh]
+    degradation: BLOCKED_OR_EXPLICIT_NA
+    instructions: Coordinate the harness flow, keep facts separate from assumptions, dispatch generated agents only after gates and contracts allow it.
+  - agent_id: sfa-harness-explorer
+    display_name: SFA Harness Explorer
+    kind: runtime_agent
+    adoption_level: active
+    role_type: explorer
+    source: local_with_ecc_role_reference
+    source_files: [.opencode/agents/sfa-harness-explorer.md, skills/explorer/SKILL.md, docs/architecture/agent-handoff-contract.md]
+    runtime_targets: [opencode, codex_generated]
+    permission: read_only
+    trigger_stage: analyse_or_pre_implementation
+    input_artifacts: [spec.md, contract.md, repo-baseline.md, user-question]
+    output_artifacts: [facts.md, assumptions.md, questions.md]
+    output_contract: fact_assumption_question
+    required_gates: [scripts/confidence-gate.sh]
+    gate_consumers: [scripts/business-code-start-gate.sh, scripts/reviewer-gate.sh]
+    degradation: BLOCKED_OR_EXPLICIT_NA
+    instructions: Read only. Return FACT ASSUMP QUESTION evidence paths before implementation or review. Do not edit files.
+  - agent_id: sfa-harness-reviewer
+    display_name: SFA Harness Reviewer
+    kind: runtime_agent
+    adoption_level: active
+    role_type: reviewer
+    source: local_with_ecc_role_reference
+    source_files: [.opencode/agents/sfa-harness-reviewer.md, skills/reviewer/SKILL.md, templates/review.md]
+    runtime_targets: [opencode, codex_generated]
+    permission: read_only
+    trigger_stage: pre_pr_or_human_review
+    input_artifacts: [spec.md, technical-solution.md, contract.md, diff, evidence.md]
+    output_artifacts: [changes/<change-id>/review.md]
+    output_contract: review_findings
+    required_gates: [scripts/reviewer-gate.sh]
+    gate_consumers: [scripts/reviewer-gate.sh]
+    degradation: BLOCKED_OR_EXPLICIT_NA
+    instructions: Review only. Lead with HIGH and MEDIUM risks, cite paths, and pass reviewer-gate before PR or human review.
+  - agent_id: sfa-test-agent
+    display_name: SFA Test Agent
+    kind: runtime_agent
+    adoption_level: active
+    role_type: test
+    source: local_with_ecc_role_reference
+    source_files: [templates/ai-test-plan.md, templates/test-agent-verification.md, templates/ai-test-report.md]
+    runtime_targets: [codex_generated]
+    permission: test_execution_only
+    trigger_stage: after_implementation_before_release
+    input_artifacts: [ai-test-plan.md, diff, evidence.md, verification-map.md]
+    output_artifacts: [test-agent-verification.md, ai-test-report.md]
+    output_contract: GOAL_ACHIEVED_OR_BLOCKED
+    required_gates: [scripts/ai-test-report-gate.sh]
+    gate_consumers: [scripts/ai-test-report-gate.sh, scripts/reviewer-gate.sh]
+    degradation: BLOCKED_OR_EXPLICIT_NA
+    instructions: Verify against confirmed ai-test-plan. Return GOAL_ACHIEVED only with evidence, otherwise BLOCKED with exact missing condition.
+  - agent_id: sfa-backend-agent
+    display_name: SFA Backend Agent
+    kind: runtime_agent
+    adoption_level: candidate
+    role_type: implementation
+    source: local_with_ecc_reviewer_build_reference
+    source_files: [rules/backend-java.mdc, templates/backend-test-plan.md, scripts/mvn-targeted-test.sh]
+    runtime_targets: [codex_generated]
+    permission: implementation_write_with_contract
+    trigger_stage: implementation_after_contract_v0_1
+    input_artifacts: [contract.md, backend-test-plan.md, allowed_paths, technical-solution.md]
+    output_artifacts: [diff, evidence.md, backend-test-plan.md]
+    output_contract: implementation_delta_with_tests
+    required_gates: [scripts/business-code-start-gate.sh, scripts/mvn-targeted-test.sh, scripts/canonical-command-gate.sh]
+    gate_consumers: [scripts/business-code-start-gate.sh, scripts/reviewer-gate.sh]
+    degradation: MAIN_AGENT_ONLY_OR_BLOCKED
+    instructions: Backend implementation is allowed only after contract and backend test plan gates. Use targeted Maven evidence and avoid protected behavior.
+  - agent_id: sfa-frontend-agent
+    display_name: SFA Frontend Agent
+    kind: runtime_agent
+    adoption_level: candidate
+    role_type: implementation
+    source: local_with_ecc_reviewer_build_reference
+    source_files: [rules/frontend-vue2.mdc, rules/frontend-wechat-miniprogram.mdc, templates/frontend-style-profile.md, scripts/frontend-lint-build.sh]
+    runtime_targets: [codex_generated]
+    permission: implementation_write_with_contract
+    trigger_stage: implementation_after_ui_rules_and_contract
+    input_artifacts: [contract.md, ui-rule-checklist.md, frontend-style-profile.md, technical-solution.md]
+    output_artifacts: [diff, evidence.md, screenshots_or_smoke_report]
+    output_contract: implementation_delta_with_ui_evidence
+    required_gates: [scripts/business-code-start-gate.sh, scripts/frontend-lint-build.sh, scripts/ui-confirmation-gate.sh]
+    gate_consumers: [scripts/business-code-start-gate.sh, scripts/reviewer-gate.sh]
+    degradation: MAIN_AGENT_ONLY_OR_BLOCKED
+    instructions: Frontend implementation follows UI rules, local style profile, narrow lint/build, and explicit UI evidence for complex screens.
+  - agent_id: sfa-mobile-agent
+    display_name: SFA Mobile Agent
+    kind: runtime_agent
+    adoption_level: candidate
+    role_type: implementation
+    source: local_with_ecc_reviewer_build_reference
+    source_files: [rules/mobile-ios-objc.mdc, rules/mobile-android-java.mdc, scripts/mobile-mechanical-quality.sh]
+    runtime_targets: [codex_generated]
+    permission: implementation_write_with_contract
+    trigger_stage: implementation_after_mobile_contract
+    input_artifacts: [contract.md, technical-solution.md, mobile_baseline.md, allowed_paths]
+    output_artifacts: [diff, evidence.md, mobile_build_or_mechanical_report]
+    output_contract: implementation_delta_with_mobile_evidence
+    required_gates: [scripts/business-code-start-gate.sh, scripts/mobile-mechanical-quality.sh, scripts/architecture-drift-gate.sh]
+    gate_consumers: [scripts/business-code-start-gate.sh, scripts/reviewer-gate.sh]
+    degradation: MAIN_AGENT_ONLY_OR_BLOCKED
+    instructions: Mobile implementation requires contract, allowed paths, mechanical quality checks, and architecture drift review before handoff.

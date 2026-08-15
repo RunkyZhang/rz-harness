@@ -1,0 +1,119 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# 项目架构指南
+
+## 技术架构
+
+这是一个基于Vue 2.6.10的企业级管理系统，使用以下技术栈：
+
+- **前端框架**: Vue.js 2.6.10 + Element UI 2.12.0
+- **路由管理**: Vue Router 3.0.6 (History模式)
+- **状态管理**: Vuex 3.1.0 (模块化)
+- **HTTP客户端**: Axios 0.18.0
+- **图表库**: ECharts 5.4.2
+- **构建工具**: Vue CLI 3.6.0
+
+## 项目结构
+
+### 核心目录说明
+
+- **src/api/**: API接口管理，按业务模块分类
+- **src/components/**: 公共组件库
+- **src/views/**: 业务页面组件
+- **src/store/**: Vuex状态管理，采用模块化设计
+- **src/utils/**: 工具函数库
+- **src/layout/**: 布局组件
+
+### 入口文件
+
+- **主入口**: [main.js](mdc:src/main.js) - 应用程序入口，全局配置
+- **路由入口**: [router/index.js](mdc:src/router/index.js) - 路由配置
+- **状态管理入口**: [store/index.js](mdc:src/store/index.js) - Vuex Store配置
+- **权限控制**: [permission.js](mdc:src/permission.js) - 全局权限拦截
+
+## 组件架构
+
+### 布局组件
+
+- **主布局**: [layout/index.vue](mdc:src/layout/index.vue) - 应用主布局
+- **内容区**: [layout/components/AppMain.vue](mdc:src/layout/components/AppMain.vue) - 页面内容区
+- **侧边栏**: [layout/components/Sidebar/](mdc:src/layout/components/Sidebar/) - 导航侧边栏
+
+### 公共组件
+
+- **面包屑**: [components/Breadcrumb/](mdc:src/components/Breadcrumb/) - 导航面包屑
+- **图标组件**: [components/SvgIcon/](mdc:src/components/SvgIcon/) - SVG图标
+- **日期选择器**: [components/RangePicker/](mdc:src/components/RangePicker/) - 日期范围选择
+- **文档查看器**: [components/vueOffice/](mdc:src/components/vueOffice/) - Office文档查看
+
+## 业务模块
+
+### 主要业务模块
+
+1. **数据中心**: [views/newData/](mdc:src/views/newData/) - 实时数据展示
+2. **客户管理**: [views/customermanagement/](mdc:src/views/customermanagement/) - 客户信息管理
+3. **订单管理**: 分散在各业务模块中
+4. **销售管理**: [views/businessTrip/](mdc:src/views/businessTrip/) - 出差申请等
+5. **市场管理**: [views/coins/](mdc:src/views/coins/) - 旺金币管理
+6. **人事管理**: 分散在各业务模块中
+7. **系统管理**: [views/organizationAndManagement/](mdc:src/views/organizationAndManagement/) - 组织架构管理
+
+### 特殊页面
+
+- **首页**: [views/index/](mdc:src/views/index/) - 系统首页，包含快捷入口和概览数据
+- **登录页**: [views/login/](mdc:src/views/login/) - 用户登录界面
+
+## 状态管理
+
+### Store模块
+
+- **app模块**: [store/modules/app.js](mdc:src/store/modules/app.js) - 应用状态
+- **user模块**: [store/modules/user.js](mdc:src/store/modules/user.js) - 用户信息
+- **permission模块**: [store/modules/permission.js](mdc:src/store/modules/permission.js) - 权限管理
+- **settings模块**: [store/modules/settings.js](mdc:src/store/modules/settings.js) - 系统设置
+
+### 全局Getters
+
+- **getters**: [store/getters.js](mdc:src/store/getters.js) - 全局计算属性
+
+## 样式管理
+
+### 样式文件
+
+- **全局样式**: [styles/index.scss](mdc:src/styles/index.scss) - 全局样式定义
+- **Element UI样式**: [styles/element-ui.scss](mdc:src/styles/element-ui.scss) - Element UI样式覆盖
+- **Less样式**: [assets/less/](mdc:src/assets/less/) - Less样式文件
+
+## 工具函数
+
+### 常用工具
+
+- **权限工具**: [utils/auth.js](mdc:src/utils/auth.js) - 权限相关工具函数
+- **通用工具**: [utils/index.js](mdc:src/utils/index.js) - 通用工具函数
+- **请求工具**: [utils/request.js](mdc:src/utils/request.js) - HTTP请求封装
+
+## 开发指南
+
+### 新增业务模块
+
+1. 在 `src/views/` 下创建业务模块目录
+2. 在 `src/api/` 下创建对应的API文件
+3. 在路由中配置新页面
+4. 在权限系统中配置访问权限
+
+### 新增公共组件
+
+1. 在 `src/components/` 下创建组件目录
+2. 创建 `index.vue` 作为组件入口
+3. 编写组件文档和使用示例
+4. 在需要的地方引入使用
+
+### 新增API接口
+
+1. 在对应的API文件中添加接口方法
+2. 使用封装好的HTTP客户端
+3. 统一错误处理
+4. 添加必要的类型注释

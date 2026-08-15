@@ -1,0 +1,47 @@
+---
+alwaysApply: false
+description: SFA Android项目总体概览和基础规则
+---
+
+# SFA Android 项目总体规则
+
+## 项目概述
+这是一个 Android SFA（销售自动化）项目，主要用于终端管理、订单处理、考勤管理等业务。
+
+## 核心技术栈
+- **语言**: Kotlin 优先（除非特别说明使用 Java）
+- **架构**: MVP（现有）+ MVVM（新功能）
+- **UI框架**: AndroidX + ConstraintLayout
+- **依赖注入**: XDroidMVP 框架
+- **网络**: Retrofit + OkHttp
+- **图片加载**: Glide
+- **数据库**: Room + MMKV
+
+## 重要目录结构
+- `app/src/main/java/com/want/hotkidceo/sfa/` - 主要代码目录
+- `app/src/main/res/` - 资源文件
+- `mvp/` - XDroidMVP 框架模块
+- `faceplatform-ui/` - 人脸识别UI模块
+
+## 版本兼容性
+- **最低支持**: Android API 19 (KitKat 4.4)
+- **目标版本**: 最新稳定版
+- 所有代码必须提供 API 19+ 兼容性方案
+
+## 编码规范
+- 遵循 Kotlin 命名约定
+- 使用语义化资源命名
+- 避免硬编码，使用常量和资源引用
+- 优先使用 ViewBinding/DataBinding
+
+## 项目特定规则
+- 遵循 SFA 项目现有的代码风格和模式
+- 尽可能使用项目现有的工具类和扩展函数
+- 保持与当前架构的一致性：
+  - 现有功能使用 MVP + XDroidMVP 框架
+  - 新功能使用 MVVM + AndroidX ViewModel 和 LiveData
+- 实现 MVVM 时的要求：
+  - 创建继承 AndroidX ViewModel 类的 ViewModels
+  - 使用 SavedStateHandle 处理配置变更
+  - 通过 LiveData 或 StateFlow 暴露 UI 状态
+  - 实现 Repository 模式进行数据操作

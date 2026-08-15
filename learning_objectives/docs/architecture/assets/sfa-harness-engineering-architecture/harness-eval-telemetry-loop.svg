@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <style>
+      .bg { fill:#fbfcff; }
+      .title { font:700 30px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill:#163b75; }
+      .sub { font:14px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill:#607084; }
+      .box { fill:#fff; stroke:#83aeea; stroke-width:2; rx:14; }
+      .green { fill:#effaf3; stroke:#76be8e; }
+      .yellow { fill:#fff7e5; stroke:#e0b45a; }
+      .red { fill:#fff0f0; stroke:#df8080; }
+      .purple { fill:#f4efff; stroke:#9d86dc; }
+      .head { font:700 18px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill:#193e75; }
+      .text { font:14px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill:#26364a; }
+      .small { font:12px -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif; fill:#5d6a7b; }
+      .arrow { stroke:#5677aa; stroke-width:2.2; fill:none; marker-end:url(#arrow); }
+      .dash { stroke-dasharray:6 5; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#5677aa"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1280" height="720"/>
+  <text class="title" x="640" y="48" text-anchor="middle">Harness Eval 与 Telemetry 反馈闭环</text>
+  <text class="sub" x="640" y="76" text-anchor="middle">评测不是证明业务已正确，而是证明控制面约束、历史样例和趋势信号可被稳定复验</text>
+  <path class="arrow dash" d="M900 554 C900 636 210 636 222 282"/>
+
+  <rect class="box green" x="72" y="132" width="300" height="150"/>
+  <text class="head" x="222" y="166" text-anchor="middle">Replay Behavior Eval</text>
+  <text class="text" x="100" y="202">3 类 stop-rule 场景</text>
+  <text class="text" x="100" y="230">8 个正/负 fixture</text>
+  <text class="small" x="100" y="252">验证：不该实现时能停</text>
+  <text class="small" x="100" y="272">Reviewer 只读 / 主分支不改业务</text>
+
+  <rect class="box yellow" x="492" y="132" width="300" height="150"/>
+  <text class="head" x="642" y="166" text-anchor="middle">Business Golden Eval</text>
+  <text class="text" x="520" y="202">6 个 seed cases</text>
+  <text class="text" x="520" y="230">sanitized change package</text>
+  <text class="small" x="520" y="256">验证：变更包是否具备可机械评分的</text>
+  <text class="small" x="520" y="276">工件和 gate 证据</text>
+
+  <rect class="box purple" x="912" y="132" width="300" height="150"/>
+  <text class="head" x="1062" y="166" text-anchor="middle">Eval Suite</text>
+  <text class="text" x="940" y="202">default_checks = 12</text>
+  <text class="text" x="940" y="230">输出 PASS_POWER_K / DECISION</text>
+  <text class="small" x="940" y="256">聚合 replay / sandbox / golden</text>
+  <text class="small" x="940" y="276">telemetry / audit / Codex wrapper</text>
+
+  <rect class="box" x="220" y="392" width="320" height="162"/>
+  <text class="head" x="380" y="426" text-anchor="middle">Telemetry Allowlist</text>
+  <text class="text" x="248" y="462">11 类 event type</text>
+  <text class="text" x="248" y="490">gate / skill / reviewer / dispatch</text>
+  <text class="text" x="248" y="516">verification / eval</text>
+  <text class="small" x="248" y="540">原始事件只在 .harness/telemetry</text>
+
+  <rect class="box red" x="740" y="392" width="320" height="162"/>
+  <text class="head" x="900" y="426" text-anchor="middle">Gate Evolution Review</text>
+  <text class="text" x="768" y="462">runs / blocks / true catches</text>
+  <text class="text" x="768" y="490">false positives / duplicate signal</text>
+  <text class="small" x="768" y="520">没有趋势证据前，不弱化 hard gate</text>
+
+  <path class="arrow" d="M372 207 L492 207"/>
+  <path class="arrow" d="M792 207 L912 207"/>
+  <path class="arrow" d="M1062 282 C1062 348 920 352 900 392"/>
+  <path class="arrow" d="M740 474 L540 474"/>
+  <path class="arrow" d="M380 392 C380 330 222 330 222 282"/>
+  <text class="small" x="640" y="642" text-anchor="middle">边界：默认不运行真实业务仓、不访问 SIT/UAT/生产、不记录 prompts/transcripts/raw logs/凭据/业务数据。</text>
+  <text class="small" x="640" y="666" text-anchor="middle">只输出聚合指标和审计结论。</text>
+</svg>

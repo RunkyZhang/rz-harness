@@ -1,0 +1,104 @@
+---
+description: 项目架构模式和最佳实践
+---
+
+# 架构规范
+
+## 双架构策略
+
+### 现有功能 - MVP 架构
+基于 XDroidMVP 框架，保持现有代码的一致性：
+
+```kotlin
+// Presenter
+class UserPresenter : XPresenter<UserContract.View>(), UserContract.Presenter {
+    override fun loadUserData() {
+        // 业务逻辑
+    }
+}
+
+// View (Activity/Fragment)
+class UserActivity : XActivity<UserPresenter>(), UserContract.View {
+    override fun getLayoutId() = R.layout.activity_user
+    override fun initPresenter() = UserPresenter()
+}
+```
+
+### 新功能 - MVVM 架构
+使用 AndroidX ViewModel + LiveData/StateFlow：
+
+```kotlin
+// ViewModel
+class UserViewModel : ViewModel() {
+    private val _userInfo = MutableLiveData<User>()
+    val userInfo: LiveData<User> = _userInfo
+
+    fun loadUser() {
+        viewModelScope.launch {
+            // 业务逻辑
+        }
+    }
+}
+
+// Activity/Fragment
+class UserActivity : AppCompatActivity() {
+    private val viewModel: UserViewModel by viewModels()
+    private lateinit var binding: ActivityUserBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_user)
+
+        viewModel.userInfo.observe(this) { user ->
+            // 更新 UI
+        }
+    }
+}
+```
+
+## 数据层模式
+
+### Repository 模式
+新功能必须实现 Repository 层：
+
+```kotlin
+class UserRepository {
+    suspend fun getUser(): Result<User> {
+        return try {
+            val response = apiService.getUser()
+            Result.success(response.data)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+}
+```
+
+### 依赖注入
+- **现有**: 手动依赖管理
+- **推荐**: Hilt 或 Koin（新模块）
+
+## 文件组织结构
+
+```
+app/src/main/java/com/want/hotkidceo/sfa/
+├── business/           # 业务模块
+│   ├── attendance/     # 考勤管理
+│   ├── visit/         # 拜访管理
+│   └── order/         # 订单管理
+├── framework/         # 框架层
+│   ├── util/          # 工具类
+│   ├── widget/        # 自定义控件
+│   └── manager/       # 管理器
+├── ui/                # UI 层
+│   ├── activity/      # Activity
+│   ├── fragment/      # Fragment
+│   └── dialog/        # 对话框
+└── present/           # MVP Presenter
+```
+
+## 最佳实践
+- **单一职责**: 每个类只负责一个功能
+- **生命周期感知**: 使用 `lifecycleScope`, `viewLifecycleOwner`
+- **错误处理**: 统一异常处理和用户提示
+- **内存管理**: 避免内存泄漏，正确使用 WeakReference

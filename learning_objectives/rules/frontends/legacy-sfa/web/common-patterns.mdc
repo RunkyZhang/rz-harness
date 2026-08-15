@@ -1,0 +1,262 @@
+---
+description: 通用 UI / 图表 / 表格交互的跨页面规范，包括 ECharts 缩放、表格列联动高亮等公共能力。未来所有"通用规范"统一收敛到本文件。
+globs:
+alwaysApply: false
+---
+
+# 通用 UI / 图表 / 表格规范（common-patterns）
+
+> 本文件汇总跨页面、跨业务线复用的通用规范。新增通用能力时，请在本文件追加章节，**不要新建分散的小 rules 文件**。
+
+---
+
+## 一、ECharts 图表缩放（dataZoom）
+
+### 概述
+
+项目中所有需要支持缩放的 ECharts 图表（折线图、柱状图等），统一采用 **inside 类型 + Ctrl + 鼠标滚轮** 触发缩放，**不使用底部 slider 滑动条**，避免占用图表显示空间和影响整体布局。
+
+### 标准配置
+
+```javascript
+dataZoom: [
+  {
+    type: 'inside',
+    xAxisIndex: 0,
+    start: 0,
+    end: 100,
+    zoomOnMouseWheel: 'ctrl',   // 必须按住 Ctrl + 滚轮才能缩放
+    moveOnMouseWheel: false,    // 禁用滚轮平移，避免与页面滚动冲突
+    moveOnMouseMove: true       // 允许鼠标拖动平移
+  }
+]
+```
+
+### 配置项说明
+
+| 配置项 | 取值 | 说明 |
+| --- | --- | --- |
+| `type` | `'inside'` | 内置型缩放，不占用图表区域空间 |
+| `xAxisIndex` | `0` | 作用于 X 轴；多 X 轴场景自行调整 |
+| `start` / `end` | `0` / `100` | 默认显示全量数据 |
+| `zoomOnMouseWheel` | `'ctrl'` | **统一规范**：按住 Ctrl 键 + 滚轮缩放 |
+| `moveOnMouseWheel` | `false` | **统一规范**：禁用滚轮平移，避免拦截页面滚动 |
+| `moveOnMouseMove` | `true` | 允许在图表内按住鼠标拖动平移 |
+
+### 严格禁止
+
+- ❌ 不要使用 `type: 'slider'` 的底部滑动条：占用图表纵向空间，破坏布局一致性
+- ❌ 不要将 `zoomOnMouseWheel` 设为 `true`：会拦截页面正常滚动
+- ❌ 不要将 `moveOnMouseWheel` 设为 `true`：原因同上
+
+### grid 布局适配
+
+不再使用底部 slider，`grid.bottom` 保持原值（通常为 `16%` 左右），**无需为缩放控件预留空间**。
+
+### 用户交互提示
+
+```vue
+<span class="zoom-tip">提示：按住 Ctrl + 鼠标滚轮可缩放图表</span>
+```
+
+```scss
+.zoom-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-left: 12px;
+}
+```
+
+### 参考实现
+
+- `src/views/reportCenter/components/TrendAnalysis/PersonLineEcharts.vue`
+- `src/views/reportCenter/components/TrendAnalysis/BrokenLineEcharts.vue`
+
+---
+
+## 二、表格"指标列联动高亮"（radio 切换 → 整列高亮）
+
+### 概述
+
+当表格表头存在 `<el-radio>` 用于切换右侧图表展示的指标时，**当前选中的 radio 所属的整列（表头 + 表体）应整列高亮**，便于用户快速定位"图表正在展示哪一列数据"。
+
+### 配色（统一规范）
+
+| 区域 | 背景色 | 用途 |
+| --- | --- | --- |
+| 表体单元格 `.highlight-col` | `#F0F6FF` | 当前选中列的数据单元格 |
+| 表头单元格 `.highlight-col-header` | `#DFE3F0` | 当前选中列的表头单元格（含父级分组表头） |
+
+```scss
+::v-deep .el-table .highlight-col {
+  background-color: #F0F6FF !important;
+}
+::v-deep .el-table .highlight-col-header {
+  background-color: #DFE3F0 !important;
+}
+```
+
+> ⚠️ 必须使用 `!important`，因为 el-table 默认的 stripe / hover / 自定义 `header-cell-style` 优先级较高。
+
+### 推荐方案：prop 映射（首选）
+
+**适用前提**：每个叶列均已声明 `prop`（这是最常见的情况，因为通常需要排序）。
+
+#### 实现步骤
+
+1. **维护字典**：把每个 radio key 映射到它对应的所有 prop（包括环比/同比的 prop）
+
+```javascript
+data() {
+  return {
+    currentRadio: 'bidding',
+    echartsKey: {
+      'bidding': ['yearMonth', 'realPaying', 'realPayingChainRatio', 'realPayingYearRatio'],
+      'proportion': ['yearMonth', 'proportionVal', 'proportionChainRatio', 'proportionYearRatio'],
+      // ...
+    }
+  }
+}
+```
+
+2. **computed 反转字典**：`prop → radioKey`
+
+```javascript
+computed: {
+  propToRadioKey() {
+    const map = {}
+    Object.keys(this.echartsKey).forEach(radioKey => {
+      this.echartsKey[radioKey].forEach(prop => {
+        if (prop !== 'yearMonth') {
+          map[prop] = radioKey
+        }
+      })
+    })
+    return map
+  }
+}
+```
+
+3. **cell-class-name / header-cell-class-name 函数**：
+
+```javascript
+methods: {
+  cellClassName({ column }) {
+    if (column.property && this.propToRadioKey[column.property] === this.currentRadio) {
+      return 'highlight-col'
+    }
+    return ''
+  },
+  headerCellClassName({ column, rowIndex }) {
+    const base = 'festival-theme'
+    // 顶层大类标题（如"业绩达成"）不参与高亮
+    if (rowIndex === 0) return base
+    if (column.property) {
+      return this.propToRadioKey[column.property] === this.currentRadio
+        ? `${base} highlight-col-header`
+        : base
+    }
+    // 中间分组父表头：检查 children 中是否有命中列
+    if (column.children && column.children.some(c => this.propToRadioKey[c.property] === this.currentRadio)) {
+      return `${base} highlight-col-header`
+    }
+    return base
+  }
+}
+```
+
+4. **绑定到表格**：
+
+```vue
+<el-table
+  :header-cell-class-name="headerCellClassName"
+  :cell-class-name="cellClassName"
+  ...
+>
+```
+
+#### 优点
+
+- ✅ 纯 computed 自动响应 `currentRadio` 变化，**无需手动调度重建**
+- ✅ 不依赖 Element UI 内部 `store.states` API，升级安全
+- ✅ 实现简洁、零时序问题
+
+#### 参考实现
+
+- `src/views/trendLine/trendList.vue`（推荐范式）
+
+---
+
+### 备用方案：column-key 父列标记 + originColumns 遍历
+
+**适用场景**：叶列（如"环比""同比"列）未声明 `prop`，且改造工作量大不便补全 `prop` 时。
+
+#### 实现要点
+
+1. 给每个含 radio 的父级 `<el-table-column>` 加 `column-key="<radioValue>"`
+2. 在 `data` 中维护 `columnGroupMap: new Map()`
+3. `mounted` 及关键 props（如 `level`、`dateTypeId`）变化时 `$nextTick` 触发 `buildColumnGroupMap`：
+
+```javascript
+buildColumnGroupMap() {
+  const map = new Map()
+  const table = this.$refs.xxxTable
+  const cols = (table && table.store && table.store.states && table.store.states.originColumns) || []
+  const walk = (col, ownerKey) => {
+    const key = col.columnKey || ownerKey
+    if (key) map.set(col.id, key)
+    if (col.children && col.children.length) {
+      col.children.forEach(c => walk(c, key))
+    }
+  }
+  cols.forEach(c => walk(c, null))
+  this.columnGroupMap = map
+}
+```
+
+4. 用 **computed 返回函数** 的方式触发重渲染（让 cell-class-name 引用变化）：
+
+```javascript
+computed: {
+  cellClassName() {
+    const activeKey = this.currentRadio
+    const map = this.columnGroupMap
+    return ({ column }) => map.get(column.id) === activeKey ? 'highlight-col' : ''
+  },
+  headerCellClassName() {
+    const activeKey = this.currentRadio
+    const map = this.columnGroupMap
+    return ({ column }) => {
+      const base = 'festival-theme'
+      return map.get(column.id) === activeKey ? `${base} highlight-col-header` : base
+    }
+  }
+}
+```
+
+#### 缺点
+
+- ⚠️ 依赖 Element UI 内部 `store.states.originColumns`（升级 element-ui 版本需回归测试）
+- ⚠️ 需手动调度 `buildColumnGroupMap`，初次渲染或动态列变化时可能短暂闪烁
+- ⚠️ 需要在父列上额外维护 `column-key` 标注
+
+#### 参考实现
+
+- `src/views/reportCenter/components/TrendAnalysis/personIndex.vue`
+- `src/views/reportCenter/components/TrendAnalysis/index.vue`
+
+---
+
+### 选型建议
+
+| 场景 | 推荐方案 |
+| --- | --- |
+| 新增页面 / 叶列普遍带 `prop` | **prop 映射**（首选） |
+| 老页面、叶列大量缺 `prop`、不便补全 | column-key + 遍历（备用） |
+| 列结构会随 props 动态变化 | **prop 映射**（无重建时序问题） |
+
+---
+
+## 后续追加规范
+
+新的通用 UI / 图表 / 表格规范请在本文件按"# 三、xxx"的章节形式追加，保持单文件聚合。

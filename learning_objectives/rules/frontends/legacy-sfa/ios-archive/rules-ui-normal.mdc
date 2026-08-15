@@ -1,0 +1,225 @@
+---
+description: iOS UI 基础规范（间距、分割线、圆角、阴影、页面边距等）
+alwaysApply: false
+---
+# iOS UI 基础规范
+
+## 1. 间距使用场景
+
+### 常量定义
+```objective-c
+/**
+ * 基础间距系统 — 基于 8pt 倍数，用于元素之间、成组留白等
+ */
+#define SFASpacing              8.0f
+
+/**
+ * 页面边距 — 页面主体与屏幕（或窗口）边缘的默认留白（通常配合 Safe Area）
+ */
+#define SFAPageMargin           16.0f
+```
+
+### 使用场景
+- **列表项之间**：区块与区块、Cell 与 Cell 的纵向/横向间距。
+- **内容块内部**：同一块内标题与正文、表单行之间的间距。
+- **图标与文字**：图标与标题/描述的水平或垂直间距。
+- **相关元素组合**：按钮组、标签组、筛选条件等成组元素的间距。
+- **页面边距（`SFAPageMargin`）**：页面主体与左右/上下安全区内的边距、列表 `contentInset`、整块内容与屏幕边缘的距离、弹窗内边距等 —— 统一用 **16pt**，与元素间「8pt 体系」区分：前者是**页级留白**，后者是**组件级间距**。
+
+**原则**：
+- 组件级间距：优先 `SFASpacing` 或其 **整数倍**（如 8、16、24），避免 6、10、12 等无依据的魔法数字（除非设计稿明确标注）。
+- 页级边距：优先 `SFAPageMargin`（16pt），需贴边或全宽背景时再单独约束。
+
+### 便利方法
+```objective-c
+/**
+ * 创建标准内边距
+ * @param spacing 基础间距值（通常使用 SFASpacing 或其倍数）
+ */
+static inline UIEdgeInsets SFAEdgeInsets(CGFloat spacing) {
+    return UIEdgeInsetsMake(spacing, spacing, spacing, spacing);
+}
+
+/**
+ * 创建自定义内边距
+ */
+static inline UIEdgeInsets SFAEdgeInsetsMake(CGFloat top, CGFloat left, CGFloat bottom, CGFloat right) {
+    return UIEdgeInsetsMake(top, left, bottom, right);
+}
+
+/**
+ * 页面边距 — 相对 Safe Area 四边留白
+ */
+static inline void SFASetPageMarginConstraints(UIView *contentView, UIView *containerView) {
+    [contentView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(containerView.mas_safeAreaLayoutGuideTop).with.offset(SFAPageMargin);
+        make.left.mas_equalTo(containerView.mas_safeAreaLayoutGuideLeft).with.offset(SFAPageMargin);
+        make.right.mas_equalTo(containerView.mas_safeAreaLayoutGuideRight).with.offset(-SFAPageMargin);
+        make.bottom.mas_equalTo(containerView.mas_safeAreaLayoutGuideBottom).with.offset(-SFAPageMargin);
+    }];
+}
+
+/**
+ * 页面边距 — 相对容器四边（不考虑 Safe Area，按需使用）
+ */
+static inline void SFASetSimplePageMarginConstraints(UIView *contentView, UIView *containerView) {
+    [contentView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.mas_equalTo(containerView).with.insets(SFAEdgeInsets(SFAPageMargin));
+    }];
+}
+```
+
+**示例**：
+```objective-c
+SFASetPageMarginConstraints(contentView, self.view);
+```
+
+---
+
+## 2. 分割线
+
+### 高度定义
+```objective-c
+/**
+ * 分割线默认高度 — 1pt（非 Retina 下仍为 1 逻辑像素）
+ */
+#define SFASeparatorHeight      1.0f
+```
+
+### 使用场景
+- 列表项之间的分隔
+- 内容区域的分割
+- 导航栏底部分割线
+- 表格视图分割线
+
+**颜色**：分割线背景色应使用 `ColorRules.h` 中的标准色（如 `Color_line`），避免随意 `grayColor` 或硬编码 RGB。
+
+### 便利方法
+```objective-c
+/**
+ * 创建标准分割线视图（示例：颜色请按项目统一为 Color_line 等宏）
+ */
+static inline UIView *SFACreateSeparatorView(UIView *containerView) {
+    UIView *separatorView = [[UIView alloc] init];
+    separatorView.backgroundColor = Color_line;  // 或项目统一分割线色
+    [containerView addSubview:separatorView];
+
+    [separatorView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.right.mas_equalTo(containerView);
+        make.height.mas_equalTo(SFASeparatorHeight);
+    }];
+
+    return separatorView;
+}
+```
+
+---
+
+## 3. 圆角
+
+### 分档规则（按视图高度）
+以**主要展示区域的高度**（如卡片、容器、输入条等）为分档依据：
+
+| 条件 | 圆角半径 | 说明 |
+|------|----------|------|
+| **高度 > 50** | **8pt** | 大卡片、大容器、大面积可点击块 |
+| **高度 > 30 且 ≤ 50** | **4pt** | 中等条、中等卡片、双行按钮区等 |
+| **高度 ≤ 30** | **视情况** | 小标签、小按钮、行内胶囊等，与设计和 `rules-ui-button` 对齐（如按钮统一 4pt 时以按钮规范为准） |
+| **其它特殊形态** | **视情况** | 圆形头像、全屏弹窗等单独与稿确认 |
+
+```objective-c
+/** 高度 > 50 时推荐使用 */
+#define SFACornerRadiusLarge     8.0f
+/** 高度 > 30 且 ≤ 50 时推荐使用 */
+#define SFACornerRadiusMedium    4.0f
+```
+
+### 使用场景（类型参考，具体半径以上表为准）
+- **大容器 / 大卡片**（高度通常 > 50）：列表大卡片、信息面板、空态容器 → **8pt**。
+- **中等条 / 中等块**（高度在 30～50）：表单行背景、次级卡片 → **4pt**。
+- **按钮**：以 `rules-ui-button` 为准（如统一 4pt）；若单独按高度分档，仍适用上表。
+- **输入框、选择器、小卡片**：高度 ≤ 30 时按 **4pt** 或与设计稿一致；**其它**不规则高度按分档或设计标注处理。
+
+**原则**：先按 **高度分档** 选 8 或 4，再核对设计稿；**其它**情况在文档或注释中说明取值原因。
+
+---
+
+## 4. 阴影
+
+### 层级定义
+```objective-c
+// 浅阴影 — 轻微分层 (x0, y2, blur8)
+#define SFAShadowLow @{ \
+    @"shadowColor": [UIColor colorWithRed:0 green:0 blue:0 alpha:0.04], \
+    @"shadowOffset": [NSValue valueWithCGSize:CGSizeMake(0, 2)], \
+    @"shadowRadius": @8, \
+    @"shadowOpacity": @1.0 \
+}
+
+// 中等阴影 — 卡片、按钮等 (x0, y4, blur16)
+#define SFAShadowMedium @{ \
+    @"shadowColor": [UIColor colorWithRed:0 green:0 blue:0 alpha:0.06], \
+    @"shadowOffset": [NSValue valueWithCGSize:CGSizeMake(0, 4)], \
+    @"shadowRadius": @16, \
+    @"shadowOpacity": @1.0 \
+}
+
+// 深阴影 — 模态框、弹出层等 (x0, y6, blur24)
+#define SFAShadowHigh @{ \
+    @"shadowColor": [UIColor colorWithRed:0 green:0 blue:0 alpha:0.08], \
+    @"shadowOffset": [NSValue valueWithCGSize:CGSizeMake(0, 6)], \
+    @"shadowRadius": @24, \
+    @"shadowOpacity": @1.0 \
+}
+```
+
+### 使用场景
+- **浅 (Low)**：轻微层级、小型浮层、弱提示卡片。
+- **中 (Medium)**：列表卡片、普通悬浮块、可点击卡片。
+- **深 (High)**：弹窗、抽屉、强提示蒙层上的内容容器。
+
+### 便利方法
+```objective-c
+/**
+ * @param shadowConfig SFAShadowLow / SFAShadowMedium / SFAShadowHigh
+ */
+static inline void SFAApplyShadow(UIView *view, NSDictionary *shadowConfig) {
+    view.layer.shadowColor = [shadowConfig[@"shadowColor"] CGColor];
+    view.layer.shadowOffset = [shadowConfig[@"shadowOffset"] CGSizeValue];
+    view.layer.shadowRadius = [shadowConfig[@"shadowRadius"] floatValue];
+    view.layer.shadowOpacity = [shadowConfig[@"shadowOpacity"] floatValue];
+}
+```
+
+---
+
+## 5. 其它
+
+### 检查清单
+在 UI 相关代码提交前建议确认：
+- [ ] **[P0]** 间距是否为 8pt 体系（`SFASpacing` 或其倍数）？
+- [ ] **[P0]** 分割线是否为 1pt，颜色是否使用 `Color_line` 等项目标准色？
+- [ ] **[P0]** 圆角是否按高度分档（>50 → 8，>30 且 ≤50 → 4，其余有依据）？
+- [ ] **[P0]** 阴影层级是否与界面层级匹配（Low / Medium / High）？
+- [ ] **[P0]** 页面边距是否为 16pt（`SFAPageMargin`）并考虑 Safe Area？
+- [ ] **[P1]** 按钮圆角是否与 `rules-ui-button` 冲突；若冲突以专项规范为准并备注。
+
+### 常见错误避免
+
+❌ **错误示例**
+```objective-c
+stackView.spacing = 12.0f;           // 非 8 的倍数且无设计依据
+line.backgroundColor = [UIColor grayColor];
+view.layer.cornerRadius = 6.0f;      // 未按高度分档或项目宏
+view.layer.shadowRadius = 5.0f;      // 未使用 SFAApplyShadow + 预设
+```
+
+✅ **正确示例**
+```objective-c
+stackView.spacing = SFASpacing;      // 或 16、24
+separatorView.backgroundColor = Color_line;
+card.layer.cornerRadius = SFACornerRadiusLarge;   // 卡片高度 > 50
+rowBg.layer.cornerRadius = SFACornerRadiusMedium;  // 高度在 (30, 50]
+SFAApplyShadow(cardView, SFAShadowMedium);
+SFASetPageMarginConstraints(contentView, self.view);
+```

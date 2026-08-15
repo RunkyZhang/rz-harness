@@ -1,0 +1,10 @@
+profile: swagger2-java-response-model
+status: active
+repository_path_env: SFA_REPO_BACKEND_SALES_MANAGEMENT
+public_response_root: sfa-sales-management-application/src/main/java/com/wantwant/sfa/sales/management/application/response/
+class_annotation: ApiModel
+field_annotation: ApiModelProperty
+scope: newly-added-public-response-vo
+
+# This profile is intentionally non-retroactive. It checks only newly added
+# response VO files passed to the pre-commit stage, not existing legacy models.

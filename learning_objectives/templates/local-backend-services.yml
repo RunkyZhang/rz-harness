@@ -1,0 +1,33 @@
+# Harness local backend service registry.
+# Copy to changes/<change-id>/local-backend-services.yml only when the project
+# defaults are not enough. Prefer keeping durable mappings in harness docs.
+
+fallback_base_url: http://dev-api.hotkidceo.com/
+proxy_listen:
+  host: 127.0.0.1
+  port: 19080
+services:
+  - backend_repo: backend-sales-management
+    frontend_prefix: /sfa/salesmanagement
+    strip_prefix: /sfa/salesmanagement
+    backend_prefix: /
+    local_target: $SFA_LOCAL_BACKEND_SALES_MANAGEMENT_URL
+    frontend_repos: frontend-map-system
+    source_contract: docs/architecture/repo-registry.md
+    reason: backend-sales-management owns the sfa salesmanagement service prefix
+  - backend_repo: backend-sfa-backend
+    frontend_prefix: /sfa/backend
+    strip_prefix: /sfa/backend
+    backend_prefix: /
+    local_target: $SFA_LOCAL_BACKEND_SFA_BACKEND_URL
+    frontend_repos: frontend-map-system
+    source_contract: docs/architecture/repo-registry.md
+    reason: backend-sfa-backend owns the sfa backend service prefix
+  - backend_repo: backend-ceo-member
+    frontend_prefix: /backend/backend-ceo-member
+    strip_prefix: /backend/backend-ceo-member
+    backend_prefix: /backend-ceo-member
+    local_target: $SFA_LOCAL_BACKEND_CEO_MEMBER_URL
+    frontend_repos: frontend-map-system
+    source_contract: docs/architecture/repo-registry.md
+    reason: backend-ceo-member is exposed through the CEO backend gateway prefix
