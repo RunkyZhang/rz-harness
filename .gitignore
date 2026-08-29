@@ -38,3 +38,5 @@
 **/.cursor/
 # claude ignore
 **/.claude/
+# 本机运行配置（含路径、账号来源、数据库与通信信息，勿提交）
+config/runtime_local.sh
