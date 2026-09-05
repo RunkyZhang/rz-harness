@@ -49,24 +49,68 @@
 ### 停止点
 
 停止点分两类：
-- **用户拍板类**（必须等用户确认才能进入下一阶段）
-- **自动关卡/独立角色类**（gate 脚本或子 Agent （Tester，Reviewer）放行，用户不逐项参与，只有 BLOCKED 才升级给用户）
+- **用户拍板类**：必须等用户确认才能进入下一阶段。聊天里说「ok / 确认」不够；主 Agent 要把盖章写进对应文件，再跑 gate。
+- **自动关卡 / 独立角色类**：gate 或 Tester / Reviewer 放行。用户不逐项参与；`BLOCKED` 或 HIGH 才升级给用户。
 
-| # | 停止点 | 类型 | 谁放行 | 放行条件 |
-|---|---|---|---|---|
-| 1 | Spec 三标签 | 用户拍板 | 用户 | 阻塞 `[QUESTION]` 已答、`[ASSUMP]` 已确认 |
-| 2 | 技术方案 CONFIRMED | 用户拍板 | 用户 | 方案确认（含飞书同步已刷新） |
-| 3 | AI 测试方案 | 用户拍板 | 用户 | `ai-test-plan.md` 用户确认 |
-| 4 | 环境就绪 READY | 自动关卡 | gate | `environment-readiness-gate.sh` 材料齐全 |
-| 5 | Code start | 自动关卡 | gate | 四重开工门禁通过（分支/路径/假设泄漏/置信度） |
-| 6 | 复杂 UI 确认 | 用户拍板（条件触发） | 用户 | `ui-confirmation.md` CONFIRMED；PC smoke 不能替代 |
-| 7 | Tester 验收 | 独立角色 | Tester | `GOAL_ACHIEVED` 或 `BLOCKED`；主 Agent 不得代裁 |
-| 8 | AI 测试报告 | 用户拍板 | 用户 | `ai-test-report.md` 人工确认后才进测试/预发 |
-| 9 | Reviewer 过门 | 独立角色 | Reviewer | `high_risk_count: 0` |
+`harness-status.md` 只镜像进度，不是拍板原文。`BLOCKED` 是合法停、升级给用户，不是放行。
 
-用户实际参与节奏：**答 QUESTION（1）→ 确认方案（2）→ 确认测试方案（3）→（条件触发）确认 UI（6）→ 确认测试报告（8）→ 人工 review**；4/5/7/9 平时无需介入，BLOCKED 才升级。
+用户平时节奏：**答 QUESTION（1）→ 确认方案（2）→ 确认测试方案（3）→（条件）确认 UI（6）→ 确认测试报告（8）→ 人工 review**。4 / 5 / 7 / 9 平时无需介入。
 
-停止点编号与阶段发生顺序不一一对应：环境材料（4）可提前准备但强制时点在真实 E2E 前，code-start（5）先于 E2E；一个阶段可挂多个停止点（验收阶段同时挂 7/8/9）；DB 真实写入二次确认挂在实现阶段内，pre-merge 卫生扫描是检查项不是决策停止点。
+编号与阶段顺序不一一对应：环境材料（4）可提前准备，强制时点在真实 E2E 前；code-start（5）先于 E2E；验收阶段可同时挂 7 / 8 / 9。契约冻结不是这 9 个里的编号项，未冻不得实现。DB 真实写入二次确认挂在实现阶段内，仍由用户拍板。pre-merge 卫生扫描是检查项，不是决策停止点。
+
+1. **Spec 三标签**（用户拍板 + gate）
+   - 产物：主 Agent 写 `changes/<id>/spec.md`；Explorer 只读供料，不改文件。
+   - 用户：答阻塞 `[QUESTION]`、确认 `[ASSUMP]`。没有 `CONFIRMED` 字段；答完主 Agent 把该项改成带来源的 `[FACT]`。
+   - 检查：`gates/confidence-gate.sh`
+   - 过门：阻塞项已清。未清不得进实现。
+
+2. **技术方案**（用户拍板 + gate）
+   - 产物：主 Agent 写 `changes/<id>/technical-solution.md`（全栈，不能只写后端）。
+   - 用户：审方案后拍板。主 Agent 把文首写成 `confirmation_status: CONFIRMED`（含 `confirmed_by` / `confirmed_at` / `allowed_next_stage` 非 `none`）。飞书 PRD 还要同步子文档后再过门。
+   - 检查：`gates/technical-solution-gate.sh`；飞书再跑同步脚本。
+   - 过门：已 `CONFIRMED` 且飞书同步已刷新（若适用）。未过不得写业务代码。
+
+3. **AI 测试方案**（用户拍板 + gate）
+   - 产物：Test Strategy 写 `changes/<id>/ai-test-plan.md`；主 Agent 不得自评代写。
+   - 用户：审测试方案后拍板。主 Agent 写成 `test_plan_status: CONFIRMED`。
+   - 检查：`gates/ai-test-plan-gate.sh`
+   - 过门：已 `CONFIRMED`。未过不得实现。
+
+4. **环境就绪**（自动关卡，仅真 E2E / 依赖真实环境时）
+   - 产物：主 Agent 写 `changes/<id>/environment-readiness.md`；账号只写**来源**，不写明文。
+   - 用户：平时不用盖章。缺账号来源、写库边界、环境事实时升级来补。
+   - 检查：`gates/environment-readiness-gate.sh`
+   - 过门：`environment_status: READY`。真 E2E 前必须 READY。
+
+5. **Code start**（自动关卡）
+   - 产物：主 Agent 在业务仓从 `main`/`master` 拉 `codex/<id>`，把 `allowed_paths` 写在 spec 里；脏仓先写 `dirty-worktree-ledger.md`。
+   - 用户：平时不用盖章。还在主干、路径要越界、脏仓归属不清时升级来拍板。
+   - 检查：`gates/confidence-gate.sh`、`gates/assumption-leak-gate.sh`、`gates/allowed-paths.sh`、`gates/business-code-start-gate.sh`；脏仓再加 `gates/business-dirty-worktree-gate.sh`。
+   - 过门：四重开工门禁通过。未过不得改业务文件。
+
+6. **复杂 UI 确认**（用户拍板，条件触发）
+   - 产物：主 Agent 写 `changes/<id>/ui-confirmation.md`（可运行原型 / 页面 / 截图 / URL）。规则缺口另见 `ui-rule-checklist.md`。
+   - 用户：看可运行页面后拍板。判定表 `Status: CONFIRMED`，且「人工确认」表有一行 Decision=`CONFIRMED`。PC smoke 不能替代。
+   - 检查：`gates/ui-confirmation-gate.sh`；规则缺口走 `gates/ui-rule-gate.sh`。
+   - 过门：已 `CONFIRMED`。未确认不得声称 UI 通过。
+
+7. **Tester 验收**（独立角色）
+   - 产物：Tester 写 `changes/<id>/test-agent-verification.md`。主 Agent 只修代码、补证据，不得代写验收结论、不得自称 `GOAL_ACHIEVED`。
+   - 用户：平时不用盖章。`BLOCKED` 时看缺口并决策。
+   - 检查：`gates/test-agent-verification-gate.sh`
+   - 过门：仅 `GOAL_ACHIEVED` 才放行。`BLOCKED` 是停，不是过。此后业务代码再变，验证作废，必须重跑。
+
+8. **AI 测试报告**（用户拍板 + gate；L 强制，M 提测/预发时要）
+   - 产物：主 Agent 汇总写 `changes/<id>/ai-test-report.md`（前置：测试方案已确认 + Tester `GOAL_ACHIEVED`）。
+   - 用户：审报告、残余风险、是否进预发。写成 `confirmation_status: CONFIRMED`；进预发还要 `recommendation: 允许进入预发`。
+   - 检查：`gates/ai-test-report-gate.sh`
+   - 过门：已人工 `CONFIRMED`。未确认不得进测试/预发。
+
+9. **Reviewer 过门**（独立角色）
+   - 产物：Reviewer 写 `changes/<id>/review.md`。主 Agent 不得代裁。
+   - 用户：平时不用盖章 HIGH/MEDIUM。过门后再做人工 review / PR。`high_risk_count > 0` 时回实现修。
+   - 检查：`gates/reviewer-gate.sh`
+   - 过门：`high_risk_count: 0`。代码又变则 review 标过期，按需重跑 Tester，再重跑 Reviewer。
 
 ## 强制工作流
 对档位 M/L、跨仓、后端行为、DB 或复杂 UI 工作，给用户的第一条回复必须包含「本次 harness 流程和停止点」：spec/contract/solution/test-plan/env/code-start/UI/DB/Tester/report/pre-merge 关卡。以 `changes/<change-id>/harness-status.md` 作为用户可见的状态卡。
