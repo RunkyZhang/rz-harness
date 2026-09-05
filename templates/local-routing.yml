@@ -1,0 +1,19 @@
+# Harness generated local routing for <change-id>.
+# 标本用 scripts/generate-local-routing.sh + templates/local-backend-services.yml 生成。
+# RZ 未拷这两项：命中本地联调时由主 Agent 手写本文件。
+
+change_id: <change-id>
+frontend_repo: frontend-map-system
+fallback_base_url: https://test-api.example.com
+proxy_listen:
+  host: 127.0.0.1
+  port: 19080
+routes:
+  - id: backend-sales-management-service
+    frontend_prefix: /sfa/salesmanagement
+    strip_prefix: /sfa/salesmanagement
+    backend_prefix: /
+    backend_repo: backend-sales-management
+    local_target: http://127.0.0.1:31010
+    source_contract: changes/<change-id>/contract.md
+    reason: backend-sales-management is active for this smoke run
