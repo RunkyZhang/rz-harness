@@ -49,7 +49,7 @@
 ### 停止点
 
 停止点分两类：
-- **用户拍板类**：必须等用户确认才能进入下一阶段。聊天里说「ok / 确认」不够；主 Agent 要把盖章写进对应文件，再跑 gate。
+- **用户拍板类**：必须等用户在对话里确认才能进入下一阶段。口头确认后由**主 Agent**把确认状态写入对应文件，再跑 gate；用户不用自己改 YAML。
 - **自动关卡 / 独立角色类**：gate 或 Tester / Reviewer 放行。用户不逐项参与；`BLOCKED` 或 HIGH 才升级给用户。
 
 `harness-status.md` 只镜像进度，不是拍板原文。`BLOCKED` 是合法停、升级给用户，不是放行。脚本均在 `gates/`。
@@ -60,15 +60,15 @@
 
 | # | 停止点 | 类型 | 谁写产物                                                                                               | 用户要干嘛 | 谁检查 | 怎样算过 |
 |---|---|---|----------------------------------------------------------------------------------------------------|---|---|---|
-| 1 | Spec 三标签 | 拍板 + gate | 主 Agent 写 `spec.md`；Explorer 只读供料                                                                  | 答阻塞 `[QUESTION]`、确认 `[ASSUMP]`。无 `CONFIRMED` 字段；答完改成带来源的 `[FACT]` | `confidence-gate.sh` | 阻塞项已清；未清不得进实现 |
-| 2 | 技术方案 | 拍板 + gate | 主 Agent 写 `technical-solution.md`（全栈，不能只写后端）                                                       | 审方案后拍板；写成 `confirmation_status: CONFIRMED`（含 `confirmed_by` / `confirmed_at`，`allowed_next_stage` 非 `none`）。飞书 PRD 还要同步子文档 | `technical-solution-gate.sh`；飞书再跑同步脚本 | 已 `CONFIRMED` 且飞书已刷新（若适用）；未过不得写业务代码 |
-| 3 | AI 测试方案 | 拍板 + gate | Test Strategy 写 `ai-test-plan.md`；主 Agent 不得代写                                                     | 审测试方案后拍板；写成 `test_plan_status: CONFIRMED` | `ai-test-plan-gate.sh` | 已 `CONFIRMED`；未过不得实现 |
-| 4 | 环境就绪 | 自动关卡（仅真 E2E） | 主 Agent 写 `environment-readiness.md`；账号只写来源                                                        | 平时不用盖章。缺账号来源、写库边界、环境事实时再补 | `environment-readiness-gate.sh` | `environment_status: READY`；真 E2E 前必须 READY |
-| 5 | Code start | 自动关卡 | 主 Agent 从 remote/master 分支拉 `harness/<id>`；`allowed_paths` 写在 spec；脏仓先写 `dirty-worktree-ledger.md` | 平时不用盖章。还在主干、路径要越界、脏仓归属不清时再拍板 | `confidence-gate.sh`、`assumption-leak-gate.sh`、`allowed-paths.sh`、`business-code-start-gate.sh`；脏仓再加 `business-dirty-worktree-gate.sh` | 四重开工门禁通过；未过不得改业务文件 |
-| 6 | 复杂 UI 确认 | 拍板（条件触发） | 主 Agent 写 `ui-confirmation.md`（可运行页 / 截图 / URL）；规则缺口见 `ui-rule-checklist.md`                       | 看可运行页面后拍板。判定表 `Status: CONFIRMED`，且人工确认表有一行 Decision=`CONFIRMED`。PC smoke 不能替代 | `ui-confirmation-gate.sh`；规则缺口走 `ui-rule-gate.sh` | 已 `CONFIRMED`；未确认不得声称 UI 通过 |
-| 7 | Tester 验收 | 独立角色 | Tester 写 `test-agent-verification.md`。主 Agent 只修代码、补证据，不得代裁、不得自称 `GOAL_ACHIEVED`                   | 平时不用盖章。`BLOCKED` 时看缺口并决策 | `test-agent-verification-gate.sh` | 仅 `GOAL_ACHIEVED` 才放行。`BLOCKED` 是停不是过。此后改代码必须重跑 |
-| 8 | AI 测试报告 | 拍板 + gate（L 强制；M 提测/预发时要） | 主 Agent 写 `ai-test-report.md`（前置：测试方案已确认 + Tester `GOAL_ACHIEVED`）                                 | 审报告、残余风险、是否进预发。写成 `confirmation_status: CONFIRMED`；进预发还要 `recommendation: 允许进入预发` | `ai-test-report-gate.sh` | 已人工 `CONFIRMED`；未确认不得进测试/预发 |
-| 9 | Reviewer 过门 | 独立角色 | Reviewer 写 `review.md`。主 Agent 不得代裁                                                                | 平时不用盖章。过门后再做人工 review / PR。HIGH>0 时回实现修 | `reviewer-gate.sh` | `high_risk_count: 0`。代码又变则审查过期，按需重跑 Tester 再重跑 Reviewer |
+| 1 | Spec 三标签 | 拍板 + gate | 主 Agent 写 `spec.md`；Explorer 只读供料。用户答完后，主 Agent 把该项改成带来源的 `[FACT]` | 答阻塞 `[QUESTION]`、确认 `[ASSUMP]` | `confidence-gate.sh` | 阻塞项已清；未清不得进实现 |
+| 2 | 技术方案 | 拍板 + gate | 主 Agent 写 `technical-solution.md`（全栈）。用户拍板后，主 Agent 改文首 YAML：`confirmation_status: CONFIRMED`、`confirmed_by` / `confirmed_at`、`allowed_next_stage` 非 `none` | 审方案，在对话里确认或要求改 | `technical-solution-gate.sh` | 文件已 `CONFIRMED`；未过不得写业务代码 |
+| 3 | AI 测试方案 | 拍板 + gate | Test Strategy 写 `ai-test-plan.md`。用户拍板后，主 Agent 写成 `test_plan_status: CONFIRMED` | 审测试方案，在对话里确认或要求改 | `ai-test-plan-gate.sh` | 已 `CONFIRMED`；未过不得实现 |
+| 4 | 环境就绪 | 自动关卡（仅真 E2E） | 主 Agent 写 `environment-readiness.md`；账号只写来源                                                        | 自动点，无需用户参与 | `environment-readiness-gate.sh` | `environment_status: READY`；真 E2E 前必须 READY |
+| 5 | Code start | 自动关卡 | 主 Agent 从 remote/master 分支拉 `harness/<id>`；`allowed_paths` 写在 spec；脏仓先写 `dirty-worktree-ledger.md` | 自动点，无需用户参与 | `confidence-gate.sh`、`assumption-leak-gate.sh`、`allowed-paths.sh`、`business-code-start-gate.sh`；脏仓再加 `business-dirty-worktree-gate.sh` | 四重开工门禁通过；未过不得改业务文件 |
+| 6 | 复杂 UI 确认 | 拍板（条件触发） | 主 Agent 写 `ui-confirmation.md`。用户拍板后，主 Agent 把判定表写成 `Status: CONFIRMED`，并在人工确认表加一行 Decision=`CONFIRMED` | 看可运行页面，在对话里确认。PC smoke 不能替代 | `ui-confirmation-gate.sh`；规则缺口走 `ui-rule-gate.sh` | 已 `CONFIRMED`；未确认不得声称 UI 通过 |
+| 7 | Tester 验收 | 独立角色 | Tester 写 `test-agent-verification.md`。主 Agent 只修代码、补证据，不得代裁、不得自称 `GOAL_ACHIEVED`                   | 自动点，无需用户参与 | `test-agent-verification-gate.sh` | 仅 `GOAL_ACHIEVED` 才放行。`BLOCKED` 是停不是过。此后改代码必须重跑 |
+| 8 | AI 测试报告 | 拍板 + gate（L 强制；M 提测/预发时要） | 主 Agent 写 `ai-test-report.md`。用户拍板后，主 Agent 改「人工确认」YAML：`confirmation_status: CONFIRMED`；进预发还要 `recommendation: 允许进入预发` | 审报告、残余风险、是否进预发，在对话里确认 | `ai-test-report-gate.sh` | 已人工 `CONFIRMED`；未确认不得进测试/预发 |
+| 9 | Reviewer 过门 | 独立角色 | Reviewer 写 `review.md`。主 Agent 不得代裁                                                                | 自动点，无需用户参与 | `reviewer-gate.sh` | `high_risk_count: 0`。代码又变则审查过期，按需重跑 Tester 再重跑 Reviewer |
 
 ## 变更包
 
