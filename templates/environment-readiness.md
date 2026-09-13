@@ -42,7 +42,7 @@ credential_storage_policy: no-secrets-in-repo
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | SYS-001 | PC Web | `frontend-map-system` | `scripts/frontend-dev-server.sh frontend-map-system 9527` | `local frontend + selected API` | `http://localhost:9527` | `backend API / proxy / VPN` | `<login page / route / screenshot>` | `READY/PENDING/BLOCKED/N/A` | `<path or N/A>` |
 | SYS-002 | Backend API | `<backend repo id>` | `<mvn command / IDE run / N/A>` | `<local/test/pre-release>` | `<local URL or env entry>` | `<Nacos/DB/Redis/MQ/OSS/VPN>` | `<health endpoint / compile / smoke API>` | `READY/PENDING/BLOCKED/N/A` | `<path or N/A>` |
-| SYS-003 | Local proxy | `Harness` | `node scripts/harness-local-proxy.mjs changes/<change-id>/local-routing.yml` | `local` | `<proxy URL>` | `<active backend routes>` | `scripts/local-routing-gate.sh` | `READY/PENDING/BLOCKED/N/A` | `<path or N/A>` |
+| SYS-003 | Local proxy | `Harness` | `node scripts/harness-local-proxy.mjs changes/<change-id>/local-routing.yml` | `local` | `<proxy URL>` | `<active backend routes>` | `gates/local-routing-gate.sh` | `READY/PENDING/BLOCKED/N/A` | `<path or N/A>` |
 
 ## 本地联调拓扑
 

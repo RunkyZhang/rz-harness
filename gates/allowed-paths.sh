@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/allowed-paths.sh <spec-file> <changed-file> [changed-file...]
+  gates/allowed-paths.sh <spec-file> <changed-file> [changed-file...]
 
 Checks changed files against absolute path prefixes listed under:
   ```yaml
@@ -22,7 +22,7 @@ Also blocks built-in protected paths unless explicitly listed under:
   ```
 
 Notes:
-  - allowed_paths may be absolute paths or environment-variable paths such as $SFA_REPO/src/**.
+  - allowed_paths may be absolute paths or environment-variable paths such as $RZ_REPO/src/**.
   - forbidden_paths may be absolute or glob-style patterns such as **/.env*.
   - built-in protected paths include .env*, production config, prod k8s paths, and DB migrations.
   - Non-file markers such as branch_only are ignored.

@@ -197,7 +197,7 @@ language: Java
 ## 5. 使用约定
 
 - 写代码前 `source config/runtime_local.sh`，用 `test -d "$RZ_REPO_<ID>"` 确认仓在磁盘上。
-- 每个目标仓第一次改业务代码：从 `main`/`master` 拉 `codex/<change-id>`，不在主干上改。
+- 每个目标仓第一次改业务代码：从 `main`/`master` 拉 `harness/<change-id>`，不在主干上改。
 - 跨仓需求在 spec 里列出本次涉及的 `repo_id` 与 allowed_paths；未列入本表的仓默认禁止改。
 
 后续补充（每个仓）：`baselines/` 下对应文件、受保护路径、最窄验证命令、业务仓是否需要轻量 `AGENTS.md` 指回本控制面。已从标本拷入的 baseline 文件名仍用标本 `Repo ID`（如 `baselines/frontend-map-system.md` 对应登记表 `mapSystem`）。

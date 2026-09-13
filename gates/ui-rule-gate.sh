@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'USAGE'
 Usage:
-  scripts/ui-rule-gate.sh <ui-rule-checklist.md | change-dir>
+  gates/ui-rule-gate.sh <ui-rule-checklist.md | change-dir>
 
 Fails closed unless UI rule checklist contains:
   - ui_rule_status: READY or NOT_APPLICABLE

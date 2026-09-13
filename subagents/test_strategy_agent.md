@@ -37,7 +37,7 @@ description: Use after technical solution confirmation and before business-code 
 ## 输出后必须运行
 
 ```bash
-scripts/ai-test-plan-gate.sh changes/<change-id>
+gates/ai-test-plan-gate.sh changes/<change-id>
 ```
 
 最终回复第一行：`Test Strategy: <DONE|BLOCKED|NEEDS_CONTEXT>`。

@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'EOF'
 Usage:
-  scripts/diff-hygiene-gate.sh <repo-root> [--base <ref>] [changed-file...]
+  gates/diff-hygiene-gate.sh <repo-root> [--base <ref>] [changed-file...]
 
 Checks changed files for review-noise whitespace-only diff hunks.
 If changed files are omitted, checks git diff --name-only from the selected base.
@@ -30,7 +30,7 @@ fi
   "DIFF_HYGIENE/MISSING_REPO" \
   "missing repo root" \
   "Pass the target business repo root first." \
-  "scripts/diff-hygiene-gate.sh /path/to/repo --base sit src/Foo.m"
+  "gates/diff-hygiene-gate.sh /path/to/repo --base sit src/Foo.m"
 
 repo="$1"
 shift
@@ -72,7 +72,7 @@ while [[ "$#" -gt 0 ]]; do
         "DIFF_HYGIENE/UNKNOWN_OPTION" \
         "unknown option: $1" \
         "Use only --base <ref> before changed files." \
-        "scripts/diff-hygiene-gate.sh /path/to/repo --base main src/Foo.java"
+        "gates/diff-hygiene-gate.sh /path/to/repo --base main src/Foo.java"
       ;;
     *)
       files+=("$1")
@@ -85,7 +85,7 @@ git -C "$repo" rev-parse --verify "$base^{commit}" >/dev/null 2>&1 || fail \
   "DIFF_HYGIENE/BASE_NOT_FOUND" \
   "base ref is not a commit in repo: $base" \
   "Pass a local base branch or commit that exists in the target repo." \
-  "git -C <repo> fetch && scripts/diff-hygiene-gate.sh <repo> --base origin/main"
+  "git -C <repo> fetch && gates/diff-hygiene-gate.sh <repo> --base origin/main"
 
 tmp_files="$(mktemp)"
 tmp_report="$(mktemp)"

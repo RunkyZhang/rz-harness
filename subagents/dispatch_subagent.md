@@ -91,7 +91,7 @@ Agent Label: promo-sku-unit / Backend / Query+Export
 以下情况必须把既有 Agent 结论标记为 `STALE`，并重新走对应验证：
 
 - Tester 后业务代码变化：重新 Tester 验收。
-- Reviewer 后业务代码变化：重新 Tester 验收，再重新 Reviewer 和 `scripts/reviewer-gate.sh`。
+- Reviewer 后业务代码变化：重新 Tester 验收，再重新 Reviewer 和 `gates/reviewer-gate.sh`。
 - 技术方案确认后正文变化且 PRD 来源为飞书：重新 Feishu sync，再跑 `technical-solution-gate.sh`。
 - AI test plan 确认后需求范围变化：重新生成或修订 `ai-test-plan.md` 并重新用户确认。
 

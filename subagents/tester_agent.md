@@ -22,7 +22,7 @@ description: Use after implementation, before test or pre-release publishing. In
 
 - `changes/<change-id>/ai-test-plan.md`（必须已是 CONFIRMED）
 - 实际 diff、`evidence.md`、`verification-map.md`（若有）
-- `environment-readiness.md`（真实 E2E 或依赖环境的测试之前必须已过 `scripts/environment-readiness-gate.sh`）
+- `environment-readiness.md`（真实 E2E 或依赖环境的测试之前必须已过 `gates/environment-readiness-gate.sh`）
 - 人设本文件
 
 ## 验收状态
@@ -36,7 +36,7 @@ description: Use after implementation, before test or pre-release publishing. In
 ## 输出后必须运行
 
 ```bash
-scripts/ai-test-report-gate.sh changes/<change-id>
+gates/ai-test-report-gate.sh changes/<change-id>
 ```
 
 该关卡要求已确认的测试方案，以及 Tester `GOAL_ACHIEVED`。

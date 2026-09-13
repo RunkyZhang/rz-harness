@@ -1,6 +1,8 @@
 # 实施计划：<change-id>
 
 > 面向人工 review 的计划默认中文；代码标识、命令、API 路径、字段名、错误码、YAML key、日志 key 和引用原文保持原样。
+>
+> **RZ 尚未引入的脚本**（`workstream-dispatch-gate`、`codegraph-preflight`/`codegraph-evidence-gate`、`gitnexus-*`、`agent-task-brief`/`agent-review-package`/`agent-output-contract-gate`、`parallel-worktree-gate`）：本文相关步骤**默认按 `N/A` 处理**，不要去找这些脚本；命中场景再从标本 `learning_objectives/scripts/` copy 并本地化（见 `AGENTS.md`「尚未引入的脚本」）。
 
 ## 输入
 
@@ -36,7 +38,7 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 | Constraint | Source | Verification |
 | --- | --- | --- |
 | `<不可修改生产配置 / secrets / DB migration / 部署脚本等>` | `AGENTS.md` / `spec.md` / `contract.md` | `allowed-paths.sh` / `business-code-start-gate.sh` / Reviewer |
-| `<本次允许修改的 repo / module / path>` | `contract.md allowed_paths` | `gates/business-code-start-gate.sh changes/<change-id> <files...>` |
+| `<本次允许修改的 repo / module / path>` | `spec.md allowed_paths` | `gates/business-code-start-gate.sh changes/<change-id> <files...>` |
 | `<字段、状态、权限、错误码、默认值等已确认事实>` | `spec.md` / PRD / 用户确认 | `verification-map.md` / targeted test / PC smoke |
 | `<版本、运行环境、Node/Maven/profile 限制>` | `baselines/*` / `environment-readiness.md` | `canonical-command-gate.sh` / repo-specific command |
 
@@ -50,7 +52,7 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 - `Files`：明确 create / modify / test 文件，路径精确到文件或目录。
 - `Interfaces`：写清本任务 consumes / produces 的 DTO、API、函数、字段、事件或文档产物。
 - `独立验证`：写清本任务自己的最小验证命令、预期结果和 evidence 路径。
-- `Handoff`：需要派发 Agent 时，先运行 `scripts/agent-task-brief.sh <plan-file> <task-number> <change-id>`；Reviewer 输入优先使用 `scripts/agent-review-package.sh <base> <head> <change-id>` 生成的文件。
+- `Handoff`：`agent-task-brief` / `agent-review-package` RZ 未引入 → 本项 N/A；需要时再引入。
 
 ## 进入实现前门禁
 
@@ -60,11 +62,11 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 - [ ] 已运行 `gates/technical-solution-gate.sh changes/<change-id>`；技术方案 `confirmation_status: CONFIRMED` 且 `allowed_next_stage` 允许进入当前阶段。
 - [ ] 已复制 `templates/verification-map.md` 到 `changes/<change-id>/verification-map.md`，将关键约束映射到验证命令、人工确认或 `N/A:` 原因，并运行 `gates/verification-map-gate.sh changes/<change-id>`。
 - [ ] 已复制 `templates/status-card.md` 到 `changes/<change-id>/status-card.md`，并在每次阶段切换、阻塞、人工确认、进入预发前更新。
-- [ ] 多仓 / 全栈需求已在 `status-card.md` 填写 `Workstream Dispatch`，拆分后端、PC、小程序等工作线；已运行 `scripts/workstream-dispatch-gate.sh changes/<change-id>`。
+- [ ] 多仓 / 全栈需求已在 `status-card.md` 填写 `Workstream Dispatch`，拆分后端、PC、小程序等工作线（`workstream-dispatch-gate` RZ 未引入 → 本项 N/A）。
 - [ ] 需要派发子 Agent 时，已填写 `changes/<change-id>/agent-dispatch-plan.md`（scaffold 空壳来自 `templates/agent-dispatch-plan.md`），并对照 `subagents/dispatch_subagent.md`。标本 `agent-dispatch-plan-gate.sh` RZ 未拷。candidate implementation 只有在 contract、allowed paths、隔离分支和 code-start gate 满足后，复制并确认 `templates/agent-candidate-confirmation.md`。
-- [ ] 业务仓首次改代码前已运行 `gates/business-code-start-gate.sh changes/<change-id> <changed-files...>`；业务仓不在 `main/master`，且文件在 `contract.md` 的 `allowed_paths` 内。
+- [ ] 业务仓首次改代码前已运行 `gates/business-code-start-gate.sh changes/<change-id> <changed-files...>`；业务仓不在 `main/master`，且文件在 `spec.md` 的 `allowed_paths` 内。
 - [ ] 如业务仓已有 dirty diff，已复制 `templates/dirty-worktree-ledger.md` 到 `changes/<change-id>/dirty-worktree-ledger.md`，并运行 `gates/business-dirty-worktree-gate.sh <repo> --ledger changes/<change-id>/dirty-worktree-ledger.md`。
-- [ ] 已按 `docs/skills-routing.md` 读取命中的 harness skill，并复制 `templates/skill-usage.md` 到 `changes/<change-id>/skill-usage.md`。
+- [ ] 已复制 `templates/skill-usage.md` 到 `changes/<change-id>/skill-usage.md`（`docs/skills-routing.md` RZ 未建 → 跳过）。
 - [ ] `gates/skill-usage-gate.sh changes/<change-id>` 已通过；命中场景未使用 skill 时已写 N/A reason。
 - [ ] 所有 `[ASSUMP]` 已确认、删除或降级为非实现项。
 - [ ] 需求理解流程图已写入 spec 或 plan；涉及异步、审批、待办、通知、定时任务/MQ 或跨仓流程时必须覆盖主路径和异常分支。
@@ -73,20 +75,20 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 - [ ] 已填写 Implementation Decision Matrix；所有准备进入代码/SQL/接口/权限/状态/错误码/默认值/adapter/回滚的决定均为可追溯事实。
 - [ ] `allowed_paths` 已覆盖本次所有计划修改文件，且后端路径已收窄到目标模块；如触碰 protected paths，spec 已写入 `approved_protected_paths` 和用户确认来源。
 - [ ] Contract 已写清 request、response、error、empty state、pagination。
-- [ ] 如涉及 Java 后端，Backend Agent 已读取 `docs/standards/java/README.md` 和 `alibaba-java-review-checklist.md`。
+- [ ] 如涉及 Java 后端，Backend Agent 复核 Java checklist（`docs/standards/java/` RZ 未建 → 本项 N/A）。
 - [ ] 如涉及 Java 后端，已计划对本次 Java/XML 改动运行 `java-mechanical-quality.sh`。
 - [ ] 如涉及 Java 后端行为变更，已复制 `templates/backend-test-plan.md` 到 `changes/<change-id>/backend-test-plan.md`，并列出 validation、permission、state transition、idempotency、async/job、adapter failure、rollback/error 的适用测试矩阵；缺失项必须标记 `BLOCKED` 或写明不适用原因。
 - [ ] 如启用并行开发，已明确 Backend Agent / Frontend Agent 写入边界和契约变更通知方式。
-- [ ] 如启用并行开发，后端/前端 Agent 已使用独立 git worktree，并通过 `parallel-worktree-gate.sh`。
+- [ ] 如启用并行开发，后端/前端 Agent 已使用独立 git worktree（`parallel-worktree-gate` RZ 未引入 → 本项 N/A）。
 - [ ] 如启用并行开发，控制面文件只允许主 Agent 写入。
 - [ ] 如触发复杂 UI，已复制 `templates/ui-confirmation.md` 到 `changes/<change-id>/ui-confirmation.md`，先生成可交互 HTML 原型或首个可运行页面，记录打开方式、覆盖交互点和人工 / 工人确认结论；确认前不得进入正式 Vue 页面实现或最终 review。
 - [ ] 用户确认本计划后，主 Agent 默认自动执行到人工验收点、阻塞点或风险决策点；不得在机械步骤完成后停下询问是否继续。
 - [ ] 已计划 PC E2E Smoke 的目标 URL、登录态、测试数据和截图证据；如无法执行，阻塞原因必须写入 evidence。
 - [ ] 如 PC E2E Smoke 需要访问本地后端，已声明 active backend 项目并生成 `changes/<change-id>/local-routing.yml`，且 route 只覆盖本次真实启动的后端项目。
-- [ ] 如 PC E2E Smoke 需要访问本地后端，已运行 `scripts/local-routing-business-config-gate.sh <changed-frontend-files...>`，没有为了本地代理修改业务前端 `vue.config.js` 或 `.env*`。
-- [ ] 如小程序本地联调需要环境 override，已复制 `templates/miniapp-local-env.md` 到 `changes/<change-id>/miniapp-local-env.md`，记录 `bd_owner_env_override` 当前值、实际请求 host、重新进入小程序和清理命令，并运行 `scripts/miniapp-local-env-gate.sh changes/<change-id>`。
-- [ ] 本地联调 / SIT 自测产生临时服务、storage、qrToken、测试数据、vConsole 或 proxy 状态时，已复制 `templates/temporary-state-ledger.md` 到 `changes/<change-id>/temporary-state-ledger.md`，结束前运行 `scripts/temporary-state-ledger-gate.sh changes/<change-id>`。
-- [ ] 验证命令执行前已运行 `scripts/canonical-command-gate.sh -- <command>`；后端 Maven reactor 命令没有遗漏 `-am`。
+- [ ] 如 PC E2E Smoke 需要访问本地后端，已运行 `gates/local-routing-business-config-gate.sh <changed-frontend-files...>`，没有为了本地代理修改业务前端 `vue.config.js` 或 `.env*`。
+- [ ] 如小程序本地联调需要环境 override，已复制 `templates/miniapp-local-env.md` 到 `changes/<change-id>/miniapp-local-env.md`，记录 `bd_owner_env_override` 当前值、实际请求 host、重新进入小程序和清理命令，并运行 `gates/miniapp-local-env-gate.sh changes/<change-id>`。
+- [ ] 本地联调 / SIT 自测产生临时服务、storage、qrToken、测试数据、vConsole 或 proxy 状态时，已复制 `templates/temporary-state-ledger.md` 到 `changes/<change-id>/temporary-state-ledger.md`，结束前运行 `gates/temporary-state-ledger-gate.sh changes/<change-id>`。
+- [ ] 验证命令执行前已运行 `gates/canonical-command-gate.sh -- <command>`；后端 Maven reactor 命令没有遗漏 `-am`。
 - [ ] 已计划合并前临时写死扫描：`gates/temp-hardcode-scan.sh <changed-files...>`。
 - [ ] 大文件放 `changes/<change-id>/artifacts/`；evidence / report 只记路径和结论。变更包整包不进 git。
 
@@ -114,30 +116,30 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 ## 实施步骤
 
 1. 后端样板确认：列出 controller、service、DTO、test 参考路径。
-2. Skill 路由：按 `docs/skills-routing.md` 记录 `grill` / `explorer` / `diagnose` / `tdd` / `reviewer` / `handoff` 的 USED 或 N/A。
+2. Skill 路由：`docs/skills-routing.md` RZ 未建 → 本步 N/A。
 3. 前端样板确认：先记录用户是否指定 UI 参考页；如用户指定 URL、截图或页面路径，该参考页优先级高于 harness 默认样板，必须写明实际复用的页面骨架和全局 class；如用户未指定，再列出 2-3 个同模块页面样板。临时路由、审核/运营类后台页优先确认是否应参考 `src/views/audit/rectification/list.vue` 与 `src/views/audit/rectification/detail.vue`。
 4. 复杂 UI 判定：如触发复杂 UI，先复制 `templates/ui-confirmation.md` 到 `changes/<change-id>/ui-confirmation.md`，再生成 `changes/<change-id>/artifacts/ui-prototype/frontend-ui-prototype.html` 或 plan 指定的等价可运行页面，用 mock 数据覆盖核心布局、主路径交互、空态 / 错误态和关键状态反馈；人工 / 工人确认结论写入 `ui-confirmation.md` 和 evidence 后，才能进入正式 Vue 页面实现。
 5. 全栈技术方案确认：按 `templates/technical-solution.md` 先做 PRD 端到端覆盖矩阵，再汇总范围分工、关键业务结论、跨端主流程、后端设计、PC Web/H5/小程序/APP 页面方案、数据模型、API、导出、埋点/分析、测试、发布、回滚和风险；给人工确认。飞书文档中的主流程图、ER 图和状态/关系图必须用 `whiteboard`，不能用 Mermaid 代码块。
 6. Verification Map：复制 `templates/verification-map.md` 到 `changes/<change-id>/verification-map.md`，把“什么叫做对”的关键约束逐条映射到命令、PC smoke、SQL 只读查询、人工确认或 `N/A:` 原因；运行 `gates/verification-map-gate.sh changes/<change-id>`。
 7. Contract v0.1 冻结：确认 endpoint、request、response、分页、空态、错误处理；如涉及 DB，确认 data model SQL、ER 图和字段理由；如需要独立能力/行为规格，确认 `capability-spec.md` 或 `behavior-spec.md`。
-8. Workstream Dispatch：多仓 / 全栈需求先在 `status-card.md` 拆后端、PC、小程序等工作线，运行 `scripts/workstream-dispatch-gate.sh changes/<change-id>`；无法并行时写 `DEGRADED:` 原因。
+8. Workstream Dispatch：多仓 / 全栈需求先在 `status-card.md` 拆后端、PC、小程序等工作线；无法并行时写 `DEGRADED:` 原因（`workstream-dispatch-gate` RZ 未引入）。
 9. Agent Dispatch Plan：需要派发 Explorer / Reviewer / Tester / Test Strategy / Backend / Frontend / Mobile 时，填写 `changes/<change-id>/agent-dispatch-plan.md`，对照 `subagents/dispatch_subagent.md`。启用 Backend / Frontend / Mobile 前，先复制 `templates/agent-candidate-confirmation.md`，确认 `candidate_dispatch_confirmation: CONFIRMED`、`business_code_start_gate: PASS`、`allowed_paths_confirmed: yes`，并保持 `protected_actions_allowed: no`、`global_config_write_allowed: no`、`db_or_release_actions_allowed: no`。标本 `agent-output-contract-gate.sh` RZ 未拷。
 10. Business code-start：业务仓第一次改代码前运行 `gates/business-code-start-gate.sh changes/<change-id> <changed-files...>`，确认分支不是 `main/master` 且路径已获准。
 11. 后端测试计划：如涉及 Java 后端行为变更，先填写 `backend-test-plan.md`；测试矩阵至少覆盖本次适用的参数校验、权限、状态流转、幂等、异步/job、外部 adapter/RPC 失败、回滚/错误落库和自定义 mapper/update count。
 12. 后端实现：先测试/DTO/contract，再 application/service，再 controller。
 13. 前端实现：基于 contract v0.1 和 mock 数据并行开发页面状态、表单、列表、详情。
 14. 后端 Java 规范门禁：运行 `java-mechanical-quality.sh` 检查本次 Java/XML 改动，warning 写入 evidence。
-15. 后端验证：先运行 `scripts/canonical-command-gate.sh -- <mvn command>`，再运行最窄 Maven compile 和 `backend-test-plan.md` 中的 targeted test；测试缺失或失败不得进入最终 review，除非用户明确接受残余风险。
+15. 后端验证：先运行 `gates/canonical-command-gate.sh -- <mvn command>`，再运行最窄 Maven compile 和 `backend-test-plan.md` 中的 targeted test；测试缺失或失败不得进入最终 review，除非用户明确接受残余风险。
 16. 前端验证：优先运行本次改动文件的窄范围 ESLint；只有确认不会污染范围外 diff 时再运行全量 lint / build。
 17. Contract 对齐：逐字段核对前端映射与后端响应。
-18. CodeGraph preflight：对相关业务仓运行 `scripts/codegraph-preflight.sh <repo-id-or-path>`，把输出写入 `codegraph-evidence.md`；MCP 查询必须显式使用 preflight 输出的 `CODEGRAPH_PROJECT_PATH` 作为 `projectPath`。优先用 `codegraph_explore` 回答结构 / route / flow 问题；再用 `codegraph_node`、`codegraph_search`、`codegraph_callers` / `codegraph_trace` 做精确跟进。只有 stale / PARTIAL / MISS / UNAVAILABLE 时才用 `--sync`、`rg`、直接读文件或测试证据降级；不能当作阻断或无影响证明；运行 `scripts/codegraph-evidence-gate.sh changes/<change-id>`。
+18. CodeGraph：`codegraph-preflight` / `codegraph-evidence-gate` RZ 未引入 → 本步 N/A；命中场景再引入，届时用 `codegraph_explore` 等 MCP 查询做结构 / 影响面证据。
 19. 临时写死扫描：运行 `gates/temp-hardcode-scan.sh <changed-files...>`；命中 `CODX` / `smoke` / `mock` / `localhost` / `token` / `password` / `TODO` / `FIXME` 时先移除、配置化或记录已审 false positive。
-20. PC E2E Smoke：复制 `templates/pc-e2e-smoke-plan.md` 到 `changes/<change-id>/pc-e2e-smoke-plan.md`；如需本地后端，声明 active backend 项目并运行 `scripts/generate-local-routing.sh` 生成 `changes/<change-id>/local-routing.yml`，再运行 `scripts/local-routing-gate.sh` 和 `scripts/local-routing-business-config-gate.sh <changed-frontend-files...>`；使用真实浏览器验证页面打开、默认查询、核心筛选、分页或列表刷新、详情、返回、空态或错误态；结果写入 `pc-e2e-smoke-report.md` 和 `evidence.md`。
+20. PC E2E Smoke：复制 `templates/pc-e2e-smoke-plan.md` 到 `changes/<change-id>/pc-e2e-smoke-plan.md`；如需本地后端，声明 active backend 项目并运行 `scripts/generate-local-routing.sh` 生成 `changes/<change-id>/local-routing.yml`，再运行 `gates/local-routing-gate.sh` 和 `gates/local-routing-business-config-gate.sh <changed-frontend-files...>`；使用真实浏览器验证页面打开、默认查询、核心筛选、分页或列表刷新、详情、返回、空态或错误态；结果写入 `pc-e2e-smoke-report.md` 和 `evidence.md`。
 21. AI 测试报告：复制 `templates/ai-test-report.md` 到 `changes/<change-id>/ai-test-report.md`，汇总后端 targeted tests、接口、PC E2E、截图、SQL/API 观察、未覆盖项和残余风险；人工确认前不得进入测试 / 预发发布。
 22. 预发前确认：运行 `gates/ai-test-report-gate.sh changes/<change-id>`；只有 `confirmation_status: CONFIRMED` 且 `recommendation: 允许进入预发` 才允许进入测试 / 预发发布。
 23. 状态卡更新：运行 `changes/status-card.sh changes/<change-id>`，把输出同步或整理进 `status-card.md`，作为用户查看“当前走到哪一步”的入口。
 24. 产物整理：保留轻量 Markdown 摘要；将截图、录屏、trace、完整长日志、临时原型草稿和数据快照移动到 `changes/<change-id>/artifacts/` 或外部存储，并在 evidence / report 中记录路径。
-25. Reviewer：只读审查 spec、plan、contract、contract-delta、technical-solution、diff、evidence、backend-test-plan、pc-e2e-smoke-plan、pc-e2e-smoke-report、test-agent-verification、ai-test-report 和 status-card，并按 Java checklist 复核后端改动；输出 `review.md` 后运行 `scripts/agent-output-contract-gate.sh changes/<change-id> Reviewer` 和 `gates/reviewer-gate.sh changes/<change-id>`。
+25. Reviewer：只读审查 spec、plan、contract、contract-delta、technical-solution、diff、evidence、backend-test-plan、pc-e2e-smoke-plan、pc-e2e-smoke-report、test-agent-verification、ai-test-report 和 status-card，并按 Java checklist 复核后端改动；输出 `review.md` 后运行 `gates/reviewer-gate.sh changes/<change-id>`（`agent-output-contract-gate` RZ 未引入）。
 26. 人工 review：用户确认 HIGH/MEDIUM 风险处理。
 
 ## Task 模板
@@ -155,7 +157,7 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 - Produces: `<下游依赖的字段 / 方法 / endpoint / evidence / report>`
 
 **Handoff:**
-- Task brief: `scripts/agent-task-brief.sh changes/<change-id>/plan.md N <change-id>`
+- Task brief: `agent-task-brief` RZ 未引入 → N/A
 - Progress ledger: `.harness/agent-work/<change-id>/progress-ledger.md`
 
 - [ ] **Step 1: 写失败测试或等价门禁 fixture**
@@ -175,7 +177,7 @@ Evidence: `<changes/<change-id>/evidence.md or artifact path>`
 
 - [ ] **Step 4: Review package**
 
-Run: `scripts/agent-review-package.sh <base> <head> <change-id>`
+Run: `agent-review-package` RZ 未引入 → N/A
 Expected: `.harness/agent-work/<change-id>/review-<base>..<head>.diff`
 ```
 
@@ -195,10 +197,10 @@ Worktree 隔离规则：
 4. Backend Agent 必须读取 Java 规范门禁文档并运行 `java-mechanical-quality.sh`。
 5. 主 Agent 集成后必须重新运行 `java-mechanical-quality.sh`。
 6. 即使后端、H5、iOS、Android 是不同 Git 仓，也默认给实现 Agent 使用独立 worktree；原因是保护主业务工作树、保留独立分支和 diff，方便主 Agent 独立集成或回退。
-7. 主 Agent 在派发实现前运行：
+7. 主 Agent 在派发实现前运行（`parallel-worktree-gate` RZ 未引入 → N/A）：
 
 ```bash
-scripts/parallel-worktree-gate.sh /path/to/backend-worktree /path/to/frontend-worktree
+# parallel-worktree-gate RZ 未引入
 ```
 
 多 Agent 等待与集成规则：
@@ -236,18 +238,16 @@ gates/confidence-gate.sh changes/<change-id>/spec.md
 gates/technical-solution-gate.sh changes/<change-id>
 gates/verification-map-gate.sh changes/<change-id>
 gates/assumption-leak-gate.sh changes/<change-id>/spec.md <changed-files...>
-scripts/workstream-dispatch-gate.sh changes/<change-id>
 gates/business-code-start-gate.sh changes/<change-id> <changed-files...>
-scripts/parallel-worktree-gate.sh /path/to/backend-worktree /path/to/frontend-worktree
 gates/contract-delta-gate.sh <changed-files...>
 gates/allowed-paths.sh changes/<change-id>/spec.md <changed-files...>
 scripts/java-mechanical-quality.sh "$RZ_REPO_SFA_SALES_MANAGEMENT" <changed-java-or-xml-files...>
-scripts/canonical-command-gate.sh -- mvn -pl sfa-sales-management-interfaces -am -DskipTests compile
+gates/canonical-command-gate.sh -- mvn -pl sfa-sales-management-interfaces -am -DskipTests compile
 scripts/mvn-targeted-test.sh "$RZ_REPO_SFA_SALES_MANAGEMENT" <module> compile
 scripts/frontend-lint-build.sh "$RZ_REPO_MAP_SYSTEM" lint-files src/views/<feature>/*.vue
 scripts/generate-local-routing.sh --change-id <change-id> --frontend-repo frontend-map-system --active-backends backend-sales-management,backend-sfa-backend --services templates/local-backend-services.yml --output changes/<change-id>/local-routing.yml --env-output changes/<change-id>/artifacts/pc-e2e-smoke/frontend.env
-scripts/local-routing-gate.sh changes/<change-id>/local-routing.yml
-scripts/local-routing-business-config-gate.sh <changed-frontend-files...>
+gates/local-routing-gate.sh changes/<change-id>/local-routing.yml
+gates/local-routing-business-config-gate.sh <changed-frontend-files...>
 RZ_HARNESS_SMOKE=1 RZ_HARNESS_PROXY_LOG=changes/<change-id>/artifacts/pc-e2e-smoke/local-proxy.ndjson node scripts/harness-local-proxy.mjs changes/<change-id>/local-routing.yml
 VUE_APP_BASE_API=http://127.0.0.1:19080/ npm run dev
 # PC E2E Smoke 使用真实浏览器执行；把 URL、步骤、截图路径和接口观察写入 changes/<change-id>/pc-e2e-smoke-report.md

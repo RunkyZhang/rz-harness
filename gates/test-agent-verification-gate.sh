@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'USAGE'
 Usage:
-  scripts/test-agent-verification-gate.sh <test-agent-verification.md | change-dir>
+  gates/test-agent-verification-gate.sh <test-agent-verification.md | change-dir>
 
 Fails closed unless the independent Test Agent verification contains:
   - verification_status: GOAL_ACHIEVED

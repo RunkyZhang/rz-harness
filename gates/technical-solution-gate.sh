@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/technical-solution-gate.sh <technical-solution.md | change-dir>
+  gates/technical-solution-gate.sh <technical-solution.md | change-dir>
 
 Fails closed unless the technical solution contains:
   confirmation_status: CONFIRMED

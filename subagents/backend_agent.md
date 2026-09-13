@@ -13,9 +13,9 @@ description: Use after API contract v0.1, backend test plan, and code-start gate
 
 ## 派发前必须已满足
 
-- `scripts/business-code-start-gate.sh` 通过
+- `gates/business-code-start-gate.sh` 通过
 - 契约 v0.1、allowed paths、安全分支（非 `main`/`master`）
-- 隔离 worktree（`scripts/parallel-worktree-gate.sh`）
+- 隔离 worktree（`parallel-worktree-gate` RZ 未引入 → 本项 N/A）
 - Java 行为变更：`backend-test-plan.md` 或明确 N/A
 
 ## 输入
@@ -35,7 +35,7 @@ description: Use after API contract v0.1, backend test plan, and code-start gate
 
 ```bash
 scripts/mvn-targeted-test.sh
-scripts/canonical-command-gate.sh
+gates/canonical-command-gate.sh
 ```
 
 最终回复第一行：`Backend: <DONE|BLOCKED|NEEDS_CONTEXT>`。

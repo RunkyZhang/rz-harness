@@ -43,5 +43,5 @@ updated_at: -
 ## Gate
 
 ```bash
-scripts/requirement-intake-gate.sh changes/<change-id>
+gates/requirement-intake-gate.sh changes/<change-id>
 ```

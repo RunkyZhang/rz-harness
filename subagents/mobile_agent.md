@@ -13,7 +13,7 @@ description: Use after mobile contract, allowed paths, and code-start gates. Imp
 
 ## 派发前必须已满足
 
-- `scripts/business-code-start-gate.sh` 通过
+- `gates/business-code-start-gate.sh` 通过
 - 契约、allowed paths、隔离 worktree、安全分支
 - 目标仓 mobile baseline（控制面 `baselines/` 若有对应文件则必读）
 
@@ -34,7 +34,7 @@ description: Use after mobile contract, allowed paths, and code-start gates. Imp
 
 ```bash
 scripts/mobile-mechanical-quality.sh
-scripts/architecture-drift-gate.sh
+gates/architecture-drift-gate.sh
 ```
 
 最终回复第一行：`Mobile: <DONE|BLOCKED|NEEDS_CONTEXT>`。

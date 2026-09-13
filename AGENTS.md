@@ -246,7 +246,7 @@ agent 动作后压回来的检查，判定失败就是反向压力，逼它重�
 | 1 | `spec.md`                                         | 拷 `templates/spec-tier-s.md` / `spec-tier-m.md` / `spec-tier-l.md`（scaffold）                         | 建包即有；需求理解时填。S/M/L 都要 | 目标、范围内外、三标签、`allowed_paths` | 主 Agent；Explorer 只读供料 | `confidence-gate.sh` | 阻塞 `[QUESTION]` 已清、`[ASSUMP]` 已确认并写成带来源的 `[FACT]` |
 | 2 | `status-card.md`                                   | 拷 `templates/status-card.md`；文首加 `artifact_profile` + `artifact_schema_version: 1`（scaffold 会写；手工建包也要写） | 建包即有；此后贯穿更新。S/M/L 都要 | 给人看的阶段、阻塞、下一步、Agent Roster | 主 Agent 跑 `changes/status-card.sh` 后写入 | 无单独「状态卡 gate」。marker 由 `gates/change-artifacts-gate.sh` 读 | 摘要不是拍板原文；脚本不覆盖 Roster |
 | 3 | `evidence.md`                                     | scaffold **当场生成空表**，无模板 md                                                                           | 建包即有；每跑命令就追加。S/M/L 都要 | 命令、结果摘要、阻塞。禁止密码/token | 主 Agent | 无单独过门；Reviewer 会看 | 只记摘要 |
-| 4 | `requirement-intake.md`                           | 条件命中时主 Agent 拷 `templates/requirement-intake.md`；scaffold / gate 都不创建                                | 条件：M/L 要结构化收需求时 | 把 PRD 收成结构化入口 | 主 Agent | 标本 `requirement-intake-gate.sh`，**RZ 未拷**；未拷前人工核对 | 可无 |
+| 4 | `requirement-intake.md`                           | 条件命中时主 Agent 拷 `templates/requirement-intake.md`；scaffold / gate 都不创建                                | 条件：M/L 要结构化收需求时 | 把 PRD 收成结构化入口 | 主 Agent | `gates/requirement-intake-gate.sh` | 可无 |
 | 5 | `contract.md`                                     | 拷 `templates/api-contract.md` → 变更包内 `contract.md`（M/L scaffold 或手工拷）。RZ **只用这一条路径** | **空壳：** M/L 建包即有。**填写：** 契约冻结时 | 冻结 endpoint、字段、错误码、分页、空态 | 主 Agent；前端只读这份 | `contract-delta-gate.sh`（有增量时） | 未冻不得实现。不用 `docs/contracts/<id>-api.md` |
 | 6 | `technical-solution.md`                           | 拷 `templates/technical-solution.md`（M/L scaffold）                                                    | **空壳：** M/L 建包即有。**填写 / 确认：** 方案阶段 | 全栈技术方案 | 主 Agent | `technical-solution-gate.sh` | 用户对话确认后，主 Agent 写 `confirmation_status: CONFIRMED`（含 `confirmed_by` / `confirmed_at`，`allowed_next_stage` 非 `none`） |
 | 7 | `plan.md`                                         | 拷 `templates/plan-tier-m.md`（M/L scaffold）                                                           | **空壳：** M/L 建包即有。**填写：** 方案后、开工前 | 实现步骤、验证、回滚 | 主 Agent | 无单独过门；勿与状态卡两套打架 | v1 可把步骤写进状态卡 |
@@ -261,15 +261,15 @@ agent 动作后压回来的检查，判定失败就是反向压力，逼它重�
 | 16 | `agent-candidate-confirmation.md`                 | 条件命中时主 Agent 拷 `templates/agent-candidate-confirmation.md`；scaffold / gate 都不创建                      | 条件：派 Backend / Frontend / Mobile | 允许候选实现 Agent | 主 Agent（用户确认后回写） | 派发前检查 | 不派则不建 |
 | 17 | 业务仓分支 `harness/<change-id>`                       | **git**：从业务仓远程主干 `origin/master`（或 `origin/main`）拉，不是 md                                                                | 第一次改该仓业务文件前 | 实现落点，不是变更包内文件 | 主 Agent | `business-code-start-gate.sh`（与 confidence / assumption-leak / allowed-paths 一起） | 停在主干则不得改业务文件 |
 | 18 | `ui-rule-checklist.md`                            | 条件命中时主 Agent 拷 `templates/ui-rule-checklist.md`；scaffold / gate 都不创建                                 | 条件：PRD UI / 交互编码 | UI 规范逐项、缺口 | 主 Agent | `ui-rule-gate.sh` | 规则缺口未确认不得实现 |
-| 19 | `ui-confirmation.md`                              | 条件命中时主 Agent 拷 `templates/ui-confirmation.md`；scaffold / gate 都不创建                                   | 条件：复杂 UI | 可运行页 / 截图后的确认记录 | 主 Agent；用户看页面后主 Agent 写 `Status: CONFIRMED` | `ui-confirmation-gate.sh` **RZ 未拷**；未拷前人工核对文件字段 | PC smoke 不能替代 |
+| 19 | `ui-confirmation.md`                              | 条件命中时主 Agent 拷 `templates/ui-confirmation.md`；scaffold / gate 都不创建                                   | 条件：复杂 UI | 可运行页 / 截图后的确认记录 | 主 Agent；用户看页面后主 Agent 写 `Status: CONFIRMED` | `gates/ui-confirmation-gate.sh` | PC smoke 不能替代 |
 | 20 | `data-model.md` / `data-model-sql.md`             | SQL：条件命中时主 Agent 拷 `templates/data-model-sql.md`。**`data-model.md` 无模板**，对照方案自建。scaffold / gate 都不创建 | 条件：改 DB | ER、字段来源、可执行 SQL | 主 Agent | 无单独过门；真实库写要用户二次确认 | 高危 SQL 禁止 |
 | 21 | `contract-delta.md`                               | 条件命中时主 Agent 拷 `templates/contract-delta.md`；scaffold / gate 都不创建                                    | 条件：实现中契约有增量 | 契约变更说明 | 主 Agent | `contract-delta-gate.sh` | 无增量不建 |
-| 22 | `local-routing.yml`                               | 标本：`generate-local-routing.sh` 生成。**RZ 未拷**：命中时主 Agent 可参考 `templates/local-routing.yml` 手写 | 条件：本地前后端联调 | 前端打哪套后端 / 代理 | 主 Agent | `local-routing-gate.sh` **RZ 未拷** | 不要长期手写堆积 route |
+| 22 | `local-routing.yml`                               | `scripts/generate-local-routing.sh` 生成；也可参考 `templates/local-routing.yml` 手写 | 条件：本地前后端联调 | 前端打哪套后端 / 代理 | 主 Agent | `gates/local-routing-gate.sh` | 不要长期手写堆积 route |
 | 23 | `pc-e2e-smoke-plan.md` / `pc-e2e-smoke-report.md` | 条件命中时主 Agent 拷 `templates/pc-e2e-smoke-plan.md`、`pc-e2e-smoke-report.md`；scaffold / gate 都不创建        | 条件：PC 真浏览器冒烟 | 冒烟计划与结果 | 主 Agent | 无专用 RZ gate；真 E2E 须先过已有的 `environment-readiness-gate.sh` | 报告只留摘要 |
-| 24 | `miniapp-local-env.md`                            | 条件命中时主 Agent 拷 `templates/miniapp-local-env.md`；scaffold / gate 都不创建                                 | 条件：改小程序本地环境 | 小程序本地运行约定 | 主 Agent | `miniapp-local-env-gate.sh` **RZ 未拷** | 未改小程序不建 |
-| 25 | `temporary-state-ledger.md`                       | 条件命中时主 Agent 拷 `templates/temporary-state-ledger.md`；scaffold / gate 都不创建                            | 条件：本地服务、测试数据、debug 开关 | 临时状态清理台账 | 主 Agent | `temporary-state-ledger-gate.sh` **RZ 未拷** | 避免遗留 |
+| 24 | `miniapp-local-env.md`                            | 条件命中时主 Agent 拷 `templates/miniapp-local-env.md`；scaffold / gate 都不创建                                 | 条件：改小程序本地环境 | 小程序本地运行约定 | 主 Agent | `gates/miniapp-local-env-gate.sh` | 未改小程序不建 |
+| 25 | `temporary-state-ledger.md`                       | 条件命中时主 Agent 拷 `templates/temporary-state-ledger.md`；scaffold / gate 都不创建                            | 条件：本地服务、测试数据、debug 开关 | 临时状态清理台账 | 主 Agent | `gates/temporary-state-ledger-gate.sh` | 避免遗留 |
 | 26 | `codegraph-evidence.md`                           | 条件命中时主 Agent 拷 `templates/codegraph-evidence.md`；scaffold / gate 都不创建                                | 条件：改公共 API / 权限等；可选 | 结构影响线索 | 主 Agent | 可选，不是关卡 | 未命中不是无影响证明 |
-| 27 | `verification-run-report.md`                      | 标本：`verification-run.sh` 生成。**RZ 未拷**：有可执行行时主 Agent 手工跑命令并写报告 | 进入 Tester / Reviewer 前（map 有可执行行时） | verification-map 跑完的报告 | 主 Agent | 无 RZ 脚本；有可执行行则必须有报告文件 | 无可执行行则 N/A |
+| 27 | `verification-run-report.md`                      | `scripts/verification-run.sh` 生成 | 进入 Tester / Reviewer 前（map 有可执行行时） | verification-map 跑完的报告 | 主 Agent | 有可执行行则必须有报告文件 | 无可执行行则 N/A |
 | 28 | `test-agent-verification.md`                      | 拷 `templates/test-agent-verification.md`（M/L scaffold 空壳）                                            | **空壳：** M/L 建包即有。**填写：** 实现后验收，**只能 Tester 填** | 对照已确认测试方案的独立验收 | **Tester**。主 Agent 修代码、补 evidence，不得代裁 | `test-agent-verification-gate.sh` | 仅 `GOAL_ACHIEVED` 放行；`BLOCKED` 是停。改代码后必须重跑 |
 | 29 | `ai-test-report.md`                               | 拷 `templates/ai-test-report.md`（L scaffold；M 提测再拷）                                                   | **空壳：** L 建包即有。**填写 / 确认：** 提测 / 预发前。M 非提测可不建 | 测试结论给人确认 | 主 Agent 汇总；用户确认后写 `confirmation_status: CONFIRMED` | `ai-test-report-gate.sh` | 前置：测试方案已确认 + Tester `GOAL_ACHIEVED`。进预发还要 `recommendation: 允许进入预发` |
 | 30 | `review.md`                                       | 拷 `templates/review.md`（M/L scaffold 空壳）                                                             | **空壳：** M/L 建包即有。**填写：** 人审 / PR 前，**只能 Reviewer 填** | 只读审查 | **Reviewer**。主 Agent 不得代裁 | `reviewer-gate.sh` | `high_risk_count: 0`。代码又变则过期，按需重跑 Tester 再重跑 Reviewer |
@@ -297,9 +297,9 @@ agent 动作后压回来的检查，判定失败就是反向压力，逼它重�
 - 使用子 Agent 时，在派发提示词和 `status-card.md` 的 Agent Roster 中记录可读的角色标签，以便即使用户面对 runtime 分配的不透明昵称，也能识别每个 Agent 的用途。
 
 行为/契约变更在实现前需要 spec、契约文档，
-以及 `changes/<change-id>/evidence.md` 中的证据。业务代码审查前应用
-`docs/standards/comment-logging.md`。
-通过 `docs/skills-routing.md` 使用本地 harness skills；记录
+以及 `changes/<change-id>/evidence.md` 中的证据。业务代码审查前应用注释/日志质量检查
+（`docs/standards/comment-logging.md` RZ 未建 → 用 `scripts/code-comment-log-quality.sh`）。
+本地 harness skills 路由（`docs/skills-routing.md` RZ 未建 → 按 `subagents/` 人设）；记录
 `changes/<change-id>/skill-usage.md` 并运行 `gates/skill-usage-gate.sh`。
 
 Java 后端行为变更在实现前需要 `backend-test-plan.md`，
@@ -381,6 +381,19 @@ CodeGraph 是可选的，不是关卡。在业务 CodeGraph review 之前，运�
 
 使用仓库特定的基线文件。初始候选：`mvn -DskipTests compile`、`scripts/frontend-lint-build.sh <repo> lint-files <files...>`、`scripts/frontend-dev-server.sh frontend-map-system 9527`、`npm run build:test`。
 先运行范围最窄的有用检查。
+
+## 尚未引入的脚本（命中场景再 copy）
+
+标本 `learning_objectives/scripts/` 里有、RZ 暂未引入的脚本。模板 / 人设里引用到它们时按“指引”理解；实际执行前需先从标本 copy 并做本地化适配（变量 `SFA_`→`RZ_`、gate 放 `gates/`、工具放 `scripts/`、配置 `repos.local`→`runtime_local`）：
+
+- 多 Agent / 多仓编排：`workstream-dispatch-gate.sh`、`parallel-worktree-gate.sh`、`agent-output-contract-gate.sh`（含 `lib/agent-registry.mjs`）、`agent-review-package.sh`、`agent-task-brief.sh`
+- CodeGraph：`codegraph-preflight.sh`、`codegraph-evidence-gate.sh`
+- GitNexus：`gitnexus-detect-changes.sh`、`gitnexus-impact.sh`
+
+**尚未建立的目录**：`docs/`（`skills-routing.md`、`standards/comment-logging.md`、`architecture/repo-registry.md`）、`rules/`、`lanes/`。涉及它们的检查或指引暂按 `N/A`：
+
+- `gates/swagger-model-documentation-gate.sh` 依赖 `rules/backends/*/manifest.yml`；没有 profile 时**不做检查、直接放行**，等 `rules/` 建起来后才生效。
+- `gates/knowledge-reference-gate.sh` 依赖 `docs/pitfalls/`、`docs/samples/`、`docs/decision-log/`；已建 `docs/pitfalls/`，其余命中再建。
 
 ## 完成定义
 

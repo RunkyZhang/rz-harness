@@ -1,13 +1,15 @@
 # Pre-PR 自审：<change-id>
 
 > 面向人工 review 的说明、风险、结论默认使用中文；代码标识、命令、API 路径、字段名、错误码、YAML key、日志 key 和引用原文保持原样。
+>
+> **RZ 尚未引入的脚本**（`workstream-dispatch-gate`、`codegraph-preflight`/`codegraph-evidence-gate`、`gitnexus-*`、`agent-task-brief`/`agent-review-package`/`agent-output-contract-gate`、`parallel-worktree-gate`）：本文相关检查项**默认按 `N/A` 处理**，不要去找这些脚本；命中场景再从标本 `learning_objectives/scripts/` copy 并本地化（见 `AGENTS.md`「尚未引入的脚本」）。
 
 ## Spec 一致性
 
 - [ ] 业务目标与 `changes/<change-id>/spec.md` 一致。
 - [ ] `changes/<change-id>/status-card.md` 已更新当前阶段、下一步、待确认项和是否允许进入下一阶段。
 - [ ] `changes/<change-id>/technical-solution.md` 已人工确认，并通过 `gates/technical-solution-gate.sh changes/<change-id>`。
-- [ ] 多仓 / 全栈需求已通过 `scripts/workstream-dispatch-gate.sh changes/<change-id>`；如降级为单 Agent 串行，`status-card.md` 已记录 `DEGRADED:` 原因。
+- [ ] 多仓 / 全栈需求已在 `status-card.md` 记录 `Workstream Dispatch`（`workstream-dispatch-gate` RZ 未引入 → 本项 N/A）。
 - [ ] 业务仓首次改代码前已通过 `gates/business-code-start-gate.sh changes/<change-id> <changed-files...>`；没有在 `main/master` 直接修改业务代码。
 - [ ] 若业务仓存在接手前 dirty diff，已通过 `gates/business-dirty-worktree-gate.sh <repo> --ledger changes/<change-id>/dirty-worktree-ledger.md`，每个 dirty path 有 owner 和 decision。
 - [ ] 所有阻塞性 `[QUESTION]` 已解决。
@@ -21,7 +23,7 @@
 - [ ] 未修改生产配置。
 - [ ] 未修改 secrets 或 `.env*` 文件。
 - [ ] 未修改 DB migration、prod k8s 或生产配置，除非 spec 的 `approved_protected_paths` 逐条记录了用户确认。
-- [ ] 本地联调未通过修改业务前端 `vue.config.js` / `.env*` 实现代理；如涉及 PC 本地代理，已执行 `scripts/local-routing-business-config-gate.sh <changed-frontend-files...>`。
+- [ ] 本地联调未通过修改业务前端 `vue.config.js` / `.env*` 实现代理；如涉及 PC 本地代理，已执行 `gates/local-routing-business-config-gate.sh <changed-frontend-files...>`。
 
 ## 契约
 
@@ -42,7 +44,7 @@
 - [ ] 如涉及 Java 后端行为变更，已创建 `changes/<change-id>/backend-test-plan.md`，或记录 `NOT_APPLICABLE` 原因。
 - [ ] 后端测试矩阵已覆盖本次适用的 validation、permission、state transition、idempotency、async/job、adapter failure、rollback/error、mapper/update count。
 - [ ] 已执行后端 compile 或 targeted test。
-- [ ] 后端 Maven 命令执行前已通过 `scripts/canonical-command-gate.sh -- <mvn command>`；`sfa-sales-management-interfaces` reactor 命令未遗漏 `-am`。
+- [ ] 后端 Maven 命令执行前已通过 `gates/canonical-command-gate.sh -- <mvn command>`；`sfa-sales-management-interfaces` reactor 命令未遗漏 `-am`。
 - [ ] 如只执行 compile 未执行 targeted test，已说明后端没有行为分支，或用户已接受残余风险。
 - [ ] 已执行前端 lint。
 - [ ] 已执行前端 build 或 unit smoke。
@@ -59,10 +61,10 @@
 - [ ] 已执行 `scripts/code-comment-log-quality.sh <repo-root> <changed-files...>`，或说明本次不涉及 Java / Vue / JS。
 - [ ] 如本次新增 active Swagger 2 profile 覆盖范围内的 public REST response `*VO.java`，已执行 `gates/swagger-model-documentation-gate.sh changes/<change-id> <changed-files...>`；模型和字段说明均通过。
 - [ ] 注释 / 日志 warning 已写入 `evidence.md`，Reviewer 已判断是否必须修复。
-- [ ] 已执行 `scripts/architecture-drift-gate.sh <repo-root> <changed-files...>`；如命中架构例外，技术方案和 Reviewer 结论已明确确认。
+- [ ] 已执行 `gates/architecture-drift-gate.sh <repo-root> <changed-files...>`；如命中架构例外，技术方案和 Reviewer 结论已明确确认。
 - [ ] 已执行 `gates/temp-hardcode-scan.sh <changed-files...>` 扫描 `CODX` / `smoke` / `mock` / `localhost` / `token` / `password` / `TODO` / `FIXME`。
 - [ ] 临时写死扫描命中项已删除、配置化，或在 `evidence.md` 逐条记录为已审 false positive；没有把明文 token/password 写入 evidence。
-- [ ] 若本次有 `decisions.md`，已执行 `scripts/decision-gate.sh changes/<change-id>/`，无遗留 `pending`。
+- [ ] 若本次有 `decisions.md`，已执行 `gates/decision-gate.sh changes/<change-id>/`，无遗留 `pending`。
 
 ## 注释与日志
 
@@ -75,18 +77,18 @@
 
 ## GitNexus 影响分析
 
-- [ ] 如本次改公共 API / DTO / VO / RPC contract、Controller / Service / Mapper / shared util、删除 / 重命名 / 改方法签名、跨前后端 / 跨仓 / 跨模块、权限 / 登录 / 支付 / 库存 / 奖励 / 审核等核心流程，已执行 `scripts/gitnexus-impact.sh <repo> <symbol>` 并把结果写入 `evidence.md`。
+- [ ] 如本次改公共 API / DTO / VO / RPC contract、Controller / Service / Mapper / shared util、删除 / 重命名 / 改方法签名、跨前后端 / 跨仓 / 跨模块、权限 / 登录 / 支付 / 库存 / 奖励 / 审核等核心流程，已人工确认影响面并将结论写入 `evidence.md`（`gitnexus-impact` RZ 未引入）。
 - [ ] 如本次是文档、模板、rules、harness 脚本小改、单页面样式 / 文案调整或新增孤立测试，已记录 GitNexus N/A 原因。
 - [ ] 如 GitNexus 输出 `GITNEXUS_STATUS=UNAVAILABLE`，已记录降级原因，并补充 `rg` / `git diff` / Maven / npm / Reviewer 兜底证据。
-- [ ] Pre-PR 前已按风险执行 `scripts/gitnexus-detect-changes.sh <repo> --scope all` 或 `--scope compare --base-ref <branch>`，或记录不适用原因。
+- [ ] Pre-PR 前已人工确认变更范围，或记录不适用原因（`gitnexus-detect-changes` RZ 未引入 → 本项 N/A）。
 - [ ] 如 GitNexus detect_changes 输出 `HIGH` / `CRITICAL`，已暂停并取得用户确认；未把本地测试通过包装成最终安全结论。
 
 ## CodeGraph 索引刷新
 
-- [ ] 如使用 CodeGraph 做结构、route 或影响面证据，已先执行 `scripts/codegraph-preflight.sh <repo-id-or-path>` 并记录结果；只有 stale / pending / watcher 不可用 / 批量变更后才使用 `--sync`。
+- [ ] 如使用 CodeGraph 做结构、route 或影响面证据（需先引入 `codegraph-preflight`）→ RZ 未引入，本项 N/A。
 - [ ] CodeGraph MCP 查询业务符号时，已显式使用 preflight 输出的 `CODEGRAPH_PROJECT_PATH` 作为 `projectPath`，没有默认查 harness 仓。
-- [ ] 如查询 API route / URL，已优先用 `codegraph_explore`，query 同时包含业务模块词、route 片段和目标；再按需要用 `codegraph_node` / `codegraph_search` / `codegraph_callers` / `codegraph_trace` 精确跟进。
-- [ ] 如使用 CodeGraph 给出影响面或 route 结论，已创建 `changes/<change-id>/codegraph-evidence.md` 并通过 `scripts/codegraph-evidence-gate.sh changes/<change-id>`。
+- [ ] 如查询 API route / URL，用 `rg` 等直接检索目标（`codegraph_explore` 需先引入 CodeGraph → RZ 未引入，本项 N/A）。
+- [ ] 如使用 CodeGraph 给出影响面或 route 结论，已创建 `changes/<change-id>/codegraph-evidence.md`（`codegraph-evidence-gate` RZ 未引入 → 本项 N/A）。
 - [ ] CodeGraph 响应如有 staleness banner / pending sync，已直接读取被点名文件或运行 preflight `--sync` 后重查。
 - [ ] CodeGraph 未命中或命中无关符号时，已先确认 repo/path、状态和查询词，再降级到 `rg` / 直接读文件 / 编译测试。
 - [ ] 如 CodeGraph 未初始化、sync 失败、MCP 不可用或查不到新增符号，已在 `evidence.md` 记录降级原因，并使用 `rg`、直接读文件、编译 / 测试和 Reviewer 证据兜底。
@@ -118,7 +120,7 @@
 
 - [ ] 已判定本次是否涉及复杂 UI；判定结论写入 spec / plan / `ui-confirmation.md`。
 - [ ] 如涉及复杂 UI，已创建 `changes/<change-id>/ui-confirmation.md`。
-- [ ] 如涉及复杂 UI，已执行 `scripts/ui-confirmation-gate.sh changes/<change-id>`；未确认时未宣称 UI 通过。
+- [ ] 如涉及复杂 UI，已执行 `gates/ui-confirmation-gate.sh changes/<change-id>`；未确认时未宣称 UI 通过。
 - [ ] 如涉及复杂 UI，正式 Vue/H5 页面实现或最终 review 前已有人工 / 工人确认记录。
 - [ ] 如复杂 UI 未确认，已标记为 `BLOCKED`，未用实现后的 PC E2E smoke 替代确认门禁。
 - [ ] 如复杂 PC 页面未跑起来给人工确认，未在 final、review 或 evidence 中写“UI 通过”。
@@ -134,8 +136,8 @@
 
 ## 本地临时状态
 
-- [ ] 如小程序本地联调使用 `bd_owner_env_override`，已创建 `changes/<change-id>/miniapp-local-env.md` 并通过 `scripts/miniapp-local-env-gate.sh changes/<change-id>`。
-- [ ] 如本地联调 / SIT 自测产生临时服务、storage override、测试二维码 / taskId、临时 DB/API 状态、vConsole/debug flag 或 proxy 状态，已创建 `changes/<change-id>/temporary-state-ledger.md` 并通过 `scripts/temporary-state-ledger-gate.sh changes/<change-id>`。
+- [ ] 如小程序本地联调使用 `bd_owner_env_override`，已创建 `changes/<change-id>/miniapp-local-env.md` 并通过 `gates/miniapp-local-env-gate.sh changes/<change-id>`。
+- [ ] 如本地联调 / SIT 自测产生临时服务、storage override、测试二维码 / taskId、临时 DB/API 状态、vConsole/debug flag 或 proxy 状态，已创建 `changes/<change-id>/temporary-state-ledger.md` 并通过 `gates/temporary-state-ledger-gate.sh changes/<change-id>`。
 
 ## AI 测试报告确认
 
@@ -173,8 +175,8 @@
 
 > 闭环：本次 change 产生的知识必须沉淀回团队知识库，否则经验死在 change 文件夹里。元数据约定见 `docs/decision-log/2026-05-29-knowledge-lifecycle.md`。
 
-- [ ] 本次有无 **pitfall**（踩过的坑 / 故障模式）？有则新增 `docs/pitfalls/SFA-PIT-*.md`（按 `docs/pitfalls/TEMPLATE.md`），无则勾选并说明 N/A。
-- [ ] 本次有无可复用 **sample**（值得模仿的样板）？有则新增 `docs/samples/SFA-SMP-*.md`（按 `docs/samples/TEMPLATE.md`）。
+- [ ] 本次有无 **pitfall**（踩过的坑 / 故障模式）？有则新增 `docs/pitfalls/RZ-PIT-*.md`（按 `docs/pitfalls/TEMPLATE.md`），无则勾选并说明 N/A。
+- [ ] 本次有无可复用 **sample**（值得模仿的样板）？有则新增 `docs/samples/RZ-SMP-*.md`（按 `docs/samples/TEMPLATE.md`）。
 - [ ] 本次有无 **decision**（技术选型 / 架构决策）？有则新增 `docs/decision-log/YYYY-MM-DD-<topic>.md`。
 - [ ] 本次有无 **guideline**（应当固化的推荐 / 禁止做法）？有则更新对应 `rules/*.mdc` 或 `docs/standards/`。
 - [ ] 已更新本次**引用过**的既有知识条目的 `last_referenced` 与 `referenced_by`（必要时提升 `maturity`）。

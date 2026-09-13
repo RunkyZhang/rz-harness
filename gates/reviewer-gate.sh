@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'USAGE'
 Usage:
-  scripts/reviewer-gate.sh <review.md | change-dir>
+  gates/reviewer-gate.sh <review.md | change-dir>
 
 Fails closed unless the independent Reviewer Agent output proves it reviewed:
   - technical solution alignment

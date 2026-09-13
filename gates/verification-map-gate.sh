@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'USAGE'
 Usage:
-  scripts/verification-map-gate.sh <verification-map.md | change-dir>
+  gates/verification-map-gate.sh <verification-map.md | change-dir>
 
 Checks that Tier M/L key constraints have explicit verification mapping before
 implementation:

@@ -46,12 +46,12 @@ approved_protected_paths: []
 ## 知识引用
 
 > 本次引用了哪些已有知识条目（pitfall / sample / decision）。ARCHIVE 阶段据此更新被引用条目的 `last_referenced` / `referenced_by`。无引用可留空。
-> 用 `scripts/knowledge-reference-gate.sh <spec>` 校验引用的 ID 真实存在。
+> 用 `gates/knowledge-reference-gate.sh <spec>` 校验引用的 ID 真实存在。
 
 ```yaml
 knowledge_refs:
-  - <SFA-PIT-NNN>   # 引用的已知坑（docs/pitfalls/）
-  - <SFA-SMP-NNN>   # 复用的样板（docs/samples/）
+  - <RZ-PIT-NNN>   # 引用的已知坑（docs/pitfalls/）
+  - <RZ-SMP-NNN>   # 复用的样板（docs/samples/）
 ```
 
 ## 完成标准

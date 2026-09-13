@@ -40,7 +40,7 @@
 - Android Studio 编译对应 flavor。
 - 本次 Android 改动文件运行：
   - `scripts/mobile-mechanical-quality.sh $RZ_REPO_SFA_ANDROID <changed-files...>`
-  - `scripts/architecture-drift-gate.sh $RZ_REPO_SFA_ANDROID <changed-files...>`
+  - `gates/architecture-drift-gate.sh $RZ_REPO_SFA_ANDROID <changed-files...>`
 - 上传页覆盖 0/1/4 张与第 5 张拦截。
 - 弱网/离线后恢复上传，`UploadPicService` 能逐张清空上传队列。
 - 审核详情页只读展示，不能出现上传控件。

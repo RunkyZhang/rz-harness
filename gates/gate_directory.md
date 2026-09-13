@@ -90,4 +90,4 @@
 
 ## 尚未引入（标本有、RZ 未拷）
 
-`requirement-intake-gate`、`local-routing-gate`、`miniapp-local-env-gate`、`temporary-state-ledger-gate`、`ui-confirmation-gate`、`retro-gate`、`change-stage-gate`、`codegraph-evidence-gate`、`architecture-drift-gate`、`canonical-command-gate`、`workstream-dispatch-gate`、`agent-dispatch-plan-gate`、`agent-registry-gate`、`agent-output-contract-gate`、`parallel-worktree-gate`、`knowledge-reference-gate`。命中场景再从标本 `learning_objectives/scripts/` 拷贝并登记进本目录。
+`workstream-dispatch-gate`、`parallel-worktree-gate`、`agent-output-contract-gate`、`agent-registry-gate`、`agent-dispatch-plan-gate`、`retro-gate`、`change-stage-gate`、`codegraph-preflight`、`codegraph-evidence-gate`、`gitnexus-detect-changes`、`gitnexus-impact`。命中场景再从标本 `learning_objectives/scripts/` 拷贝并登记进本目录（变量 `SFA_`→`RZ_`、配置 `repos.local`→`runtime_local`）。

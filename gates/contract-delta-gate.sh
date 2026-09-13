@@ -4,10 +4,10 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/contract-delta-gate.sh <changed-file> [changed-file...]
+  gates/contract-delta-gate.sh <changed-file> [changed-file...]
 
 Checks:
-  - If docs/contracts/<change-id>-api.md changed, then changes/<change-id>/contract-delta.md must also be changed.
+  - If changes/<change-id>/contract.md changed, then changes/<change-id>/contract-delta.md must also be changed.
   - Prints a frontend notification line for the orchestrator to forward to Frontend Agent.
 USAGE
 }
@@ -62,7 +62,7 @@ contains_file() {
 
 checked=0
 for file in "${changed[@]}"; do
-  if [[ "$file" =~ ^docs/contracts/(.+)-api\.md$ ]]; then
+  if [[ "$file" =~ ^changes/([^/]+)/contract\.md$ ]]; then
     checked=1
     change_id="${BASH_REMATCH[1]}"
     delta_file="changes/${change_id}/contract-delta.md"

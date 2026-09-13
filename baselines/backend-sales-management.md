@@ -2,7 +2,7 @@
 
 日期：2026-08-29
 仓库路径：`$RZ_REPO_SFA_SALES_MANAGEMENT`（本机值见 `config/runtime_local.sh`）  
-当前分支：`codex/harness-self-test-20260519`  
+当前分支：`harness/harness-self-test-20260519`  
 仓库类型：Java 后端  
 试点角色：首个 Fullstack CRUD lane 的后端主仓
 

@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/business-dirty-worktree-gate.sh <repo> [--ledger <dirty-worktree-ledger.md>]
+  gates/business-dirty-worktree-gate.sh <repo> [--ledger <dirty-worktree-ledger.md>]
 
 Fails when a business repo has dirty files unless every dirty path is recorded
 in a ledger with an owner and decision. This protects user work from being
@@ -31,7 +31,7 @@ repo="${1:-}"
   "DIRTY_WORKTREE/MISSING_REPO" \
   "missing repo path" \
   "Pass the business repository path." \
-  "scripts/business-dirty-worktree-gate.sh /path/to/repo --ledger changes/<id>/dirty-worktree-ledger.md"
+  "gates/business-dirty-worktree-gate.sh /path/to/repo --ledger changes/<id>/dirty-worktree-ledger.md"
 shift || true
 
 ledger=""

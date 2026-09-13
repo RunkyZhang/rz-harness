@@ -1,7 +1,7 @@
 # 决策账本：<change-id>
 
 > 实现中途冒出的、需要人类异步拍板的 BLOCKING 决策点登记在此。
-> 用法：Agent 把待决项记为 `status: pending` 后，继续做**不依赖该决策**的工作；人类异步在本文件填决策；合并前 `scripts/decision-gate.sh` 校验无遗留 `pending`。
+> 用法：Agent 把待决项记为 `status: pending` 后，继续做**不依赖该决策**的工作；人类异步在本文件填决策；合并前 `gates/decision-gate.sh` 校验无遗留 `pending`。
 > spec 阶段的 `[QUESTION]` 仍由 `gates/confidence-gate.sh` 管，不要重复登记。
 >
 > 字段说明：

@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/confidence-gate.sh <spec-file>
+  gates/confidence-gate.sh <spec-file>
 
 Checks:
   - spec contains [FACT], [ASSUMP], and [QUESTION] sections/items

@@ -40,7 +40,7 @@ description: Use when an RZ Harness task needs read-only evidence from business 
 
 1. 本控制面入口：`AGENTS.md`、当前 `changes/<change-id>/spec.md`（若已有）。
 2. 目标仓 baseline：若控制面 `baselines/` 下有对应该仓的说明，先读它再下钻业务仓样板。
-3. 陷阱/样板库：仅当控制面已有 `docs/pitfalls/`、`docs/samples/` 时，先读分类 README，再按需读少量全文。不要假设存在 `SFA-PIT-*` / `SFA-SMP-*` 这类标本文件名。
+3. 陷阱/样板库：仅当控制面已有 `docs/pitfalls/`、`docs/samples/` 时，先读分类 README，再按需读少量全文。不要假设存在 `RZ-PIT-*` / `RZ-SMP-*` 这类文件名。
 
 查询预算（默认）：单次探索完整读取的知识条目 ≤ 5 条；超出说明问题没收敛，先回到清单重新过滤。
 

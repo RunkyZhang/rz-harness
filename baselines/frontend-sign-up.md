@@ -2,7 +2,7 @@
 
 日期：2026-05-19  
 仓库路径：`$RZ_REPO_SIGN_UP`（本机值见 `config/runtime_local.sh`）  
-当前分支：`codex/harness-self-test-20260519`  
+当前分支：`harness/harness-self-test-20260519`  
 仓库类型：Vue2 H5 / 移动端前端  
 试点角色：纳入 registry 和 baseline，暂不作为首个后台 CRUD 主仓
 

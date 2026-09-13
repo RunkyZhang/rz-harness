@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'USAGE'
 Usage:
-  scripts/ai-test-plan-gate.sh <ai-test-plan.md | change-dir>
+  gates/ai-test-plan-gate.sh <ai-test-plan.md | change-dir>
 
 Fails closed unless the AI test plan contains:
   - test_plan_status: CONFIRMED

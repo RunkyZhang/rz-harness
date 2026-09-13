@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'USAGE'
 Usage:
-  scripts/temp-hardcode-scan.sh <changed-file-or-dir>...
+  gates/temp-hardcode-scan.sh <changed-file-or-dir>...
 
 Scans changed business files before merge for temporary hardcoding markers:
 CODX, smoke, mock, localhost, token, password, TODO, FIXME.

@@ -15,10 +15,10 @@ description: Use after UI rules, contract, and code-start gates. Implement front
 
 ## 派发前必须已满足
 
-- `scripts/business-code-start-gate.sh` 通过
+- `gates/business-code-start-gate.sh` 通过
 - 契约 v0.1、allowed paths、隔离 worktree
-- PRD UI / 交互：`ui-rule-checklist.md` 与 `scripts/ui-rule-gate.sh`
-- 复杂 UI：`ui-confirmation.md` 与 `scripts/ui-confirmation-gate.sh`
+- PRD UI / 交互：`ui-rule-checklist.md` 与 `gates/ui-rule-gate.sh`
+- 复杂 UI：`ui-confirmation.md` 与 `gates/ui-confirmation-gate.sh`
 
 ## 输入
 

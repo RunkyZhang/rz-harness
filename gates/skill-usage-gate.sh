@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'USAGE'
 Usage:
-  scripts/skill-usage-gate.sh changes/<change-id>
+  gates/skill-usage-gate.sh changes/<change-id>
 
 Checks that a change records harness-local skill usage. This gate verifies the
 record exists and does not leave TODO statuses. It does not decide whether a

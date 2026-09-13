@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'USAGE'
 Usage:
-  scripts/swagger-model-documentation-gate.sh <change-dir> <changed-file> [changed-file...]
+  gates/swagger-model-documentation-gate.sh <change-dir> <changed-file> [changed-file...]
 
 For each active Swagger 2 backend profile, checks newly added public response
 VO files under the configured root. Every checked class requires @ApiModel and
@@ -30,7 +30,7 @@ fi
   "SWAGGER_MODEL_DOC/MISSING_ARGUMENTS" \
   "missing change dir or changed files" \
   "Pass the active change dir and concrete changed files from the pre-commit stage." \
-  "scripts/swagger-model-documentation-gate.sh changes/example /absolute/repo/.../ExampleVO.java"
+  "gates/swagger-model-documentation-gate.sh changes/example /absolute/repo/.../ExampleVO.java"
 
 change_dir="$1"
 shift
@@ -41,7 +41,7 @@ shift
   "changes/example"
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-if [[ -z "${SFA_REPO_BACKEND_SALES_MANAGEMENT:-}" && -f "$root/config/runtime_local.sh" ]]; then
+if [[ -z "${RZ_REPO_SFA_SALES_MANAGEMENT:-}" && -f "$root/config/runtime_local.sh" ]]; then
   # shellcheck disable=SC1091
   source "$root/config/runtime_local.sh"
 fi

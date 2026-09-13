@@ -16,7 +16,7 @@ description: Use when an RZ Harness change needs read-only review of spec, plan,
 按实际存在的文件读，缺则记录为缺口，不要假装读过：
 
 1. `changes/<change-id>/spec.md`
-2. 契约（若有）：`docs/contracts/<change-id>-api.md` 或变更包内 contract
+2. 契约（若有）：`changes/<change-id>/contract.md`
 3. `changes/<change-id>/technical-solution.md`（若有）
 4. `changes/<change-id>/ai-test-plan.md`、`test-agent-verification.md`、`ai-test-report.md`（若有）
 5. 实际 diff
@@ -64,7 +64,7 @@ medium_risk_status: RECORDED
 输出落盘后必须运行：
 
 ```bash
-scripts/reviewer-gate.sh changes/<change-id>
+gates/reviewer-gate.sh changes/<change-id>
 ```
 
 ## 禁止

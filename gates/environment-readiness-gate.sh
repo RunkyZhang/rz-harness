@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'USAGE'
 Usage:
-  scripts/environment-readiness-gate.sh <environment-readiness.md | change-dir>
+  gates/environment-readiness-gate.sh <environment-readiness.md | change-dir>
 
 Fails closed unless environment readiness contains:
   - environment_status: READY

@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/technical-solution-feishu-sync-gate.sh <technical-solution.md | change-dir>
+  gates/technical-solution-feishu-sync-gate.sh <technical-solution.md | change-dir>
 
 When a confirmed technical solution uses a Feishu/Lark PRD source, this gate
 requires a synced Feishu child document and a current source hash.

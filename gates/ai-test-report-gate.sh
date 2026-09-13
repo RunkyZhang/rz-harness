@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/ai-test-report-gate.sh <ai-test-report.md | change-dir>
+  gates/ai-test-report-gate.sh <ai-test-report.md | change-dir>
 
 Fails closed unless the AI test report contains:
   - a confirmed ai-test-plan.md in the same change dir
@@ -67,13 +67,13 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
   "AI_TEST_REPORT_GATE/TEST_PLAN_NOT_CONFIRMED" \
   "AI test plan gate failed" \
   "Confirm changes/<change-id>/ai-test-plan.md before final AI test report confirmation." \
-  "scripts/ai-test-plan-gate.sh changes/<change-id>"
+  "gates/ai-test-plan-gate.sh changes/<change-id>"
 
 "$script_dir/test-agent-verification-gate.sh" "$change_dir" || fail \
   "AI_TEST_REPORT_GATE/TEST_AGENT_NOT_VERIFIED" \
   "Test Agent verification gate failed" \
   "Run the Main Agent fix / Test Agent retest loop until verification_status: GOAL_ACHIEVED." \
-  "scripts/test-agent-verification-gate.sh changes/<change-id>"
+  "gates/test-agent-verification-gate.sh changes/<change-id>"
 
 if ! grep -qF "ai-test-plan.md" "$report"; then
   fail \

@@ -35,7 +35,7 @@
 - Xcode 编译 SpecialDisplay 所属 target。
 - 本次 iOS 改动文件运行：
   - `scripts/mobile-mechanical-quality.sh $RZ_REPO_SFA_IOS <changed-files...>`
-  - `scripts/architecture-drift-gate.sh $RZ_REPO_SFA_IOS <changed-files...>`
+  - `gates/architecture-drift-gate.sh $RZ_REPO_SFA_IOS <changed-files...>`
 - mock 或测试环境覆盖：
   - 历史单图展示。
   - 近景/远景各 4 张上传。
