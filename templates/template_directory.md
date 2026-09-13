@@ -40,7 +40,7 @@ changes/change-scaffold.sh --tier S|M|L <change-id>
 
 | 模板 | 变更包内文件名 | 何时拷 | 作用 | 谁填 | 谁检查 |
 |---|---|---|---|---|---|
-| `requirement-intake.md` | `requirement-intake.md` | 条件：M/L 要结构化收需求 | 把 PRD 收成结构化入口 | 主 Agent | 标本 `requirement-intake-gate.sh` **RZ 未拷** |
+| `requirement-intake.md` | `requirement-intake.md` | 条件：M/L 要结构化收需求 | 把 PRD 收成结构化入口 | 主 Agent | `gates/requirement-intake-gate.sh` |
 
 ### 3. 方案 / 契约（停止点 2）
 
@@ -71,12 +71,12 @@ changes/change-scaffold.sh --tier S|M|L <change-id>
 | 模板 | 变更包内文件名 | 何时拷 | 作用 | 谁填 | 谁检查 |
 |---|---|---|---|---|---|
 | `ui-rule-checklist.md` | `ui-rule-checklist.md` | 条件：PRD UI / 交互编码 | UI 规范逐项、缺口 | 主 Agent | `ui-rule-gate.sh` |
-| `ui-confirmation.md` | `ui-confirmation.md` | 条件：复杂 UI | 可运行页 / 截图后的确认记录 | 主 Agent；用户看页面后写 `CONFIRMED` | `ui-confirmation-gate.sh` **RZ 未拷** |
-| `local-routing.yml` | `local-routing.yml` | 条件：本地前后端联调 | 前端打哪套后端 / 代理。标本生成脚本 **RZ 未拷**，命中时手写 | 主 Agent | `local-routing-gate.sh` **RZ 未拷** |
+| `ui-confirmation.md` | `ui-confirmation.md` | 条件：复杂 UI | 可运行页 / 截图后的确认记录 | 主 Agent；用户看页面后写 `CONFIRMED` | `gates/ui-confirmation-gate.sh` |
+| `local-routing.yml` | `local-routing.yml` | 条件：本地前后端联调 | 前端打哪套后端 / 代理；`scripts/generate-local-routing.sh` 生成 | 主 Agent | `gates/local-routing-gate.sh` |
 | `pc-e2e-smoke-plan.md` | `pc-e2e-smoke-plan.md` | 条件：PC 真浏览器冒烟 | 冒烟计划 | 主 Agent | 无专用 RZ gate；真 E2E 须先过 `environment-readiness-gate.sh` |
 | `pc-e2e-smoke-report.md` | `pc-e2e-smoke-report.md` | 同上 | 冒烟结果摘要 | 主 Agent | 同上 |
-| `miniapp-local-env.md` | `miniapp-local-env.md` | 条件：改小程序本地环境 | 小程序本地运行约定 | 主 Agent | `miniapp-local-env-gate.sh` **RZ 未拷** |
-| `temporary-state-ledger.md` | `temporary-state-ledger.md` | 条件：本地服务、测试数据、debug 开关 | 临时状态清理台账 | 主 Agent | `temporary-state-ledger-gate.sh` **RZ 未拷** |
+| `miniapp-local-env.md` | `miniapp-local-env.md` | 条件：改小程序本地环境 | 小程序本地运行约定 | 主 Agent | `gates/miniapp-local-env-gate.sh` |
+| `temporary-state-ledger.md` | `temporary-state-ledger.md` | 条件：本地服务、测试数据、debug 开关 | 临时状态清理台账 | 主 Agent | `gates/temporary-state-ledger-gate.sh` |
 
 ### 7. 环境就绪（停止点 4）
 
@@ -116,9 +116,9 @@ changes/change-scaffold.sh --tier S|M|L <change-id>
 | `evidence.md` | scaffold 当场生成空表 |
 | `capability-spec.md` / `behavior-spec.md` | 条件：复杂状态机 / 权限 / 跨端；按 AGENTS 自建 |
 | `data-model.md` | 改 DB 时对照方案自建（SQL 用 `data-model-sql.md`） |
-| `verification-run-report.md` | 标本 `verification-run.sh` **RZ 未拷**；有可执行验证行时主 Agent 手工写 |
+| `verification-run-report.md` | `scripts/verification-run.sh` 生成；有可执行验证行时必须有 |
 | `handoff.md` | 换线程 / 暂停时按 handoff skill 章节自建；给下一个主 Agent，不是子 Agent 信箱 |
 
 ## 标本有、RZ 未拷（需要时再补）
 
-`frontend-style-profile.md`、`business-repo-agents-stub.md`、`codex-agent.toml`、`local-backend-services.yml`、`harness-state.yml`、`implementation-decision-matrix.md`、`local-dev-readiness.md`。
+`frontend-style-profile.md`、`business-repo-agents-stub.md`、`codex-agent.toml`、`harness-state.yml`、`implementation-decision-matrix.md`、`local-dev-readiness.md`。

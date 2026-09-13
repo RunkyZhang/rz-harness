@@ -339,8 +339,7 @@ DB 变更需要带 ER 图的数据模型文档、可执行 SQL、规范化检查
 实现和验证之后，只读 Reviewer 必须在人工 review 或 PR 之前撰写 `changes/<change-id>/review.md` 并运行 `gates/reviewer-gate.sh changes/<change-id>`。
 Reviewer 关卡要求技术方案对齐、harness 约束、架构漂移、注释/日志质量、可维护性/可读性、测试证据，以及 `high_risk_count: 0`。
 
-CodeGraph 是可选的，不是关卡。在业务 CodeGraph review 之前，运行 `scripts/codegraph-preflight.sh <repo-id-or-path>` 并将该仓库作为 MCP `projectPath`。
-宽结构/路由问题优先 `codegraph_explore`；精确符号跟进使用 node/search/callers/trace。记录过期/降级；未命中不是无影响的证明。
+CodeGraph 是可选的，不是关卡，**RZ 未引入**（`codegraph-preflight` 等未拷）→ 本段 N/A；命中场景再从标本引入。届时：在业务 CodeGraph review 前运行 `scripts/codegraph-preflight.sh <repo-id-or-path>` 并作为 MCP `projectPath`；宽结构/路由问题优先 `codegraph_explore`，精确符号跟进用 node/search/callers/trace；未命中不是无影响的证明。
 
 ## 置信度关卡
 
