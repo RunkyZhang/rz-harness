@@ -26,6 +26,15 @@
 
 ## 领域名词
 
+### harness / 控制面 / runtime
+
+| 词 | 是什么 | 负责什么                                      |
+|---|---|-------------------------------------------|
+| **runtime** | 真正跑起来的 agent 程序（Cursor / Codex / OpenCode） | 提供 agent 循环、读文件、跑 shell、权限、沙箱——**能跑**     |
+| **harness** | 套在 runtime 外面的工程系统（规则 + 工件 + 检查 + 流程） | 让 agent **在边界里跑**：改哪些文件、什么时候必须停、宣称完成拿什么证明 |
+| **控制面** | 本仓库 `rz-harness` 本身 | harness 的载体：包含规矩、模板、gate、子 Agent 人设文等文件   |
+
+
 ### 档位
 
 这次需求使用哪个档位分级，使用不同档位流程上会有不同的步骤。不一定代表需求大小，而是改动范围、风险和环境依赖。功能点少也可能是 L（例如改权限、动真实库）；页面很多也可能是 S（单仓低风险小修）。
@@ -36,7 +45,43 @@
 | M | 普通全栈或多文件业务，大约 1～2 个 API | 包括 S 档内容，再加强制方案、契约、测试方案、Tester、Reviewer |
 | L | 跨仓、高风险、强依赖真实环境、发布前风险高 | 包括 M 档内容，再加环境就绪、测试报告、决策记录               |
 
+## 运行机制：Guides 与 Sensors
+
+harness 不替代 agent，而是**围住** agent：行动前喂资料（Guides），行动后压检查（Sensors）。
+
+### 一张图：两层控制怎么围住 agent
+
+```text
+        Guides（AGENTS / templates / baselines / subagents 人设 / lane）
+                    ↓ 行动前喂进去
+              agent 干活（act）
+                    ↓ 产出 / 动作
+        Sensors（gates / 编译 / lint / 测试 / Reviewer）
+                    ↓ FAIL → 把 FIX 压回 agent，重做
+                    ↓ PASS → 继续
+```
+
+- Guides 会失败（模型可能不读、读了也可能违反），所以必须有 Sensors 兜底。
+- 需要人拍板的节点见「停止点」——本质是 loop 暂停、把控制权交回给人的时刻。
+
+### Guides：行动前的引导（不自动拦）
+
+喂给 agent 读的说明，靠“读”起作用，**本身不 PASS/FAIL、不拦截**：`AGENTS.md`、`templates/`、`baselines/`、`subagents/` 人设、lane。
+
+### Sensors：行动后的检查（会拦）
+
+agent 动作后压回来的检查，判定失败就是反向压力，逼它重做：
+
+| 层 | 例子 | 怎么判 |
+|---|---|---|
+| **确定性（Computational）** | `gates/*.sh`（gate）、编译、lint、测试、扫描 | 脚本 / 工具，可重复、可机判 |
+| **推断性（Inferential）** | Reviewer 审查、CodeGraph 影响分析 | 模型 / 人判断 |
+
+设计时先问：这条约束能不能用脚本判？能 → 写成 gate；不能（代码好不好、架构漂不漂）→ 交 Reviewer。另外 gate 本身是**拉式**的：要有人 / agent 去跑它，自动跑要靠 hook。
+
 ### gate（门禁）
+
+> gate 是 Sensors 里最“确定性”的一类：只做能**算清**的判断（文件是否存在、字段是否填了、路径是否在白名单），写成脚本、放 `gates/`。
 
 检查变更包产出物或流程状态、输出 PASS/FAIL 的可执行脚本。主 Agent / hook 根据 exit code 判断流程继续或阻断。gate 只裁决不干活。
 
@@ -45,6 +90,7 @@
 - exit code 约定：`0` = PASS 可继续；非 `0` = FAIL 阻断
 - FAIL 诊断输出 `FAIL / CODE / FIX / SAMPLE` 四要素（问题、错误码、怎么修、参考模板）
 - gate 检查的对象是 `changes/<change-id>/` 下的产物（spec、evidence、状态卡等）；命令证据记录在 evidence.md，不由 gate 承载
+- **fail-closed**：判定不了时默认 **FAIL**——文件缺失、字段没填、条件无法判定都不算通过；不许“找不到就跳过/放行”（反向的 fail-open 是明确禁止的）
 
 ### 停止点
 
