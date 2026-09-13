@@ -37,7 +37,7 @@
 
 在 `changes/<change-id>/evidence.md` 记录精确命令和结果。
 
-- [ ] 已创建 `changes/<change-id>/skill-usage.md`，并按 `docs/skills-routing.md` 记录命中的 harness skill。
+- [ ] 已创建 `changes/<change-id>/skill-usage.md`（`docs/skills-routing.md` RZ 未建 → 按 `subagents/` 人设，跳过该文件）。
 - [ ] 已执行 `gates/skill-usage-gate.sh changes/<change-id>`；没有遗留 TODO，N/A 行均有原因。
 - [ ] 如使用外部 Codex skill / Brooks lens，已按 `skills/third-party/external-codex-skills.md` 记录 USED / N/A；没有用外部 lens 替代 harness-local skill。
 - [ ] 未启用 `brooks-sweep`、PR/CI auto-fix loop 或外部 app real action 自动化。
@@ -173,12 +173,12 @@
 
 ## ARCHIVE：知识沉淀（合并前提炼）
 
-> 闭环：本次 change 产生的知识必须沉淀回团队知识库，否则经验死在 change 文件夹里。元数据约定见 `docs/decision-log/2026-05-29-knowledge-lifecycle.md`。
+> 闭环：本次 change 产生的知识必须沉淀回团队知识库，否则经验死在 change 文件夹里。（`docs/samples/`、`docs/decision-log/`、`rules/`、`docs/standards/` RZ 未建 → 相关项暂 N/A；`docs/pitfalls/` 已建。）
 
 - [ ] 本次有无 **pitfall**（踩过的坑 / 故障模式）？有则新增 `docs/pitfalls/RZ-PIT-*.md`（按 `docs/pitfalls/TEMPLATE.md`），无则勾选并说明 N/A。
-- [ ] 本次有无可复用 **sample**（值得模仿的样板）？有则新增 `docs/samples/RZ-SMP-*.md`（按 `docs/samples/TEMPLATE.md`）。
-- [ ] 本次有无 **decision**（技术选型 / 架构决策）？有则新增 `docs/decision-log/YYYY-MM-DD-<topic>.md`。
-- [ ] 本次有无 **guideline**（应当固化的推荐 / 禁止做法）？有则更新对应 `rules/*.mdc` 或 `docs/standards/`。
+- [ ] 本次有无可复用 **sample**（值得模仿的样板）？`docs/samples/` RZ 未建 → 本项 N/A（命中再建）。
+- [ ] 本次有无 **decision**（技术选型 / 架构决策）？`docs/decision-log/` RZ 未建 → 本项 N/A（命中再建）。
+- [ ] 本次有无 **guideline**（应当固化的推荐 / 禁止做法）？`rules/`、`docs/standards/` RZ 未建 → 本项 N/A（命中再建）。
 - [ ] 已更新本次**引用过**的既有知识条目的 `last_referenced` 与 `referenced_by`（必要时提升 `maturity`）。
 - [ ] 新增 / 修改的知识条目已带 front matter 元数据（`maturity` / `sources` / `last_referenced`）。
 

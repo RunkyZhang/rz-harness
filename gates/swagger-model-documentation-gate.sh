@@ -122,7 +122,7 @@ while IFS= read -r manifest; do
         "SWAGGER_MODEL_DOC/MISSING_FIELD_PROPERTY" \
         "new public response VO has fields without @ApiModelProperty: $file ($missing_fields)" \
         "Document each declared response field with @ApiModelProperty, including status, enum, time, and compatibility semantics." \
-        "docs/standards/comment-logging.md"
+        "AGENTS.md"
     fi
   done
 done < <(find "$root/rules/backends" -name manifest.yml -type f -print 2>/dev/null | sort)
