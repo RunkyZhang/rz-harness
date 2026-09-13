@@ -181,7 +181,7 @@ while IFS= read -r file; do
       fail \
         "CHANGE_ARTIFACTS/UNKNOWN_ROOT_FILE" \
         "unknown root artifact in new change: $name" \
-        "Use a registered artifact name or move supporting files under evidence/, runtime-smoke/, prd-ui/, tests/, or artifacts/." \
+        "Use a registered artifact name or move supporting files under evidence/, runtime-smoke/, prd-ui/, tests/, or artifacts/ (changes/<id>/artifacts/ for bulky files)." \
         "changes/change-whitelist-spec.md"
     fi
   fi

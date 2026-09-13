@@ -12,12 +12,12 @@
 | Executor | 写入执行者 |
 | Environment | 写入本地或测试环境 |
 | Browser tool | 写入 Codex Browser / Chrome / Playwright 等 |
-| Artifact dir | `artifacts/<change-id>/pc-e2e-smoke/` 或外部存储路径 |
+| Artifact dir | `changes/<change-id>/artifacts/pc-e2e-smoke/` 或外部存储路径 |
 | Login state | `已有登录态` / `测试账号登录` / `人工输入` / `免登录` / `BLOCKED` |
 | Test account | 写账号标识；如来自本地配置，写 `RZ_E2E_USERNAME configured` |
 | Test password source | `local-env configured` / `keychain configured` / `browser-session` / `manual input` / `not configured`，不得写明文密码 |
 | Local routing | `changes/<change-id>/local-routing.yml` / `未使用` |
-| Proxy log | `artifacts/<change-id>/pc-e2e-smoke/local-proxy.ndjson` / `未使用` |
+| Proxy log | `changes/<change-id>/artifacts/pc-e2e-smoke/local-proxy.ndjson` / `未使用` |
 | Result | `PASS` / `FAIL` / `BLOCKED` |
 | Recommendation | `允许进入人工 SIT` / `修复后重跑` / `补齐环境后重跑` |
 
@@ -49,10 +49,10 @@
 
 | Screenshot | Path | Purpose |
 | --- | --- | --- |
-| 初始页面 | `artifacts/<change-id>/pc-e2e-smoke/...` 或外部链接 | 证明页面可打开且主区域渲染 |
-| 查询结果 | `artifacts/<change-id>/pc-e2e-smoke/...` 或外部链接 | 证明列表、分页或空态可见 |
-| 详情页面 | `artifacts/<change-id>/pc-e2e-smoke/...` 或外部链接 | 证明详情关键字段可见 |
-| 空态或错误态 | `artifacts/<change-id>/pc-e2e-smoke/...` 或外部链接 | 证明异常路径不展示旧数据 |
+| 初始页面 | `changes/<change-id>/artifacts/pc-e2e-smoke/...` 或外部链接 | 证明页面可打开且主区域渲染 |
+| 查询结果 | `changes/<change-id>/artifacts/pc-e2e-smoke/...` 或外部链接 | 证明列表、分页或空态可见 |
+| 详情页面 | `changes/<change-id>/artifacts/pc-e2e-smoke/...` 或外部链接 | 证明详情关键字段可见 |
+| 空态或错误态 | `changes/<change-id>/artifacts/pc-e2e-smoke/...` 或外部链接 | 证明异常路径不展示旧数据 |
 
 ## 接口观察
 
@@ -71,7 +71,7 @@
 - 浏览器冒烟只覆盖主路径，不替代测试人员 SIT / UAT。
 - 多角色权限、复杂数据边界和历史页面回归未覆盖，除非本报告明确列出。
 - 未执行或降级的步骤必须在进入人工 SIT 前确认影响。
-- 截图、trace、录屏和原始浏览器日志不提交到 Git；本报告只记录路径和结论。
+- 截图、trace、录屏和原始浏览器日志放 `changes/<change-id>/artifacts/`；本报告只记录路径和结论。变更包整包不进 git。
 - 报告不得记录明文密码。生产密码、token、cookie 或个人真实账号凭据不得记录。如登录缺失，只能记录为 `BLOCKED` 或人工补测项。
 
 ## Reviewer 检查点

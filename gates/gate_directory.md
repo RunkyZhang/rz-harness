@@ -1,7 +1,7 @@
 # Gate 字典目录（gates/gate_directory.md）
 
 > 每个 gate 检查什么、何时跑、前置依赖。所有 gate 遵守统一约定：exit `0` = PASS；非 `0` = FAIL 并输出 `FAIL / CODE / FIX / SAMPLE` 四要素诊断。
-> 通用规则：gate 只裁决不创建文件；检查对象是 `changes/<change-id>/` 产物；命令证据记 evidence.md。
+> 通用规则：gate 只裁决不创建文件；检查对象是本机 `changes/<change-id>/` 产物（整包不进 git）；命令证据记 evidence.md。
 > `changes/status-card.sh` **不是 gate**：和 `change-scaffold.sh` 同级，只读收集阶段摘要，由主 Agent 合并进 `status-card.md`。不要拷进 `gates/`，也不要拷进变更包。
 
 ## 按流程阶段查

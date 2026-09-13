@@ -13,7 +13,7 @@ executor: 主 Agent
 environment: <local / SIT / UAT / pre-release>
 result: PENDING
 recommendation: 修复后重测
-artifact_dir: artifacts/<change-id>/ai-test/
+artifact_dir: changes/<change-id>/artifacts/ai-test/
 test_plan: changes/<change-id>/ai-test-plan.md
 test_agent_verification: changes/<change-id>/test-agent-verification.md
 ```
@@ -60,7 +60,7 @@ test_agent_verification: changes/<change-id>/test-agent-verification.md
 要求：
 
 - 每条用例必须写清角色、前置条件、步骤、期望、实际、证据和结果。
-- 截图、trace、完整日志放 `artifacts/<change-id>/ai-test/` 或外部存储；本报告只写路径和摘要。
+- 截图、trace、完整日志放 `changes/<change-id>/artifacts/ai-test/` 或外部存储；本报告只写路径和摘要。
 - 有状态 API、DB 写入、job 触发必须记录用户二次确认来源；没有确认时只能写 `BLOCKED`。
 
 ## 截图与证据

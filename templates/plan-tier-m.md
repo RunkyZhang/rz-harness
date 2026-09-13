@@ -88,7 +88,7 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 - [ ] 本地联调 / SIT 自测产生临时服务、storage、qrToken、测试数据、vConsole 或 proxy 状态时，已复制 `templates/temporary-state-ledger.md` 到 `changes/<change-id>/temporary-state-ledger.md`，结束前运行 `scripts/temporary-state-ledger-gate.sh changes/<change-id>`。
 - [ ] 验证命令执行前已运行 `scripts/canonical-command-gate.sh -- <command>`；后端 Maven reactor 命令没有遗漏 `-am`。
 - [ ] 已计划合并前临时写死扫描：`gates/temp-hardcode-scan.sh <changed-files...>`。
-- [ ] 已按 `docs/architecture/changes-retention-policy.md` 规划过程产物位置：Git 只保留轻量 Markdown 摘要，大文件放 `artifacts/<change-id>/` 或外部存储。
+- [ ] 大文件放 `changes/<change-id>/artifacts/`；evidence / report 只记路径和结论。变更包整包不进 git。
 
 ## 自动执行边界
 
@@ -116,7 +116,7 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 1. 后端样板确认：列出 controller、service、DTO、test 参考路径。
 2. Skill 路由：按 `docs/skills-routing.md` 记录 `grill` / `explorer` / `diagnose` / `tdd` / `reviewer` / `handoff` 的 USED 或 N/A。
 3. 前端样板确认：先记录用户是否指定 UI 参考页；如用户指定 URL、截图或页面路径，该参考页优先级高于 harness 默认样板，必须写明实际复用的页面骨架和全局 class；如用户未指定，再列出 2-3 个同模块页面样板。临时路由、审核/运营类后台页优先确认是否应参考 `src/views/audit/rectification/list.vue` 与 `src/views/audit/rectification/detail.vue`。
-4. 复杂 UI 判定：如触发复杂 UI，先复制 `templates/ui-confirmation.md` 到 `changes/<change-id>/ui-confirmation.md`，再生成 `artifacts/<change-id>/ui-prototype/frontend-ui-prototype.html` 或 plan 指定的等价可运行页面，用 mock 数据覆盖核心布局、主路径交互、空态 / 错误态和关键状态反馈；人工 / 工人确认结论写入 `ui-confirmation.md` 和 evidence 后，才能进入正式 Vue 页面实现。
+4. 复杂 UI 判定：如触发复杂 UI，先复制 `templates/ui-confirmation.md` 到 `changes/<change-id>/ui-confirmation.md`，再生成 `changes/<change-id>/artifacts/ui-prototype/frontend-ui-prototype.html` 或 plan 指定的等价可运行页面，用 mock 数据覆盖核心布局、主路径交互、空态 / 错误态和关键状态反馈；人工 / 工人确认结论写入 `ui-confirmation.md` 和 evidence 后，才能进入正式 Vue 页面实现。
 5. 全栈技术方案确认：按 `templates/technical-solution.md` 先做 PRD 端到端覆盖矩阵，再汇总范围分工、关键业务结论、跨端主流程、后端设计、PC Web/H5/小程序/APP 页面方案、数据模型、API、导出、埋点/分析、测试、发布、回滚和风险；给人工确认。飞书文档中的主流程图、ER 图和状态/关系图必须用 `whiteboard`，不能用 Mermaid 代码块。
 6. Verification Map：复制 `templates/verification-map.md` 到 `changes/<change-id>/verification-map.md`，把“什么叫做对”的关键约束逐条映射到命令、PC smoke、SQL 只读查询、人工确认或 `N/A:` 原因；运行 `gates/verification-map-gate.sh changes/<change-id>`。
 7. Contract v0.1 冻结：确认 endpoint、request、response、分页、空态、错误处理；如涉及 DB，确认 data model SQL、ER 图和字段理由；如需要独立能力/行为规格，确认 `capability-spec.md` 或 `behavior-spec.md`。
@@ -136,7 +136,7 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 21. AI 测试报告：复制 `templates/ai-test-report.md` 到 `changes/<change-id>/ai-test-report.md`，汇总后端 targeted tests、接口、PC E2E、截图、SQL/API 观察、未覆盖项和残余风险；人工确认前不得进入测试 / 预发发布。
 22. 预发前确认：运行 `gates/ai-test-report-gate.sh changes/<change-id>`；只有 `confirmation_status: CONFIRMED` 且 `recommendation: 允许进入预发` 才允许进入测试 / 预发发布。
 23. 状态卡更新：运行 `changes/status-card.sh changes/<change-id>`，把输出同步或整理进 `status-card.md`，作为用户查看“当前走到哪一步”的入口。
-24. 产物整理：保留轻量 Markdown 摘要；将截图、录屏、trace、完整长日志、临时原型草稿和数据快照移动到 `artifacts/<change-id>/` 或外部存储，并在 evidence / report 中记录路径。
+24. 产物整理：保留轻量 Markdown 摘要；将截图、录屏、trace、完整长日志、临时原型草稿和数据快照移动到 `changes/<change-id>/artifacts/` 或外部存储，并在 evidence / report 中记录路径。
 25. Reviewer：只读审查 spec、plan、contract、contract-delta、technical-solution、diff、evidence、backend-test-plan、pc-e2e-smoke-plan、pc-e2e-smoke-report、test-agent-verification、ai-test-report 和 status-card，并按 Java checklist 复核后端改动；输出 `review.md` 后运行 `scripts/agent-output-contract-gate.sh changes/<change-id> Reviewer` 和 `gates/reviewer-gate.sh changes/<change-id>`。
 26. 人工 review：用户确认 HIGH/MEDIUM 风险处理。
 
@@ -245,15 +245,15 @@ scripts/java-mechanical-quality.sh "$RZ_REPO_SFA_SALES_MANAGEMENT" <changed-java
 scripts/canonical-command-gate.sh -- mvn -pl sfa-sales-management-interfaces -am -DskipTests compile
 scripts/mvn-targeted-test.sh "$RZ_REPO_SFA_SALES_MANAGEMENT" <module> compile
 scripts/frontend-lint-build.sh "$RZ_REPO_MAP_SYSTEM" lint-files src/views/<feature>/*.vue
-scripts/generate-local-routing.sh --change-id <change-id> --frontend-repo frontend-map-system --active-backends backend-sales-management,backend-sfa-backend --services templates/local-backend-services.yml --output changes/<change-id>/local-routing.yml --env-output artifacts/<change-id>/pc-e2e-smoke/frontend.env
+scripts/generate-local-routing.sh --change-id <change-id> --frontend-repo frontend-map-system --active-backends backend-sales-management,backend-sfa-backend --services templates/local-backend-services.yml --output changes/<change-id>/local-routing.yml --env-output changes/<change-id>/artifacts/pc-e2e-smoke/frontend.env
 scripts/local-routing-gate.sh changes/<change-id>/local-routing.yml
 scripts/local-routing-business-config-gate.sh <changed-frontend-files...>
-RZ_HARNESS_SMOKE=1 RZ_HARNESS_PROXY_LOG=artifacts/<change-id>/pc-e2e-smoke/local-proxy.ndjson node scripts/harness-local-proxy.mjs changes/<change-id>/local-routing.yml
+RZ_HARNESS_SMOKE=1 RZ_HARNESS_PROXY_LOG=changes/<change-id>/artifacts/pc-e2e-smoke/local-proxy.ndjson node scripts/harness-local-proxy.mjs changes/<change-id>/local-routing.yml
 VUE_APP_BASE_API=http://127.0.0.1:19080/ npm run dev
 # PC E2E Smoke 使用真实浏览器执行；把 URL、步骤、截图路径和接口观察写入 changes/<change-id>/pc-e2e-smoke-report.md
 gates/ai-test-report-gate.sh changes/<change-id>
 changes/status-card.sh changes/<change-id>
-# 大体积产物放 artifacts/<change-id>/，Git 中只保留摘要和路径
+# 大体积产物放 changes/<change-id>/artifacts/；变更包整包不进 git
 ```
 
 ## 回滚
@@ -275,7 +275,7 @@ changes/status-card.sh changes/<change-id>
 | `npm run lint` 自动修改范围外文件 | 默认跑 `lint-files`；全量 auto-fix 后必须检查 diff 并清理或暂停 |
 | 复杂 UI 直接进入 Vue 实现后返工 | 先用可交互 HTML 原型让人工 / 工人确认布局和关键交互；未确认则记录 `BLOCKED` |
 | AI 在机械步骤后反复停下询问 | 用户确认 plan 后默认自动执行到人工验收、阻塞或风险决策点；停下必须说明停点类型 |
-| `changes/` 被过程数据撑大 | Git 只提交轻量摘要；截图、录屏、trace、完整长日志和临时草稿放 `artifacts/<change-id>/` 或外部存储 |
+| `changes/` 被过程数据撑大 | 变更包整包不进 git；截图、录屏、trace、完整长日志和临时草稿放 `changes/<change-id>/artifacts/` 或外部存储 |
 | Agent 声称遵守 Java 规范但实际遗漏 | 机械门禁硬阻断可判断项；Reviewer 按 checklist 复核不可机器判断项 |
 | PC E2E Smoke 缺少账号、登录态、测试数据或浏览器环境 | 记录为 `BLOCKED`，不得声称 E2E 通过；进入人工 SIT 前补齐条件或明确风险 |
 | 本地前端默认访问测试环境，无法命中本地后端 | 使用 active backend 生成的 harness-only `local-routing.yml` 和本地 proxy；只声明本次真实启动的后端项目，其他请求 fallback |

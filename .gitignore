@@ -40,3 +40,8 @@
 **/.claude/
 # 本机运行配置（含路径、账号来源、数据库与通信信息，勿提交）
 config/runtime_local.sh
+
+# 变更包整包是本机工作目录，不提交。
+# 只忽略 changes/<change-id>/ 子目录；changes/ 根下的
+# change-scaffold.sh、status-card.sh、change-whitelist-spec.md 仍可提交。
+/changes/*/

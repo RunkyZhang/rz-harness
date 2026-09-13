@@ -2,7 +2,7 @@
 
 > 目标：让新 change 的产物数量和文件名有清晰边界，避免小需求被迫复制 Tier L 流程，也避免历史产物继续无序增长。旧 change 迁移采用 warning，不追溯硬阻断。
 >
-> RZ 落点：本文件在 `changes/change-whitelist-spec.md`。建包用 `changes/change-scaffold.sh`，状态卡收集用 `changes/status-card.sh`，白名单检查用 `gates/change-artifacts-gate.sh`。本文件、`change-scaffold.sh` 和 `status-card.sh` 放在 `changes/` 根下，是控制面文件，不是某个 `changes/<change-id>/` 变更包内的产物。契约只允许 `changes/<change-id>/contract.md`，不用标本的 `docs/contracts/<id>-api.md`。M/L 的 `agent-dispatch-plan.md` 来自 `templates/agent-dispatch-plan.md`，不调用标本 registry 脚本。
+> RZ 落点：本文件在 `changes/change-whitelist-spec.md`。建包用 `changes/change-scaffold.sh`，状态卡收集用 `changes/status-card.sh`，白名单检查用 `gates/change-artifacts-gate.sh`。本文件、`change-scaffold.sh` 和 `status-card.sh` 放在 `changes/` 根下，是控制面文件，要进 git；`changes/<change-id>/` 变更包整包不进 git。契约只允许 `changes/<change-id>/contract.md`，不用标本的 `docs/contracts/<id>-api.md`。M/L 的 `agent-dispatch-plan.md` 来自 `templates/agent-dispatch-plan.md`，不调用标本 registry 脚本。
 
 ```yaml
 schema_version: 1
@@ -25,6 +25,8 @@ historical_policy: warn_only
 ## Root File Policy
 
 新 change 根目录只允许使用已登记文件名。未登记产物应放入明确目录，例如 `evidence/`、`runtime-smoke/`、`prd-ui/`、`tests/` 或 `artifacts/`。
+
+大文件（截图、录屏、trace、长日志、原型草稿）放 `changes/<change-id>/artifacts/`，不要摊在包根、也不要放到仓库根的 `artifacts/`。变更包整包不进 git；evidence / report 只记路径和结论。
 
 允许的根文件：
 
@@ -83,7 +85,7 @@ historical_policy: warn_only
 - `runtime-smoke/`
 - `prd-ui/`
 - `tests/`
-- `artifacts/`
+- `artifacts/`（包内大文件目录，对应 `changes/<change-id>/artifacts/`）
 
 ## Marker
 

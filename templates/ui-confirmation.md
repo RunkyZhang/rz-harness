@@ -47,11 +47,11 @@
 
 | Artifact | Path / URL | Notes |
 | --- | --- | --- |
-| Prototype or runnable page | `<artifacts/<change-id>/... or local URL>` | `<how to open>` |
+| Prototype or runnable page | `<changes/<change-id>/artifacts/... or local URL>` | `<how to open>` |
 | Initial screenshot | `<artifact path>` | `<state shown>` |
 | Main interaction screenshot | `<artifact path>` | `<state shown>` |
 
-大体积截图、录屏、trace 和临时原型草稿放 `artifacts/<change-id>/` 或外部存储；Git 中只保留路径和摘要。
+大体积截图、录屏、trace 和临时原型草稿放 `changes/<change-id>/artifacts/` 或外部存储；evidence / 本文件只记路径和摘要。变更包整包不进 git。
 
 ## 覆盖交互
 

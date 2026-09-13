@@ -1,7 +1,7 @@
 # 模板字典目录（templates/template_directory.md）
 
 > 每个模板拷到变更包后叫什么、谁填、用在哪段流程、谁检查。本文件是字典，**不要**拷进 `changes/<change-id>/`。
-> 通用规则：模板只提供空壳；`changes/change-scaffold.sh` 按档位原样 copy，不读 PRD、不让模型写正文。条件文件由主 Agent 命中时再拷。占位符 `<change-id>` 由 scaffold 替换。
+> 通用规则：模板只提供空壳；`changes/change-scaffold.sh` 按档位原样 copy，不读 PRD、不让模型写正文。条件文件由主 Agent 命中时再拷。占位符 `<change-id>` 由 scaffold 替换。`changes/<change-id>/` 整包不进 git；本目录模板要进 git。
 
 拷贝命令示例：
 
@@ -95,7 +95,7 @@ changes/change-scaffold.sh --tier S|M|L <change-id>
 | 模板 | 变更包内文件名 | 何时拷 | 作用 | 谁填 | 谁检查 |
 |---|---|---|---|---|---|
 | `pre-pr-review.md` | `pre-pr.md` | 合并前 | 人审包、残余风险 | 主 Agent | `diff-hygiene-gate.sh`、`temp-hardcode-scan.sh`（检查项，不是拍板停止点） |
-| `retro.md` | `retro.md` | 收口时，可后补 | 复盘 | 主 Agent | 无单独过门；大文件不进 git |
+| `retro.md` | `retro.md` | 收口时，可后补 | 复盘 | 主 Agent | 无单独过门；大文件放 `changes/<id>/artifacts/`；变更包不进 git |
 
 ## 速查：模板文件名 → 变更包文件名
 

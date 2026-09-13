@@ -50,10 +50,10 @@ prd_screen_breakdown_status: PENDING
 
 | Screenshot | State | Purpose | Target path |
 | --- | --- | --- | --- |
-| `<截图名>` | `<页面状态>` | `<证明什么>` | `artifacts/<change-id>/ui/...` |
+| `<截图名>` | `<页面状态>` | `<证明什么>` | `changes/<change-id>/artifacts/ui/...` |
 
 ## Side-by-side 验收证据计划
 
 | Screenshot ID | PRD screenshot | Implementation screenshot target | Difference marker | Status |
 | --- | --- | --- | --- | --- |
-| UI-001 | `<PRD screenshot>` | `artifacts/<change-id>/ui/ui-001-impl.png` | `<差异标注方式>` | `PLANNED / CAPTURED / N/A` |
+| UI-001 | `<PRD screenshot>` | `changes/<change-id>/artifacts/ui/ui-001-impl.png` | `<差异标注方式>` | `PLANNED / CAPTURED / N/A` |

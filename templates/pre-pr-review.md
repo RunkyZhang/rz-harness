@@ -101,9 +101,8 @@
 
 ## 产物保留
 
-- [ ] `changes/<change-id>/` 只包含轻量 Markdown 事实源、审计摘要和必要确认版原型。
-- [ ] 截图、录屏、trace、coverage、完整长日志、临时原型草稿和数据快照未提交到 Git。
-- [ ] 大体积或原始过程产物已放到 `artifacts/<change-id>/`、CI artifact、对象存储或飞书附件。
+- [ ] `changes/<change-id>/` 整包不进 git（`.gitignore` 为 `/changes/*/`）。
+- [ ] 截图、录屏、trace、coverage、完整长日志、临时原型草稿和数据快照放 `changes/<change-id>/artifacts/` 或外部存储。
 - [ ] `evidence.md` / report 只记录 artifact 路径、关键摘要、结果和影响。
 - [ ] 没有默认全量引用历史 `changes/` 作为本次上下文；如引用历史 change，已说明检索线索。
 

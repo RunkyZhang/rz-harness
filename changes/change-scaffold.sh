@@ -11,6 +11,8 @@ refuses to overwrite an existing change directory.
 
 RZ notes:
   - Lives in changes/ as change-control tooling, not inside a change package.
+  - Change packages under changes/<id>/ are gitignored; this script stays at
+    changes/ root and is committed.
   - Sibling: changes/status-card.sh (read-only status snapshot).
   - Does not read PRD and does not let the model write body text.
   - M/L copies templates/agent-dispatch-plan.md instead of calling

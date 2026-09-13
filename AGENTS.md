@@ -64,7 +64,7 @@
 | 2 | 技术方案 | 拍板 + gate | 主 Agent 写 `technical-solution.md`（全栈）。用户拍板后，主 Agent 改文首 YAML：`confirmation_status: CONFIRMED`、`confirmed_by` / `confirmed_at`、`allowed_next_stage` 非 `none` | 审方案，在对话里确认或要求改 | `technical-solution-gate.sh` | 文件已 `CONFIRMED`；未过不得写业务代码 |
 | 3 | AI 测试方案 | 拍板 + gate | Test Strategy 写 `ai-test-plan.md`。用户拍板后，主 Agent 写成 `test_plan_status: CONFIRMED` | 审测试方案，在对话里确认或要求改 | `ai-test-plan-gate.sh` | 已 `CONFIRMED`；未过不得实现 |
 | 4 | 环境就绪 | 自动关卡（仅真 E2E） | 主 Agent 写 `environment-readiness.md`；账号只写来源                                                        | 自动点，无需用户参与 | `environment-readiness-gate.sh` | `environment_status: READY`；真 E2E 前必须 READY |
-| 5 | Code start | 自动关卡 | 主 Agent 从 remote/master 分支拉 `harness/<id>`；`allowed_paths` 写在 spec；脏仓先写 `dirty-worktree-ledger.md` | 自动点，无需用户参与 | `confidence-gate.sh`、`assumption-leak-gate.sh`、`allowed-paths.sh`、`business-code-start-gate.sh`；脏仓再加 `business-dirty-worktree-gate.sh` | 四重开工门禁通过；未过不得改业务文件 |
+| 5 | Code start | 自动关卡 | 主 Agent 从业务仓远程主干 `origin/master`（或 `origin/main`）拉 `harness/<id>`；`allowed_paths` 写在 spec；脏仓先写 `dirty-worktree-ledger.md` | 自动点，无需用户参与 | `confidence-gate.sh`、`assumption-leak-gate.sh`、`allowed-paths.sh`、`business-code-start-gate.sh`；脏仓再加 `business-dirty-worktree-gate.sh` | 四重开工门禁通过；未过不得改业务文件 |
 | 6 | 复杂 UI 确认 | 拍板（条件触发） | 主 Agent 写 `ui-confirmation.md`。用户拍板后，主 Agent 把判定表写成 `Status: CONFIRMED`，并在人工确认表加一行 Decision=`CONFIRMED` | 看可运行页面，在对话里确认。PC smoke 不能替代 | `ui-confirmation-gate.sh`；规则缺口走 `ui-rule-gate.sh` | 已 `CONFIRMED`；未确认不得声称 UI 通过 |
 | 7 | Tester 验收 | 独立角色 | Tester 写 `test-agent-verification.md`。主 Agent 只修代码、补证据，不得代裁、不得自称 `GOAL_ACHIEVED`                   | 自动点，无需用户参与 | `test-agent-verification-gate.sh` | 仅 `GOAL_ACHIEVED` 才放行。`BLOCKED` 是停不是过。此后改代码必须重跑 |
 | 8 | AI 测试报告 | 拍板 + gate（L 强制；M 提测/预发时要） | 主 Agent 写 `ai-test-report.md`。用户拍板后，主 Agent 改「人工确认」YAML：`confirmation_status: CONFIRMED`；进预发还要 `recommendation: 允许进入预发` | 审报告、残余风险、是否进预发，在对话里确认 | `ai-test-report-gate.sh` | 已人工 `CONFIRMED`；未确认不得进测试/预发 |
@@ -72,7 +72,7 @@
 
 ## 变更包（change）
 
-一次需求开始会创建目录 `changes/<change-id>/` ，相当于这次需求的工作目录。
+一次需求开始会创建目录 `changes/<change-id>/` ，相当于这次需求的本机工作目录。**整包不提交 git**（`.gitignore` 为 `/changes/*/`）。`changes/` 根下的 `change-scaffold.sh`、`status-card.sh`、`change-whitelist-spec.md` 是控制面，要进 git。
 
 ### 脚本
 执行 `changes/change-scaffold.sh --tier S|M|L <change-id>` 。脚本会：
@@ -85,6 +85,7 @@
 白名单策略（控制能出现的文件）会判断 `changes/<change-id>/` 目录中是否产生不应该出现的文件
 - 通过 `changes/change-whitelist-spec.md` 定义可以出现哪些文件
 - 通过 `gates/change-artifacts-gate.sh` 检查是否出现没在白名单中的文件
+- 大文件（截图、录屏、trace、长日志）放 `changes/<change-id>/artifacts/`，不要摊在包根、也不要放到仓库根的 `artifacts/`
 
 ### 状态卡（`status-card.md`）
 
@@ -127,15 +128,37 @@
 
 ### 证据（`evidence.md`）
 
-可复查的**命令痕迹**，不是口头「测过了」。宣称跑过编译、lint、gate、冒烟或重启，本轮就要在这里留下命令和结果摘要。S/M/L 建包即有。
+可复查的**命令痕迹**：证明“真的跑过、结果如何”，不是口头「测过了」。宣称跑过编译、lint、gate、冒烟或重启，本轮就要在这里留下命令和结果摘要。
 
-文件路径：`changes/<change-id>/evidence.md`。**没有**对应的 `templates/` md；scaffold **当场生成**一张空表（建包那一行算第一笔）。之后每跑一条关键命令就**追加**一行，不要覆盖整表、不要等收口再补。
+#### 作用
 
-表头：`Check | Command / Source | Result | Summary`。记什么：命令或来源、`PASS` / `FAIL` / `BLOCKED` / `N/A`、一两句摘要。命中场景但未做的检查写 `N/A` 和原因。注释/日志扫描的 warning 也可以记在这里交给 Reviewer。
+把每一步关键命令和结果落盘，成为可复查的本机事实源（变更包不进 git）。Agent 的自我汇报不是证据；宣称完成必须能在这里找到本轮命令输出。它不是验收裁决（裁决由 Tester 写在 `test-agent-verification.md`），也不是 gate（无单独 evidence gate）。
 
-**禁止写入：** token、cookie、DB password、客户资料、未脱敏 SQL 结果、原始私密 prompt。明文机密只放 `config/runtime_local.sh` 或系统钥匙串。长日志、截图、录屏、trace 不要整段贴进本文件；标本约定放到 `artifacts/<change-id>/` 或外部存储，evidence 里只记路径和结论。RZ 尚未建 `artifacts/` 时，同样只记路径和结论，不要把大文件塞进变更包。
+#### 初始文件
 
-**不是验收裁决，也不是 gate。** Tester 的结论写在 `test-agent-verification.md`；主 Agent 只修代码、把复测命令补进 evidence，不得代裁 `GOAL_ACHIEVED`。`codegraph-evidence.md` 是结构影响线索，和本文件不是同一个东西。无单独 evidence gate；Reviewer 会读。gate 只裁决不干活，命令证据不由 gate 承载。
+建包即有，S/M/L 都要。路径 `changes/<change-id>/evidence.md`。**没有** `templates/` md；`changes/change-scaffold.sh` **当场生成**空表，首行是建包记录 `Scaffold … PASS`。表头：`Check | Command / Source | Result | Summary`；`Result` 取 `PASS` / `FAIL` / `BLOCKED` / `N/A`。
+
+#### 触发时机
+
+主 Agent 每跑一条关键命令就**追加**，不必等收口：
+
+- 编译、lint、gate、冒烟、重启、扫描执行后
+- 命中场景但未做的检查，写 `N/A` 和原因
+
+不要覆盖整表，不要等收口再补。
+
+#### 动作
+
+1. 每条关键命令执行后，把 `Check / Command / Result / Summary` 追加进 `evidence.md`；
+2. 长输出只留关键摘要和 `changes/<change-id>/artifacts/` 路径，不整段贴；
+3. 注释/日志扫描的 warning 也可记这里，交 Reviewer 判断。
+
+#### 其他规则
+
+- 只**主 Agent**写；Tester 的复测结论写在 `test-agent-verification.md`，主 Agent 不得代裁 `GOAL_ACHIEVED`；
+- **禁止写入** token、cookie、DB password、客户资料、未脱敏 SQL 结果、原始私密 prompt。明文机密只放 `config/runtime_local.sh` 或系统钥匙串。长日志、截图、录屏、trace 放 `changes/<change-id>/artifacts/` 或外部存储，evidence 只记路径和结论；
+- `gates/reviewer-gate.sh` 要求 `review.md` 引用 `evidence.md`，否则 Reviewer 关卡 FAIL——evidence 不是“有空才看”；
+- 与证据家族其他文件区分：`test-agent-verification.md`（Tester 裁决）、`verification-run-report.md`（verification-map 执行报告，脚本生成）、`codegraph-evidence.md`（结构影响线索）、`pc-e2e-smoke-report.md`（冒烟摘要）；
 
 ### 文件列表：
 
@@ -157,7 +180,7 @@
 | 14 | `environment-readiness.md`                        | 拷 `templates/environment-readiness.md`（L scaffold；M 命中再拷）                                            | **空壳：** L 建包即有。**填写：** 真 E2E 前（可提前）。M 非 E2E 可不建 | 环境、拓扑、账号**来源**、写库边界 | 主 Agent | `environment-readiness-gate.sh` | `environment_status: READY`。不查 CONFIRMED，不探活 |
 | 15 | `dirty-worktree-ledger.md`                        | 条件命中时主 Agent 拷 `templates/dirty-worktree-ledger.md`；scaffold / gate 都不创建                             | 条件：业务仓已有未提交改动 | 脏 diff 归属，避免覆盖用户工作 | 主 Agent | `business-dirty-worktree-gate.sh` | 无脏仓则不建 |
 | 16 | `agent-candidate-confirmation.md`                 | 条件命中时主 Agent 拷 `templates/agent-candidate-confirmation.md`；scaffold / gate 都不创建                      | 条件：派 Backend / Frontend / Mobile | 允许候选实现 Agent | 主 Agent（用户确认后回写） | 派发前检查 | 不派则不建 |
-| 17 | 业务仓分支 `harness/<change-id>`                       | **git**：从 `remote`/`master` 拉分支，不是 md                                                                | 第一次改该仓业务文件前 | 实现落点，不是变更包内文件 | 主 Agent | `business-code-start-gate.sh`（与 confidence / assumption-leak / allowed-paths 一起） | 停在主干则不得改业务文件 |
+| 17 | 业务仓分支 `harness/<change-id>`                       | **git**：从业务仓远程主干 `origin/master`（或 `origin/main`）拉，不是 md                                                                | 第一次改该仓业务文件前 | 实现落点，不是变更包内文件 | 主 Agent | `business-code-start-gate.sh`（与 confidence / assumption-leak / allowed-paths 一起） | 停在主干则不得改业务文件 |
 | 18 | `ui-rule-checklist.md`                            | 条件命中时主 Agent 拷 `templates/ui-rule-checklist.md`；scaffold / gate 都不创建                                 | 条件：PRD UI / 交互编码 | UI 规范逐项、缺口 | 主 Agent | `ui-rule-gate.sh` | 规则缺口未确认不得实现 |
 | 19 | `ui-confirmation.md`                              | 条件命中时主 Agent 拷 `templates/ui-confirmation.md`；scaffold / gate 都不创建                                   | 条件：复杂 UI | 可运行页 / 截图后的确认记录 | 主 Agent；用户看页面后主 Agent 写 `Status: CONFIRMED` | `ui-confirmation-gate.sh` **RZ 未拷**；未拷前人工核对文件字段 | PC smoke 不能替代 |
 | 20 | `data-model.md` / `data-model-sql.md`             | SQL：条件命中时主 Agent 拷 `templates/data-model-sql.md`。**`data-model.md` 无模板**，对照方案自建。scaffold / gate 都不创建 | 条件：改 DB | ER、字段来源、可执行 SQL | 主 Agent | 无单独过门；真实库写要用户二次确认 | 高危 SQL 禁止 |
@@ -173,7 +196,7 @@
 | 30 | `review.md`                                       | 拷 `templates/review.md`（M/L scaffold 空壳）                                                             | **空壳：** M/L 建包即有。**填写：** 人审 / PR 前，**只能 Reviewer 填** | 只读审查 | **Reviewer**。主 Agent 不得代裁 | `reviewer-gate.sh` | `high_risk_count: 0`。代码又变则过期，按需重跑 Tester 再重跑 Reviewer |
 | 31 | `pre-pr.md`                                       | 合并前主 Agent 拷 `templates/pre-pr-review.md` 存成 `pre-pr.md`；scaffold / gate 都不创建                        | 合并前 | 人审包、残余风险 | 主 Agent | `diff-hygiene-gate.sh`、`temp-hardcode-scan.sh` | 卫生扫描是检查项，不是拍板停止点 |
 | 32 | `decisions.md`                                    | 拷 `templates/decisions.md`（L scaffold）                                                               | **空壳：** L 建包即有。**填写：** 过程中有拍板时。S/M 可后补 | 过程决策记录 | 主 Agent | 无单独过门 | L 强制 |
-| 33 | `retro.md`                                        | 收口时主 Agent 拷 `templates/retro.md`；scaffold / gate 都不创建                                               | 收口时，可后补 | 复盘 | 主 Agent | 无单独过门 | 大文件不进 git |
+| 33 | `retro.md`                                        | 收口时主 Agent 拷 `templates/retro.md`；scaffold / gate 都不创建                                               | 收口时，可后补 | 复盘 | 主 Agent | 无单独过门 | 变更包不进 git；大文件仍放包内 `artifacts/` |
 | 34 | `handoff.md`                                      | **无 `templates/handoff.md`**；按 handoff skill 里的章节自建                                                  | **随时**：换线程、暂停、上下文压缩 | 留给**下一个主 Agent**的交接单 | 主 Agent | 无 gate | 不是 Explorer / Reviewer 之间的信箱 |
 
 ## 模版文件
@@ -184,7 +207,7 @@
 对档位 M/L、跨仓、后端行为、DB 或复杂 UI 工作，给用户的第一条回复必须包含「本次 harness 流程和停止点」：spec/contract/solution/test-plan/env/code-start/UI/DB/Tester/report/pre-merge 关卡。以 `changes/<change-id>/status-card.md` 作为用户可见的状态卡。
 
 写代码之前：阅读当前变更，业务工作加载 `config/runtime_local.sh`，确认允许的仓库/路径，区分 `[FACT]` / `[ASSUMP]` / `[QUESTION]`，未解决的假设/问题不得进入实现，并优先使用目标仓样板。
-每个目标仓第一次修改业务代码之前，从 `main`/`master` 创建/切换到 `harness/<change-id>`，除非用户另有要求；记录基线分支+commit，永不在 `main`/`master` 上修改，并对计划文件通过 `gates/business-code-start-gate.sh`。
+每个目标仓第一次修改业务代码之前，从业务仓远程主干 `origin/master`（或 `origin/main`）创建/切换到 `harness/<change-id>`，除非用户另有要求；记录基线分支+commit，永不在主干分支（`main`/`master`）上修改，并对计划文件通过 `gates/business-code-start-gate.sh`。
 
 严格执行说明：
 - 用户说「开始开发」、「进行下一步」、「确认」或「ok」时，只推进到下一个已满足的 harness 关卡。它们不能豁免技术方案确认、飞书同步、AI 测试方案确认、code-start、allowed-path、环境、Tester 或 Reviewer 关卡。

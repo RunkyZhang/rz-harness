@@ -13,7 +13,7 @@
 | Target page | 写入实际页面名称 |
 | Target URL | 写入本地或测试环境 URL |
 | Backend base URL | 写入本地或测试环境后端地址 |
-| Artifact dir | `artifacts/<change-id>/pc-e2e-smoke/` 或外部存储路径 |
+| Artifact dir | `changes/<change-id>/artifacts/pc-e2e-smoke/` 或外部存储路径 |
 | Local routing | `changes/<change-id>/local-routing.yml` / `不使用本地代理` |
 | Harness proxy URL | `http://127.0.0.1:19080` / `不使用本地代理` |
 
@@ -50,17 +50,17 @@
 生成和启动命令：
 
 ```bash
-mkdir -p artifacts/<change-id>/pc-e2e-smoke
+mkdir -p changes/<change-id>/artifacts/pc-e2e-smoke
 scripts/generate-local-routing.sh \
   --change-id <change-id> \
   --frontend-repo frontend-map-system \
   --active-backends backend-sales-management,backend-sfa-backend \
   --services templates/local-backend-services.yml \
   --output changes/<change-id>/local-routing.yml \
-  --env-output artifacts/<change-id>/pc-e2e-smoke/frontend.env
+  --env-output changes/<change-id>/artifacts/pc-e2e-smoke/frontend.env
 scripts/local-routing-gate.sh changes/<change-id>/local-routing.yml
 RZ_HARNESS_SMOKE=1 \
-RZ_HARNESS_PROXY_LOG=artifacts/<change-id>/pc-e2e-smoke/local-proxy.ndjson \
+RZ_HARNESS_PROXY_LOG=changes/<change-id>/artifacts/pc-e2e-smoke/local-proxy.ndjson \
 node scripts/harness-local-proxy.mjs changes/<change-id>/local-routing.yml
 ```
 
@@ -109,7 +109,7 @@ npm run dev -- --host 0.0.0.0 --port 9527
 14. 返回列表页，确认页面不空白、不报错。
 15. 执行空态或错误态验证。
 16. 如启用本地代理，保存 `local-proxy.ndjson` 并统计 route 命中与 fallback 命中。
-17. 将截图路径、接口观察、代理命中摘要和结论写入 `pc-e2e-smoke-report.md`；截图默认放在 `artifacts/<change-id>/pc-e2e-smoke/`，不直接提交到 Git。
+17. 将截图路径、接口观察、代理命中摘要和结论写入 `pc-e2e-smoke-report.md`；截图默认放在 `changes/<change-id>/artifacts/pc-e2e-smoke/`。变更包整包不进 git。
 
 ## 关键断言
 
@@ -133,5 +133,5 @@ npm run dev -- --host 0.0.0.0 --port 9527
 - 本次不覆盖完整多角色权限矩阵。
 - 本次不自动造复杂测试数据。
 - 本次不替代测试人员 SIT / UAT。
-- 截图、trace、录屏和原始浏览器日志不提交到 Git；report 只记录路径和结论。
+- 截图、trace、录屏和原始浏览器日志放 `changes/<change-id>/artifacts/`；report 只记录路径和结论。变更包整包不进 git。
 - 本地代理只在 `RZ_HARNESS_SMOKE=1` 的 harness smoke 中启用，不影响普通 `npm run dev`。

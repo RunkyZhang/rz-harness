@@ -220,13 +220,13 @@ knowledge_refs:
 - [ ] Complex UI confirmation is recorded, or marked `NOT_APPLICABLE`.
 - [ ] Allowed-paths check is recorded.
 - [ ] Reviewer output is recorded.
-- [ ] Bulky process artifacts are stored under `artifacts/<change-id>/` or external storage, with only summary paths recorded in Git.
+- [ ] Bulky process artifacts are stored under `changes/<change-id>/artifacts/` or external storage; evidence / report only record paths and summaries. The whole change package is not committed.
 - [ ] Rollback note is recorded.
 
 ## 产物保留策略
 
-- [FACT] Git 中长期保留 `spec.md`、`plan.md`、精简 `evidence.md`、`review.md`、`pre-pr.md` 和必要的 `retro.md` / `contract-delta.md`。
-- [FACT] 截图、录屏、trace、coverage、完整长日志、临时原型草稿和数据快照默认放到 `artifacts/<change-id>/` 或外部存储。
+- [FACT] `changes/<change-id>/` 整包不进 git（`.gitignore` 为 `/changes/*/`）。`changes/` 根下的 `change-scaffold.sh`、`status-card.sh`、`change-whitelist-spec.md` 要进 git。
+- [FACT] 截图、录屏、trace、coverage、完整长日志、临时原型草稿和数据快照放到 `changes/<change-id>/artifacts/` 或外部存储；evidence / report 只记路径和结论。
 - [FACT] AI 默认只读取当前 active change；历史 `changes/` 只按明确线索定向检索。
 
 ## 回滚
