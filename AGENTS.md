@@ -30,11 +30,11 @@
 
 这次需求使用哪个档位分级，使用不同档位流程上会有不同的步骤。不一定代表需求大小，而是改动范围、风险和环境依赖。功能点少也可能是 L（例如改权限、动真实库）；页面很多也可能是 S（单仓低风险小修）。
 
-| 档 | 典型长什么样 | 流程上多什么 |
-|---|---|---|
-| S | 单仓小修、文档、低风险脚本 | 只要 spec / 状态卡 / 证据 |
-| M | 普通全栈或多文件业务，大约 1～2 个 API | 再加强制方案、契约、测试方案、Tester、Reviewer |
-| L | 跨仓、高风险、强依赖真实环境、发布前风险高 | 再加环境就绪、测试报告、决策记录 |
+| 档 | 典型长什么样 | 流程上多什么                                  |
+|---|---|-----------------------------------------|
+| S | 单仓小修、文档、低风险脚本 | 只要 spec / 状态卡 / 证据                      |
+| M | 普通全栈或多文件业务，大约 1～2 个 API | 包括 S 档内容，再加强制方案、契约、测试方案、Tester、Reviewer |
+| L | 跨仓、高风险、强依赖真实环境、发布前风险高 | 包括 M 档内容，再加环境就绪、测试报告、决策记录               |
 
 ### gate（门禁）
 
@@ -48,11 +48,11 @@
 
 ### 停止点
 
-停止点分两类：
+停止点和流程节点并不一一对应。流程中需要确认的点。停止点分两类：
 - **用户拍板类**：必须等用户在对话里确认才能进入下一阶段。口头确认后由**主 Agent**把确认状态写入对应文件，再跑 gate；用户不用自己改 YAML。
 - **自动关卡 / 独立角色类**：gate 或 Tester / Reviewer 放行。用户不逐项参与；`BLOCKED` 或 HIGH 才升级给用户。
 
-`harness-status.md` 只镜像进度，不是拍板原文。`BLOCKED` 是合法停、升级给用户，不是放行。脚本均在 `gates/`。
+`status-card.md` 只镜像进度，不是拍板原文。`BLOCKED` 是合法停、升级给用户，不是放行。gate 脚本在 `gates/`；状态卡收集脚本在 `changes/status-card.sh`（只读，不裁决）。
 
 用户平时节奏：**答 QUESTION（1）→ 确认方案（2）→ 确认测试方案（3）→（条件）确认 UI（6）→ 确认测试报告（8）→ 人工 review**。4 / 5 / 7 / 9 平时无需介入。
 
@@ -74,20 +74,75 @@
 
 一次需求开始会创建目录 `changes/<change-id>/` ，相当于这次需求的工作目录。
 
+### 脚本
 执行 `changes/change-scaffold.sh --tier S|M|L <change-id>` 。脚本会：
 - 新建目录 `changes/<change-id>/`
 - 按档位（S/M/L）把所需 md 从 `templates/` 原样 copy 到变更包目录
 - 当场拼一个空表 `evidence.md`
 - M/L 同时拷 `templates/agent-dispatch-plan.md` 空壳（不调标本 `agent-dispatch-plan.sh`）
 
-白名单策略会判断 `changes/<change-id>/` 目录中会不会产生不应该出现的文件
+### 白名单策略
+白名单策略（控制能出现的文件）会判断 `changes/<change-id>/` 目录中是否产生不应该出现的文件
 - 通过 `changes/change-whitelist-spec.md` 定义可以出现哪些文件
 - 通过 `gates/change-artifacts-gate.sh` 检查是否出现没在白名单中的文件
+
+### 状态卡（`status-card.md`）
+
+给人看的**单一流程入口**：这次需求走到哪、下一步是什么、卡在哪、要不要你拍板、子 Agent 在干什么。
+
+#### 作用
+
+把各产物上的真实状态抄成一张卡。方案是否 `CONFIRMED`、环境是否 `READY`、Tester 是否 `GOAL_ACHIEVED`，原文在各自 md 里。状态卡只镜像，不拍板。用户口头确认后，主 Agent 先改对应产物，再改状态卡，再跑对应 gate。不要只改状态卡就宣称过门。无单独「状态卡 gate」；它不 PASS/FAIL、不拦截。`BLOCKED` 写在卡上是合法停、升级给你，不是放行。
+
+#### 初始文件
+
+建包即有，S/M/L 都要。`changes/change-scaffold.sh` 拷 `templates/status-card.md` 到 `changes/<change-id>/status-card.md`，并在文首写入 `artifact_profile` 和 `artifact_schema_version: 1`。`gates/change-artifacts-gate.sh` 靠这两行识别档位。手工建包也要写这两行。
+
+#### 触发时机
+
+主 Agent 在下列事件刷新状态卡，不必等你开口：
+
+- 你问「现在到哪了」「下一步是什么」或同类问题
+- 阶段切换
+- 阻塞出现或解除
+- 人工确认前后（方案、测试方案、复杂 UI、测试报告）
+- Tester / Reviewer 返回
+- 审查之后又改了业务代码，先前结论失效
+- 进入预发前
+- 派发 / 完成 / 阻塞子 Agent（还要改 Agent Roster）
+
+不是契约之后才出现的单独阶段，也不是收口时才写的总结。
+
+#### 动作
+
+1. 跑 `changes/status-card.sh changes/<change-id>` 脚本，脚本只收集当前变更包（`changes/<change-id>`）状态信息给主 Agent；
+2. 主 Agent 根据脚本收集的状态信息，并聚合其他信息更新 `status-card.md`（不要覆盖 Agent Roster）；
+
+#### 其他规则
+
+- 只**主 Agent**写状态卡。子 Agent 不得改；
+- 当前阶段取值：`需求理解 / 方案确认 / 允许开工 / 实现中 / AI测试待确认 / 预发待发布 / 已收口`；
+- 脚本自动推断上限是 `允许开工`；`实现中` 和 `已收口` 读不到业务仓和收口状态，由主 Agent 在实现开始、收口时手动置位；
+- scaffold 只给空壳。主 Agent 建包后立刻写入当前阶段（通常 `需求理解`）、下一步、是否允许进入下一阶段、当前阻塞、需要人工确认。Agent Roster 从主 Agent 那一行开始填。禁止写入 token、cookie、DB password。
+
+### 证据（`evidence.md`）
+
+可复查的**命令痕迹**，不是口头「测过了」。宣称跑过编译、lint、gate、冒烟或重启，本轮就要在这里留下命令和结果摘要。S/M/L 建包即有。
+
+文件路径：`changes/<change-id>/evidence.md`。**没有**对应的 `templates/` md；scaffold **当场生成**一张空表（建包那一行算第一笔）。之后每跑一条关键命令就**追加**一行，不要覆盖整表、不要等收口再补。
+
+表头：`Check | Command / Source | Result | Summary`。记什么：命令或来源、`PASS` / `FAIL` / `BLOCKED` / `N/A`、一两句摘要。命中场景但未做的检查写 `N/A` 和原因。注释/日志扫描的 warning 也可以记在这里交给 Reviewer。
+
+**禁止写入：** token、cookie、DB password、客户资料、未脱敏 SQL 结果、原始私密 prompt。明文机密只放 `config/runtime_local.sh` 或系统钥匙串。长日志、截图、录屏、trace 不要整段贴进本文件；标本约定放到 `artifacts/<change-id>/` 或外部存储，evidence 里只记路径和结论。RZ 尚未建 `artifacts/` 时，同样只记路径和结论，不要把大文件塞进变更包。
+
+**不是验收裁决，也不是 gate。** Tester 的结论写在 `test-agent-verification.md`；主 Agent 只修代码、把复测命令补进 evidence，不得代裁 `GOAL_ACHIEVED`。`codegraph-evidence.md` 是结构影响线索，和本文件不是同一个东西。无单独 evidence gate；Reviewer 会读。gate 只裁决不干活，命令证据不由 gate 承载。
+
+### 文件列表：
 
 | # | 文件                                                | 从哪创建                                                                                                 | 何时出现 | 作用 | 谁写 | 谁检查 | 怎样算过 / 备注 |
 |---|---------------------------------------------------|------------------------------------------------------------------------------------------------------|---|---|---|---|---|
 | 1 | `spec.md`                                         | 拷 `templates/spec-tier-s.md` / `spec-tier-m.md` / `spec-tier-l.md`（scaffold）                         | 建包即有；需求理解时填。S/M/L 都要 | 目标、范围内外、三标签、`allowed_paths` | 主 Agent；Explorer 只读供料 | `confidence-gate.sh` | 阻塞 `[QUESTION]` 已清、`[ASSUMP]` 已确认并写成带来源的 `[FACT]` |
-| 2 | `harness-status.md`                               | 拷 `templates/harness-status.md`；文首加 `artifact_profile` + `artifact_schema_version: 1`（scaffold 会写；手工建包也要写） | 建包即有；此后贯穿更新。S/M/L 都要 | 给人看的阶段、阻塞、下一步、Agent Roster | 主 Agent | 无单独「状态卡 gate」。marker 由 `gates/change-artifacts-gate.sh` 读 | 摘要不是拍板原文 |
+| 2 | `status-card.md`                                   | 拷 `templates/status-card.md`；文首加 `artifact_profile` + `artifact_schema_version: 1`（scaffold 会写；手工建包也要写） | 建包即有；此后贯穿更新。S/M/L 都要 | 给人看的阶段、阻塞、下一步、Agent Roster | 主 Agent 跑 `changes/status-card.sh` 后写入 | 无单独「状态卡 gate」。marker 由 `gates/change-artifacts-gate.sh` 读 | 摘要不是拍板原文；脚本不覆盖 Roster |
 | 3 | `evidence.md`                                     | scaffold **当场生成空表**，无模板 md                                                                           | 建包即有；每跑命令就追加。S/M/L 都要 | 命令、结果摘要、阻塞。禁止密码/token | 主 Agent | 无单独过门；Reviewer 会看 | 只记摘要 |
 | 4 | `requirement-intake.md`                           | 条件命中时主 Agent 拷 `templates/requirement-intake.md`；scaffold / gate 都不创建                                | 条件：M/L 要结构化收需求时 | 把 PRD 收成结构化入口 | 主 Agent | 标本 `requirement-intake-gate.sh`，**RZ 未拷**；未拷前人工核对 | 可无 |
 | 5 | `contract.md`                                     | 拷 `templates/api-contract.md` → 变更包内 `contract.md`（M/L scaffold 或手工拷）。RZ **只用这一条路径** | **空壳：** M/L 建包即有。**填写：** 契约冻结时 | 冻结 endpoint、字段、错误码、分页、空态 | 主 Agent；前端只读这份 | `contract-delta-gate.sh`（有增量时） | 未冻不得实现。不用 `docs/contracts/<id>-api.md` |
@@ -126,18 +181,18 @@
 全部模板文件保存在目录 `templates/`，用来生成 change 变更包所需文件。`templates/template_directory.md` 为字典目录（每个 template 作用是什么、用在哪段流程、拷到变更包后叫什么）。
 
 ## 强制工作流
-对档位 M/L、跨仓、后端行为、DB 或复杂 UI 工作，给用户的第一条回复必须包含「本次 harness 流程和停止点」：spec/contract/solution/test-plan/env/code-start/UI/DB/Tester/report/pre-merge 关卡。以 `changes/<change-id>/harness-status.md` 作为用户可见的状态卡。
+对档位 M/L、跨仓、后端行为、DB 或复杂 UI 工作，给用户的第一条回复必须包含「本次 harness 流程和停止点」：spec/contract/solution/test-plan/env/code-start/UI/DB/Tester/report/pre-merge 关卡。以 `changes/<change-id>/status-card.md` 作为用户可见的状态卡。
 
 写代码之前：阅读当前变更，业务工作加载 `config/runtime_local.sh`，确认允许的仓库/路径，区分 `[FACT]` / `[ASSUMP]` / `[QUESTION]`，未解决的假设/问题不得进入实现，并优先使用目标仓样板。
 每个目标仓第一次修改业务代码之前，从 `main`/`master` 创建/切换到 `harness/<change-id>`，除非用户另有要求；记录基线分支+commit，永不在 `main`/`master` 上修改，并对计划文件通过 `gates/business-code-start-gate.sh`。
 
 严格执行说明：
 - 用户说「开始开发」、「进行下一步」、「确认」或「ok」时，只推进到下一个已满足的 harness 关卡。它们不能豁免技术方案确认、飞书同步、AI 测试方案确认、code-start、allowed-path、环境、Tester 或 Reviewer 关卡。
-- `harness-status.md` 不是最后才写的总结。阶段变化、阻塞出现或解除、Tester / Reviewer 返回、以及审查之后的代码变更使先前验证失效时，都要更新。
+- `status-card.md` 不是最后才写的总结。阶段变化、阻塞出现或解除、Tester / Reviewer 返回、以及审查之后的代码变更使先前验证失效时，都要更新。
 - 若 Tester 验证之后又发生任何业务代码变更，在采信该结果之前必须重跑或刷新 Tester 验证。
 - 若 Reviewer 产出之后又发生任何业务代码变更，将先前审查标为过期，按需重跑 Tester，然后重跑 Reviewer 和 `gates/reviewer-gate.sh`。
 - 主 Agent 可以实施、集成和修复问题，但不得替代独立 Tester 或只读 Reviewer 的裁决。
-- 使用子 Agent 时，在派发提示词和 `harness-status.md` 的 Agent Roster 中记录可读的角色标签，以便即使用户面对 runtime 分配的不透明昵称，也能识别每个 Agent 的用途。
+- 使用子 Agent 时，在派发提示词和 `status-card.md` 的 Agent Roster 中记录可读的角色标签，以便即使用户面对 runtime 分配的不透明昵称，也能识别每个 Agent 的用途。
 
 行为/契约变更在实现前需要 spec、契约文档，
 以及 `changes/<change-id>/evidence.md` 中的证据。业务代码审查前应用
@@ -218,7 +273,7 @@ CodeGraph 是可选的，不是关卡。在业务 CodeGraph review 之前，运�
 - **Frontend**（`subagents/frontend_agent.md`）：候选。UI 规则与契约之后，在隔离 worktree 内改前端；契约只读。
 - **Mobile**（`subagents/mobile_agent.md`）：候选。移动端契约与允许路径之后，在隔离 worktree 内改 iOS/Android。
 
-每个子 Agent 提示词必须以 `Agent Label: <change-id> / <role> / <scope>` 开头，并且必须声明写入范围、禁止路径、要求产出，以及该 Agent 是否只读。子 Agent 最终回复应以 `<role>: <DONE|PASS|BLOCKED|NEEDS_CONTEXT>` 开头；主 Agent 在 `changes/<change-id>/harness-status.md` 的 Agent Roster 中记录相同的标签和状态。详细约定见 `subagents/dispatch_subagent.md`。
+每个子 Agent 提示词必须以 `Agent Label: <change-id> / <role> / <scope>` 开头，并且必须声明写入范围、禁止路径、要求产出，以及该 Agent 是否只读。子 Agent 最终回复应以 `<role>: <DONE|PASS|BLOCKED|NEEDS_CONTEXT>` 开头；主 Agent 在 `changes/<change-id>/status-card.md` 的 Agent Roster 中记录相同的标签和状态。详细约定见 `subagents/dispatch_subagent.md`。
 
 ## 命令
 
