@@ -72,7 +72,7 @@ field_value() {
 
 artifact_profile() {
   local value
-  value="$(field_value "$change_dir/harness-status.md" "artifact_profile" || true)"
+  value="$(field_value "$change_dir/status-card.md" "artifact_profile" || true)"
   if [[ -n "$value" ]]; then
     printf '%s\n' "$value"
     return
@@ -95,7 +95,7 @@ case "$profile" in
       fail \
         "CHANGE_ARTIFACTS/MISSING_PROFILE" \
         "new change is missing artifact_profile marker" \
-        "Create the change with changes/change-scaffold.sh or add artifact_profile: tier-s|tier-m|tier-l to harness-status.md." \
+        "Create the change with changes/change-scaffold.sh or add artifact_profile: tier-s|tier-m|tier-l to status-card.md." \
         "changes/change-scaffold.sh --tier S my-change"
     fi
     ;;
@@ -116,7 +116,7 @@ esac
 allowed_names=(
   spec.md
   requirement-intake.md
-  harness-status.md
+  status-card.md
   plan.md
   contract.md
   api-contract.md
@@ -190,13 +190,13 @@ done < <(find "$change_dir" -maxdepth 1 -type f | sort)
 required=()
 case "$profile" in
   tier-s)
-    required=(spec.md harness-status.md evidence.md)
+    required=(spec.md status-card.md evidence.md)
     ;;
   tier-m)
-    required=(spec.md harness-status.md evidence.md plan.md contract.md technical-solution.md verification-map.md ai-test-plan.md test-agent-verification.md agent-dispatch-plan.md skill-usage.md review.md)
+    required=(spec.md status-card.md evidence.md plan.md contract.md technical-solution.md verification-map.md ai-test-plan.md test-agent-verification.md agent-dispatch-plan.md skill-usage.md review.md)
     ;;
   tier-l)
-    required=(spec.md harness-status.md evidence.md plan.md contract.md technical-solution.md verification-map.md ai-test-plan.md test-agent-verification.md agent-dispatch-plan.md skill-usage.md review.md environment-readiness.md ai-test-report.md decisions.md)
+    required=(spec.md status-card.md evidence.md plan.md contract.md technical-solution.md verification-map.md ai-test-plan.md test-agent-verification.md agent-dispatch-plan.md skill-usage.md review.md environment-readiness.md ai-test-report.md decisions.md)
     ;;
 esac
 

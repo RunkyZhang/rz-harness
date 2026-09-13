@@ -18,7 +18,7 @@
 
 - [QUESTION] 方案确认点：spec / contract / plan / data model / capability spec（如适用）和完整技术方案文档确认后才进入业务代码；技术方案使用 `templates/technical-solution.md`。
 - [QUESTION] 全栈方案点：技术方案必须先按 PRD 逐项盘点后端、PC Web、H5、小程序、APP、导出、埋点/分析、DB、job/MQ；PRD 涉及的端必须有对应设计和验证项。
-- [QUESTION] 状态展示点：`changes/<change-id>/harness-status.md` 是用户查看当前阶段、下一步和待确认项的单一入口。
+- [QUESTION] 状态展示点：`changes/<change-id>/status-card.md` 是用户查看当前阶段、下一步和待确认项的单一入口。
 - [QUESTION] 代码启动点：无阻塞 `[ASSUMP]` / `[QUESTION]`，且 allowed paths 已确认。
 - [QUESTION] UI 确认点：复杂 PC 页面必须先跑起来给人工确认；未确认不得声明 UI 通过。
 - [QUESTION] DB 停止点：真实库写操作必须二次确认；高危 SQL 全局禁止。
@@ -88,7 +88,7 @@ non_blocking_questions:
 | Contract doc | `changes/<change-id>/contract.md` |
 | Technical solution doc | [QUESTION] `changes/<change-id>/technical-solution.md` 或飞书 Wiki 子文档 URL，必须按 `templates/technical-solution.md` 产出全栈技术方案 |
 | Verification map | `changes/<change-id>/verification-map.md`，必须按 `templates/verification-map.md` 把关键约束映射到验证方式 |
-| Harness status | `changes/<change-id>/harness-status.md` |
+| Status card | `changes/<change-id>/status-card.md` |
 | AI test report | `changes/<change-id>/ai-test-report.md` |
 | Data model doc | `changes/<change-id>/data-model.md` 或 `docs/data-models/<change-id>.md` |
 | Capability / behavior spec | 可选：`changes/<change-id>/capability-spec.md` 或 `behavior-spec.md`；仅在复杂状态机、权限、跨端一致性或能力边界需要时使用 |

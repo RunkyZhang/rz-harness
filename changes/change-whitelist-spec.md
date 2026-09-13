@@ -2,7 +2,7 @@
 
 > 目标：让新 change 的产物数量和文件名有清晰边界，避免小需求被迫复制 Tier L 流程，也避免历史产物继续无序增长。旧 change 迁移采用 warning，不追溯硬阻断。
 >
-> RZ 落点：本文件在 `changes/change-whitelist-spec.md`。建包用 `changes/change-scaffold.sh`，白名单检查用 `gates/change-artifacts-gate.sh`。本文件和 `change-scaffold.sh` 放在 `changes/` 根下，是控制面文件，不是某个 `changes/<change-id>/` 变更包内的产物。契约只允许 `changes/<change-id>/contract.md`，不用标本的 `docs/contracts/<id>-api.md`。M/L 的 `agent-dispatch-plan.md` 来自 `templates/agent-dispatch-plan.md`，不调用标本 registry 脚本。
+> RZ 落点：本文件在 `changes/change-whitelist-spec.md`。建包用 `changes/change-scaffold.sh`，状态卡收集用 `changes/status-card.sh`，白名单检查用 `gates/change-artifacts-gate.sh`。本文件、`change-scaffold.sh` 和 `status-card.sh` 放在 `changes/` 根下，是控制面文件，不是某个 `changes/<change-id>/` 变更包内的产物。契约只允许 `changes/<change-id>/contract.md`，不用标本的 `docs/contracts/<id>-api.md`。M/L 的 `agent-dispatch-plan.md` 来自 `templates/agent-dispatch-plan.md`，不调用标本 registry 脚本。
 
 ```yaml
 schema_version: 1
@@ -18,8 +18,8 @@ historical_policy: warn_only
 
 | Profile | 适用场景 | Required root artifacts | Notes |
 | --- | --- | --- | --- |
-| `tier-s` | 单仓小修、文档或低风险脚本变更 | `spec.md`, `harness-status.md`, `evidence.md` | 不强制技术方案、AI 测试方案和 Reviewer 包。 |
-| `tier-m` | Tier M、普通全栈或多文件业务变更 | `spec.md`, `harness-status.md`, `evidence.md`, `plan.md`, `contract.md`, `technical-solution.md`, `verification-map.md`, `ai-test-plan.md`, `test-agent-verification.md`, `agent-dispatch-plan.md`, `skill-usage.md`, `review.md` | 把既有强制流程和 Agent 派发计划一次 scaffold 出来，减少手工漏文件。`agent-candidate-confirmation.md` 只在启用 candidate implementation agent 时可选新增。 |
+| `tier-s` | 单仓小修、文档或低风险脚本变更 | `spec.md`, `status-card.md`, `evidence.md` | 不强制技术方案、AI 测试方案和 Reviewer 包。 |
+| `tier-m` | Tier M、普通全栈或多文件业务变更 | `spec.md`, `status-card.md`, `evidence.md`, `plan.md`, `contract.md`, `technical-solution.md`, `verification-map.md`, `ai-test-plan.md`, `test-agent-verification.md`, `agent-dispatch-plan.md`, `skill-usage.md`, `review.md` | 把既有强制流程和 Agent 派发计划一次 scaffold 出来，减少手工漏文件。`agent-candidate-confirmation.md` 只在启用 candidate implementation agent 时可选新增。 |
 | `tier-l` | Tier L、跨仓、高风险、真实环境依赖或发布前风险高的变更 | tier-m 全部文件 + `environment-readiness.md`, `ai-test-report.md`, `decisions.md` | DB、UI、临时状态、CodeGraph 等只在命中场景时再新增对应可选文件。 |
 
 ## Root File Policy
@@ -30,7 +30,7 @@ historical_policy: warn_only
 
 - `spec.md`
 - `requirement-intake.md`
-- `harness-status.md`
+- `status-card.md`
 - `plan.md`
 - `contract.md`
 - `api-contract.md`
@@ -87,7 +87,7 @@ historical_policy: warn_only
 
 ## Marker
 
-新 scaffold 会在 `harness-status.md` 顶部写入：
+新 scaffold 会在 `status-card.md` 顶部写入：
 
 ```yaml
 artifact_profile: tier-s
@@ -100,6 +100,7 @@ artifact_schema_version: 1
 
 ```bash
 changes/change-scaffold.sh --tier S <change-id>
+changes/status-card.sh changes/<change-id>
 gates/change-artifacts-gate.sh changes/<change-id>
 gates/change-artifacts-gate.sh --historical changes/<old-change-id>
 ```

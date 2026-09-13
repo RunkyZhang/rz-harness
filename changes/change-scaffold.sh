@@ -11,6 +11,7 @@ refuses to overwrite an existing change directory.
 
 RZ notes:
   - Lives in changes/ as change-control tooling, not inside a change package.
+  - Sibling: changes/status-card.sh (read-only status snapshot).
   - Does not read PRD and does not let the model write body text.
   - M/L copies templates/agent-dispatch-plan.md instead of calling
     specimen agent-dispatch-plan.sh / agent-registry.yml.
@@ -89,8 +90,8 @@ write_status() {
   {
     printf 'artifact_profile: %s\n' "$profile"
     printf 'artifact_schema_version: 1\n\n'
-    sed "s|<change-id>|$change_id|g" "$root/templates/harness-status.md"
-  } >"$target/harness-status.md"
+    sed "s|<change-id>|$change_id|g" "$root/templates/status-card.md"
+  } >"$target/status-card.md"
 }
 
 copy_template "$spec_template" "spec.md"

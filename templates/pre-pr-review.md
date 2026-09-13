@@ -5,9 +5,9 @@
 ## Spec 一致性
 
 - [ ] 业务目标与 `changes/<change-id>/spec.md` 一致。
-- [ ] `changes/<change-id>/harness-status.md` 已更新当前阶段、下一步、待确认项和是否允许进入下一阶段。
+- [ ] `changes/<change-id>/status-card.md` 已更新当前阶段、下一步、待确认项和是否允许进入下一阶段。
 - [ ] `changes/<change-id>/technical-solution.md` 已人工确认，并通过 `gates/technical-solution-gate.sh changes/<change-id>`。
-- [ ] 多仓 / 全栈需求已通过 `scripts/workstream-dispatch-gate.sh changes/<change-id>`；如降级为单 Agent 串行，`harness-status.md` 已记录 `DEGRADED:` 原因。
+- [ ] 多仓 / 全栈需求已通过 `scripts/workstream-dispatch-gate.sh changes/<change-id>`；如降级为单 Agent 串行，`status-card.md` 已记录 `DEGRADED:` 原因。
 - [ ] 业务仓首次改代码前已通过 `gates/business-code-start-gate.sh changes/<change-id> <changed-files...>`；没有在 `main/master` 直接修改业务代码。
 - [ ] 若业务仓存在接手前 dirty diff，已通过 `gates/business-dirty-worktree-gate.sh <repo> --ledger changes/<change-id>/dirty-worktree-ledger.md`，每个 dirty path 有 owner 和 decision。
 - [ ] 所有阻塞性 `[QUESTION]` 已解决。
@@ -110,7 +110,7 @@
 ## 自动执行停点
 
 - [ ] 用户确认方案后，AI 已按 plan 自动推进到人工验收点、阻塞点或风险决策点。
-- [ ] 每次到达人工验收点、阻塞点或风险决策点时，`harness-status.md` 已同步当前阶段和下一步。
+- [ ] 每次到达人工验收点、阻塞点或风险决策点时，`status-card.md` 已同步当前阶段和下一步。
 - [ ] 没有在机械步骤完成后无理由暂停；如暂停，已在 evidence 中说明停点类型。
 - [ ] 如标记 `BLOCKED`，已记录阻塞条件、已尝试动作、不能继续自动执行的原因和最小用户输入。
 - [ ] 如进入人工验收，已提供验收 URL / 原型文件 / 报告路径、已跑命令、未覆盖项和需要用户判断的问题。

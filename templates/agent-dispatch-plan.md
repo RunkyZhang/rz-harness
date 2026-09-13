@@ -28,6 +28,6 @@ runtime: cursor
 
 - 每个子 Agent prompt 第一行：`Agent Label: <change-id> / <role> / <scope>`。
 - 子 Agent 最终回复第一行：`<role>: <DONE|PASS|BLOCKED|NEEDS_CONTEXT|ISSUES_FOUND>`。
-- 主 Agent 把同一标签写入 `harness-status.md` 的 Agent Roster。
+- 主 Agent 把同一标签写入 `status-card.md` 的 Agent Roster。
 - 控制面默认只允许主 Agent 写。
 - 派 Backend / Frontend / Mobile 前须契约 v0.1、`allowed_paths`、隔离 worktree，以及用户确认后的 `agent-candidate-confirmation.md`。

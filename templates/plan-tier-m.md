@@ -8,7 +8,7 @@
 | --- | --- |
 | Spec | `changes/<change-id>/spec.md` |
 | Contract | `changes/<change-id>/contract.md` |
-| Harness status | `changes/<change-id>/harness-status.md` |
+| Status card | `changes/<change-id>/status-card.md` |
 | Technical solution | `changes/<change-id>/technical-solution.md` |
 | Verification map | `changes/<change-id>/verification-map.md` |
 | Skill usage | `changes/<change-id>/skill-usage.md` |
@@ -59,8 +59,8 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 - [ ] 已按 `templates/technical-solution.md` 生成全栈技术方案文档，并完成人工确认；方案已按 PRD 逐项覆盖后端、PC Web、H5、小程序、APP、导出、埋点/分析、DB、job/MQ 中所有适用端；如写入飞书，主流程图、ER 图和状态/关系图必须是 `whiteboard`，不得残留 `lang="mermaid"` 代码块。
 - [ ] 已运行 `gates/technical-solution-gate.sh changes/<change-id>`；技术方案 `confirmation_status: CONFIRMED` 且 `allowed_next_stage` 允许进入当前阶段。
 - [ ] 已复制 `templates/verification-map.md` 到 `changes/<change-id>/verification-map.md`，将关键约束映射到验证命令、人工确认或 `N/A:` 原因，并运行 `gates/verification-map-gate.sh changes/<change-id>`。
-- [ ] 已复制 `templates/harness-status.md` 到 `changes/<change-id>/harness-status.md`，并在每次阶段切换、阻塞、人工确认、进入预发前更新。
-- [ ] 多仓 / 全栈需求已在 `harness-status.md` 填写 `Workstream Dispatch`，拆分后端、PC、小程序等工作线；已运行 `scripts/workstream-dispatch-gate.sh changes/<change-id>`。
+- [ ] 已复制 `templates/status-card.md` 到 `changes/<change-id>/status-card.md`，并在每次阶段切换、阻塞、人工确认、进入预发前更新。
+- [ ] 多仓 / 全栈需求已在 `status-card.md` 填写 `Workstream Dispatch`，拆分后端、PC、小程序等工作线；已运行 `scripts/workstream-dispatch-gate.sh changes/<change-id>`。
 - [ ] 需要派发子 Agent 时，已填写 `changes/<change-id>/agent-dispatch-plan.md`（scaffold 空壳来自 `templates/agent-dispatch-plan.md`），并对照 `subagents/dispatch_subagent.md`。标本 `agent-dispatch-plan-gate.sh` RZ 未拷。candidate implementation 只有在 contract、allowed paths、隔离分支和 code-start gate 满足后，复制并确认 `templates/agent-candidate-confirmation.md`。
 - [ ] 业务仓首次改代码前已运行 `gates/business-code-start-gate.sh changes/<change-id> <changed-files...>`；业务仓不在 `main/master`，且文件在 `contract.md` 的 `allowed_paths` 内。
 - [ ] 如业务仓已有 dirty diff，已复制 `templates/dirty-worktree-ledger.md` 到 `changes/<change-id>/dirty-worktree-ledger.md`，并运行 `gates/business-dirty-worktree-gate.sh <repo> --ledger changes/<change-id>/dirty-worktree-ledger.md`。
@@ -120,7 +120,7 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 5. 全栈技术方案确认：按 `templates/technical-solution.md` 先做 PRD 端到端覆盖矩阵，再汇总范围分工、关键业务结论、跨端主流程、后端设计、PC Web/H5/小程序/APP 页面方案、数据模型、API、导出、埋点/分析、测试、发布、回滚和风险；给人工确认。飞书文档中的主流程图、ER 图和状态/关系图必须用 `whiteboard`，不能用 Mermaid 代码块。
 6. Verification Map：复制 `templates/verification-map.md` 到 `changes/<change-id>/verification-map.md`，把“什么叫做对”的关键约束逐条映射到命令、PC smoke、SQL 只读查询、人工确认或 `N/A:` 原因；运行 `gates/verification-map-gate.sh changes/<change-id>`。
 7. Contract v0.1 冻结：确认 endpoint、request、response、分页、空态、错误处理；如涉及 DB，确认 data model SQL、ER 图和字段理由；如需要独立能力/行为规格，确认 `capability-spec.md` 或 `behavior-spec.md`。
-8. Workstream Dispatch：多仓 / 全栈需求先在 `harness-status.md` 拆后端、PC、小程序等工作线，运行 `scripts/workstream-dispatch-gate.sh changes/<change-id>`；无法并行时写 `DEGRADED:` 原因。
+8. Workstream Dispatch：多仓 / 全栈需求先在 `status-card.md` 拆后端、PC、小程序等工作线，运行 `scripts/workstream-dispatch-gate.sh changes/<change-id>`；无法并行时写 `DEGRADED:` 原因。
 9. Agent Dispatch Plan：需要派发 Explorer / Reviewer / Tester / Test Strategy / Backend / Frontend / Mobile 时，填写 `changes/<change-id>/agent-dispatch-plan.md`，对照 `subagents/dispatch_subagent.md`。启用 Backend / Frontend / Mobile 前，先复制 `templates/agent-candidate-confirmation.md`，确认 `candidate_dispatch_confirmation: CONFIRMED`、`business_code_start_gate: PASS`、`allowed_paths_confirmed: yes`，并保持 `protected_actions_allowed: no`、`global_config_write_allowed: no`、`db_or_release_actions_allowed: no`。标本 `agent-output-contract-gate.sh` RZ 未拷。
 10. Business code-start：业务仓第一次改代码前运行 `gates/business-code-start-gate.sh changes/<change-id> <changed-files...>`，确认分支不是 `main/master` 且路径已获准。
 11. 后端测试计划：如涉及 Java 后端行为变更，先填写 `backend-test-plan.md`；测试矩阵至少覆盖本次适用的参数校验、权限、状态流转、幂等、异步/job、外部 adapter/RPC 失败、回滚/错误落库和自定义 mapper/update count。
@@ -135,9 +135,9 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 20. PC E2E Smoke：复制 `templates/pc-e2e-smoke-plan.md` 到 `changes/<change-id>/pc-e2e-smoke-plan.md`；如需本地后端，声明 active backend 项目并运行 `scripts/generate-local-routing.sh` 生成 `changes/<change-id>/local-routing.yml`，再运行 `scripts/local-routing-gate.sh` 和 `scripts/local-routing-business-config-gate.sh <changed-frontend-files...>`；使用真实浏览器验证页面打开、默认查询、核心筛选、分页或列表刷新、详情、返回、空态或错误态；结果写入 `pc-e2e-smoke-report.md` 和 `evidence.md`。
 21. AI 测试报告：复制 `templates/ai-test-report.md` 到 `changes/<change-id>/ai-test-report.md`，汇总后端 targeted tests、接口、PC E2E、截图、SQL/API 观察、未覆盖项和残余风险；人工确认前不得进入测试 / 预发发布。
 22. 预发前确认：运行 `gates/ai-test-report-gate.sh changes/<change-id>`；只有 `confirmation_status: CONFIRMED` 且 `recommendation: 允许进入预发` 才允许进入测试 / 预发发布。
-23. 状态卡更新：运行 `scripts/harness-status.sh changes/<change-id>`，把输出同步或整理进 `harness-status.md`，作为用户查看“当前走到哪一步”的入口。
+23. 状态卡更新：运行 `changes/status-card.sh changes/<change-id>`，把输出同步或整理进 `status-card.md`，作为用户查看“当前走到哪一步”的入口。
 24. 产物整理：保留轻量 Markdown 摘要；将截图、录屏、trace、完整长日志、临时原型草稿和数据快照移动到 `artifacts/<change-id>/` 或外部存储，并在 evidence / report 中记录路径。
-25. Reviewer：只读审查 spec、plan、contract、contract-delta、technical-solution、diff、evidence、backend-test-plan、pc-e2e-smoke-plan、pc-e2e-smoke-report、test-agent-verification、ai-test-report 和 harness-status，并按 Java checklist 复核后端改动；输出 `review.md` 后运行 `scripts/agent-output-contract-gate.sh changes/<change-id> Reviewer` 和 `gates/reviewer-gate.sh changes/<change-id>`。
+25. Reviewer：只读审查 spec、plan、contract、contract-delta、technical-solution、diff、evidence、backend-test-plan、pc-e2e-smoke-plan、pc-e2e-smoke-report、test-agent-verification、ai-test-report 和 status-card，并按 Java checklist 复核后端改动；输出 `review.md` 后运行 `scripts/agent-output-contract-gate.sh changes/<change-id> Reviewer` 和 `gates/reviewer-gate.sh changes/<change-id>`。
 26. 人工 review：用户确认 HIGH/MEDIUM 风险处理。
 
 ## Task 模板
@@ -252,7 +252,7 @@ RZ_HARNESS_SMOKE=1 RZ_HARNESS_PROXY_LOG=artifacts/<change-id>/pc-e2e-smoke/local
 VUE_APP_BASE_API=http://127.0.0.1:19080/ npm run dev
 # PC E2E Smoke 使用真实浏览器执行；把 URL、步骤、截图路径和接口观察写入 changes/<change-id>/pc-e2e-smoke-report.md
 gates/ai-test-report-gate.sh changes/<change-id>
-scripts/harness-status.sh changes/<change-id>
+changes/status-card.sh changes/<change-id>
 # 大体积产物放 artifacts/<change-id>/，Git 中只保留摘要和路径
 ```
 

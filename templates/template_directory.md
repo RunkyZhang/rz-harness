@@ -20,7 +20,7 @@ changes/change-scaffold.sh --tier S|M|L <change-id>
 | `spec-tier-s.md` | `spec.md` | S | 目标、范围内外、三标签、`allowed_paths` | 主 Agent；Explorer 只读供料 | `confidence-gate.sh` |
 | `spec-tier-m.md` | `spec.md` | M | 同上，M 节更全（全栈盘点、契约路径等） | 同上 | 同上 |
 | `spec-tier-l.md` | `spec.md` | L | 同上，L 再加环境/能力边界等 | 同上 | 同上 |
-| `harness-status.md` | `harness-status.md` | S/M/L | 给人看的阶段、阻塞、下一步、Agent Roster。scaffold 会在文首加 `artifact_profile` + `artifact_schema_version: 1` | 主 Agent 贯穿更新 | `change-artifacts-gate.sh` 读 marker；无单独状态卡 gate |
+| `status-card.md` | `status-card.md` | S/M/L | 给人看的阶段、阻塞、下一步、Agent Roster。scaffold 会在文首加 `artifact_profile` + `artifact_schema_version: 1` | 主 Agent 跑 `changes/status-card.sh` 后写入；不覆盖 Roster | `change-artifacts-gate.sh` 读 marker；无单独状态卡 gate |
 | `plan-tier-m.md` | `plan.md` | M/L | 实现步骤、验证、回滚 | 主 Agent | 无单独过门 |
 | `api-contract.md` | `contract.md` | M/L | 冻结 endpoint、字段、错误码、分页、空态。RZ **只用**变更包内这一条路径 | 主 Agent；前端只读 | 未冻不得实现；有增量时 `contract-delta-gate.sh` |
 | `technical-solution.md` | `technical-solution.md` | M/L | 全栈技术方案 | 主 Agent | `technical-solution-gate.sh`（用户对话确认后写 `CONFIRMED`） |

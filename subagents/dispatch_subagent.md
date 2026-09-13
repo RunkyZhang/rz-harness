@@ -1,7 +1,7 @@
 # 子 Agent 派发协议
 
 > 只给 **主 Agent** 读。用于 RZ Harness 在 Cursor / Codex / OpenCode 等 runtime 上派发、展示和回收子 Agent。
-> 目标是让用户从 `harness-status.md` 一眼看出每个 Agent 的职责，即使 runtime 分配了不可读 nickname。
+> 目标是让用户从 `status-card.md` 一眼看出每个 Agent 的职责，即使 runtime 分配了不可读 nickname。
 
 本文件不是创建进程的 API。主 Agent 按本协议写好 prompt 后，调用 **runtime 内置派发工具**（Cursor 为 `Task`）开启新 session。不要用 `agent-registry.yml` 去创建 Agent。角色人设在 `subagents/<role>_agent.md`，派发时列入 `Read inputs`，由子 Agent 自己读。
 
@@ -60,7 +60,7 @@ Agent Label: promo-sku-unit / Backend / Query+Export
 
 ## 4. Status Card Mapping
 
-主 Agent 必须把每个子 Agent 写入 `changes/<change-id>/harness-status.md` 的 `Agent Roster`。
+主 Agent 必须把每个子 Agent 写入 `changes/<change-id>/status-card.md` 的 `Agent Roster`。
 
 状态建议：
 

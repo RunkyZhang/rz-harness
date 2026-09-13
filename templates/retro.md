@@ -2,7 +2,7 @@
 
 > 用途：在高风险或中大型 change closeout 时，把返工、用户纠正、gate 触发、
 > Reviewer 结论和知识沉淀变成可复核数据。Tier S 小修可以不单独创建本文件，
-> 只在 `harness-status.md` / `evidence.md` 写轻量 closeout metrics。
+> 只在 `status-card.md` / `evidence.md` 写轻量 closeout metrics。
 
 ```yaml
 change_id: <change-id>
@@ -27,7 +27,7 @@ knowledge_updates_status: PENDING
 
 | Trigger | Applies? | Evidence |
 | --- | --- | --- |
-| Tier M/L | `<yes/no>` | `harness-status.md artifact_profile` |
+| Tier M/L | `<yes/no>` | `status-card.md artifact_profile` |
 | Cross-repo | `<yes/no>` | `plan.md / workstream dispatch` |
 | Incident / rework | `<yes/no>` | `evidence.md / user correction` |
 | High risk | `<yes/no>` | `review.md / ai-test-report.md` |
