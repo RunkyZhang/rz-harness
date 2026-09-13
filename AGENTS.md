@@ -45,6 +45,38 @@
 | M | 普通全栈或多文件业务，大约 1～2 个 API | 包括 S 档内容，再加强制方案、契约、测试方案、Tester、Reviewer |
 | L | 跨仓、高风险、强依赖真实环境、发布前风险高 | 包括 M 档内容，再加环境就绪、测试报告、决策记录               |
 
+### 需求理解（FACT/ASSUMP/QUESTION）
+
+主 Agent 把「PRD 写了的 / 代码里已有的 / 用户说的 / 模型猜的」拆开，写进 `changes/<change-id>/spec.md`。聊天不是事实源。没出处的业务规则、字段、状态、权限、错误码、默认值、回滚规则不是事实。
+
+| 标签 | 是什么 | 限制                                                             |
+|---|---|----------------------------------------------------------------|
+| `[FACT]` | 有出处：PRD、用户确认、现有代码、已冻契约、线上已有行为 | 只有这类可以进实现                                                      |
+| `[ASSUMP]` | 模型推断、尚未确认 | 不阻塞开工，但这条不得作为实现依据；一旦渗进实现文件，`assumption-leak-gate.sh` 会检查出 FAIL |
+| `[QUESTION]` | 必须用户决定，Agent 不能代选 | 阻塞项未清，不得写业务代码                                                  |
+
+拿不准时写成 `[QUESTION]`，不要先标成 `[FACT]`。
+
+**谁写：** 
+- 主 Agent 理解需求文档、定义全部三标签、写入 `spec.md`。
+- Explorer （可选）只读、不改文件；主 Agent 对业务仓现状吃不准时才派，Explorer 在对话里按三标签供料（含证据路径）
+- 主 Agent 会根据 Explorer 查证的信息决定采纳与否再落 `spec.md`
+- 用户答阻塞 `[QUESTION]`、确认或推翻 `[ASSUMP]`；答完后由主 Agent 改标签
+
+**何时：** 建包时 scaffold 拷模板，文件里已有占位标签，不是已经问过用户。需求理解阶段（停止点 1）填写实质内容，然后停下来问用户。用户答完，主 Agent **原地**把该行改成带来源的 `[FACT]`（`[QUESTION]` 和已确认的 `[ASSUMP]` 都这样处理，不能留下 `[QUESTION]` 再另写一行 FACT），再跑 `gates/confidence-gate.sh`。口头「ok」不算过。
+
+**写法：** 
+- 三种标签都必须出现。没有假设写 `[ASSUMP] None.`。
+- 不影响本次实现的 `[QUESTION]` 放到 `non_blocking_questions:` 下，默认不拦开工；
+- 吃不准是否阻塞就放正文当阻塞项
+- 其他模板（契约、技术方案）里的 `[QUESTION]` 只是空格占位，`gates/confidence-gate.sh` 不扫那些文件
+- 要拿某条 `[ASSUMP]` 去写代码，必须先确认成 `[FACT]` 才能进行代码实现
+
+| Gate | 查哪                                   | 过不了意味着                                                |
+|---|--------------------------------------|-------------------------------------------------------|
+| `confidence-gate.sh` | 只扫描  `spec.md` 判断是否还剩阻塞 `[QUESTION]` | 问题没答完，不能开工。**不会**因为 `spec.md` 里还留着未确认 `[ASSUMP]` 就不开工 |
+| `assumption-leak-gate.sh` | 检查实现文件里有没有 `[ASSUMP]` 字面标签，以及 spec 中假设的标识符有没有漏进实现代码   | 假设漏进实现                                                |
+
 ## 运行机制：Guides 与 Sensors
 
 harness 不替代 agent，而是**围住** agent：行动前喂资料（Guides），行动后压检查（Sensors）。
@@ -335,7 +367,7 @@ CodeGraph 是可选的，不是关卡。在业务 CodeGraph review 之前，运�
 
 当前角色：
 
-- **Explorer**（`subagents/explorer_agent.md`）：方案或实现前只读查证。输出 `[FACT]` / `[ASSUMP]` / `[QUESTION]` 和可仿写样板路径；不改文件。
+- **Explorer**（`subagents/explorer_agent.md`）：方案或实现前只读查证。对主 Agent输出 `[FACT]` / `[ASSUMP]` / `[QUESTION]` 进行专业的查证。值返回信息给主 Agent 不改 `spec.md` 文件。
 - **Reviewer**（`subagents/reviewer_agent.md`）：实现之后、人工 review / PR 之前只读审查。只写 `changes/<change-id>/review.md`；`high_risk_count` 为 0 才建议进人审。
 - **Test Strategy**（`subagents/test_strategy_agent.md`）：技术方案确认后、实现前编写 `ai-test-plan.md`，须用户确认；不写业务代码。
 - **Tester**（`subagents/tester_agent.md`）：实现后对照已确认测试方案独立验收，维护 `test-agent-verification.md`；不得修业务代码；不得由主 Agent 自称 `GOAL_ACHIEVED`。
