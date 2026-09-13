@@ -77,6 +77,7 @@
 ### 脚本
 执行 `changes/change-scaffold.sh --tier S|M|L <change-id>` 。脚本会：
 - 新建目录 `changes/<change-id>/`
+- 预建 `changes/<change-id>/artifacts/` 子目录，作为大文件（截图 / 录屏 / trace / 长日志）的统一落点
 - 按档位（S/M/L）把所需 md 从 `templates/` 原样 copy 到变更包目录
 - 当场拼一个空表 `evidence.md`
 - M/L 同时拷 `templates/agent-dispatch-plan.md` 空壳（不调标本 `agent-dispatch-plan.sh`）

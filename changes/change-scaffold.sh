@@ -69,6 +69,8 @@ esac
 target="$changes_dir/$change_id"
 [[ ! -e "$target" ]] || fail "change directory already exists: $target"
 mkdir -p "$target"
+# 预建 artifacts/：大文件（截图 / 录屏 / trace / 长日志）的统一落点，让变更包结构一眼可见
+mkdir -p "$target/artifacts"
 
 copy_template() {
   local template="$1" dest="$2"
