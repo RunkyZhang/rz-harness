@@ -1,9 +1,20 @@
 # AGENTS.md (rz-ai-harness)
 
-本仓库是 RZ AI Harness **控制面**：规矩、变更包、gate、子 Agent 人设。业务代码在各自 git 仓里，用磁盘路径引用，不要把业务仓 clone 或拷进本目录。
+本仓库是 RZ AI Harness **控制面**：规矩、模版、gate、子 Agent 人设、变更包工作目录。业务代码在各自 git 仓里，用磁盘路径引用，不要把业务仓 clone 或拷进本目录。
 
 ## 控制面
-> harness 配置，相当于 app 程序中的【设置】功能。包括运行时参数、语言政策、Git仓库、Baseline、Hook。本地化配置适用于你现在的开发环境。Hook 比较特殊，是 runtime（Cursor / Codex / OpenCode）的一部分，所以根据不同的 runtime 有不同的配置
+控制面 = 本仓库 `rz-harness`，harness 的载体。目录 / 内容分两类：
+
+- **配置类**：要按本机环境和使用的 runtime（Cursor / Codex / OpenCode）做本地化填写
+  - 运行时参数：`config/runtime_local.sh` → 见「控制面 → 运行时参数」
+  - Git 仓库：`git-registry.md`、`baselines/` → 见「控制面 → Git仓库」，「控制面 → Baseline」
+  - Hook 接线：各 runtime 按 `hooks/hook_setup.md` 在本机启用；脚本本身进 git → 见「控制面 → runtime 的 Hook 机制」
+- **静态类**：装好即用，内置能力，功能不按环境改
+  - 语言政策 → 见「控制面 → 语言政策」
+  - 模版文件：`templates/` → 见「控制面 → 模版文件」
+  - gate 与工具脚本：门禁在 `gates/`（见 `gates/gate_directory.md`）、前后端 / 生命周期工具在 `scripts/` → gate 见【运行机制 → gate（门禁）】
+  - 子 Agent 人设：`subagents/` → 见【子 Agent】
+  - 知识与规则：`docs/`、`rules/`、`lanes/` → 见「知识与规则」
 
 ### 运行时参数
 - 本机配置：路径 `config/runtime_local.sh`，按当前开发环境填写。参数至少包括：业务仓绝对路径、账号/凭据**来源**、数据库连接信息、本地服务地址/代理/端口、本机工具命令等
@@ -25,18 +36,50 @@
 - 主 Agent 在写该仓 `allowed_paths`、选样板、第一次改业务代码之前读取对应文件。Explorer 下钻业务仓前先读。Backend / Frontend / Mobile 实现前必读。Reviewer 审查该仓 diff 时对照其中的分层、样板和受保护路径。
 - `mapSystem` 额外遵守 `baselines/frontend-map-system.md` 的 Node 版本、登录和临时路由约定。
 
-### runtime 的 Hook 机制
-> 大多数 runtime（agent 程序，如 codex，cursor等）都有自己的 hook 机制。
+### 模版文件
+> 全部模板文件保存在目录 `templates/`，用来生成 change 变更包所需文件。`templates/template_directory.md` 为字典目录（每个 template 作用是什么、用在哪段流程、拷到变更包后叫什么）。
 
+### gate 与工具脚本
+> 门禁脚本在 `gates/`（见 `gates/gate_directory.md`）；前后端 / 生命周期等工具脚本在 `scripts/`。详见「运行机制：Guides 与 Sensors」。
+
+### 子 Agent
+> 角色人设在 `subagents/<role>_agent.md`（Explorer / Reviewer / Test Strategy / Tester / Backend / Frontend / Mobile）。详见「子 Agent」。
+
+### 知识与规则
+> 知识库在 `docs/`（如 `docs/pitfalls/`）；技术栈规则在 `rules/`；任务路线在 `lanes/`（rules/、lanes/ RZ 未建）。
+
+### runtime 的 Hook 机制
+> - 大多数 runtime（Cursor / Codex / OpenCode）都有自己的 hook 机制。用户可以自定义“当某事件发生时，让 runtime 执行某个脚本”。和 LLM 的 `tool_call` 不同，hook 是 runtime 的功能，不依赖 LLM 决策
+> - **触发方式**上，hook 是“推式”（runtime 在事件点一定会执行），比“拉式”（靠人 / agent 记得跑 gate）更可靠。重要 gate 挂到 hook 上自动执行，可降低漏执行风险。（注意：gate 是“检查内容”，hook 是“触发时机”，二者不是比谁靠谱的同类）
+> - 不同 runtime 的 hook 设置方式不同，选定 runtime 后要按 `hooks/hook_setup.md` 接线。`hooks/hook_adapter.sh` 只做路由（转发到 `hooks/harness-sensor-runner.sh`）；检查逻辑在 runner 里（危险命令 / code-start 瘦身 / 有 `RZ_CHANGE_SPEC` 时跑 `gates/allowed-paths.sh`）
+
+图
+```text
+        runtime 事件点
+           │ 触发
+           ▼
+        各 runtime 接线（见 hooks/hook_setup.md）
+           Cursor: .cursor/hooks.json    
+           Codex: .codex/hooks.json
+           OpenCode: 按 hooks/hook_setup.md 本机建 plugin（spawn 同一脚本）
+           │ 调用
+           ▼
+           hooks/hook_adapter.sh（只路由）
+           │
+           ▼
+        hooks/harness-sensor-runner.sh（做事）
+           ├─ pre  事件：能硬停（拦 commit / 危险命令）
+           └─ post 事件：只能警告、拦下一步，不能撤销
+```
+目前 hook 会执行的检查在 `hooks/harness-sensor-runner.sh`）。检查内容包括危险 shell（`rm -rf`、`git push --force` 等），不符合规则的 git 命令
 
 ## 领域名词
 
-### harness / 控制面 / runtime
+### harness / runtime
 | 词 | 是什么 | 负责什么                                      |
 |---|---|-------------------------------------------|
 | **runtime** | 真正跑起来的 agent 程序（Cursor / Codex / OpenCode） | 提供 agent 循环、读文件、跑 shell、权限、沙箱——**能跑**     |
 | **harness** | 套在 runtime 外面的工程系统（规则 + 工件 + 检查 + 流程） | 让 agent **在边界里跑**：改哪些文件、什么时候必须停、宣称完成拿什么证明 |
-| **控制面** | 本仓库 `rz-harness` 本身 | harness 的载体：包含规矩、模板、gate、子 Agent 人设文等文件   |
 
 ### 档位
 > 这次需求使用哪个档位分级，使用不同档位流程上会有不同的步骤。不一定代表需求大小，而是改动范围、风险和环境依赖。功能点少也可能是 L（例如改权限、动真实库）；页面很多也可能是 S（单仓低风险小修）。
@@ -260,9 +303,6 @@
 | 33 | `retro.md`                                        | 收口时主 Agent 拷 `templates/retro.md`；scaffold / gate 都不创建                                               | 收口时，可后补 | 复盘 | 主 Agent | 无单独过门 | 变更包不进 git；大文件仍放包内 `artifacts/` |
 | 34 | `handoff.md`                                      | **无 `templates/handoff.md`**；按 handoff skill 里的章节自建                                                  | **随时**：换线程、暂停、上下文压缩 | 留给**下一个主 Agent**的交接单 | 主 Agent | 无 gate | 不是 Explorer / Reviewer 之间的信箱 |
 
-## 模版文件
-> 全部模板文件保存在目录 `templates/`，用来生成 change 变更包所需文件。`templates/template_directory.md` 为字典目录（每个 template 作用是什么、用在哪段流程、拷到变更包后叫什么）。
-
 ## 强制工作流
 对档位 M/L、跨仓、后端行为、DB 或复杂 UI 工作，给用户的第一条回复必须包含「本次 harness 流程和停止点」：spec/contract/solution/test-plan/env/code-start/UI/DB/Tester/report/pre-merge 关卡。以 `changes/<change-id>/status-card.md` 作为用户可见的状态卡。
 
@@ -336,7 +376,6 @@ CodeGraph 是可选的，不是关卡，**RZ 未引入**（`codegraph-preflight`
 合并前，对变更的业务文件运行 `gates/diff-hygiene-gate.sh <repo> [--base <ref>] <files...>` 和 `gates/temp-hardcode-scan.sh <files...>`。
 
 ## 子 Agent
-
 主 Agent 负责派发和管理子 Agent。创建靠 **runtime 内置工具**（例如：Cursor 为 `Task`）。子 Agent 使用新 session，默认看不到主对话；spec / diff 等必读材料写进派发 prompt 的 `Read inputs`，由子 Agent 读磁盘。
 
 - 目录：`subagents/`

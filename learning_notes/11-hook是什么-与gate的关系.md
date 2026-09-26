@@ -92,8 +92,8 @@ Cursor / Codex / opencode 的事件名不同，所以：
 
 ```
 .cursor/hooks.json ─┐
-.codex/hooks.json  ─┼─→ 统一转发 → scripts/harness-sensor-runner.sh（逻辑只写一份）
-opencode.json      ─┘
+.codex/hooks.json  ─┼─→ hooks/hook_adapter.sh（只路由）→ hooks/harness-sensor-runner.sh（做事）
+OpenCode plugin    ─┘
 ```
 
 配置层**只做接线**，检查逻辑不复制进各工具配置。

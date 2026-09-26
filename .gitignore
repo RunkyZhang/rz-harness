@@ -36,6 +36,8 @@
 **/.vscode/
 # cursor ignore
 **/.cursor/
+# opencode 本机 plugin（按 hooks/hook_setup.md 创建，不提交）
+.opencode/plugins/
 # claude ignore
 **/.claude/
 # 本机运行配置（含路径、账号来源、数据库与通信信息，勿提交）
