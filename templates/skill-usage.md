@@ -15,14 +15,11 @@
 
 ## 外部辅助 Lens
 
-> 外部 lens 只能辅助本仓 skill；不能替代上面的 harness-local skill usage。使用边界见 `skills/third-party/external-codex-skills.md`。
+> RZ 未引入 `skills/third-party/` 与 ECC。本表默认全部 `N/A`，并写原因。不得用外部 lens 替代上表 harness skill。
 
 | Lens | Status | Evidence / Output | N/A reason |
 | --- | --- | --- | --- |
-| `brooks-review` / `brooks-test` / `brooks-audit` / `brooks-debt` | TODO / USED / N/A | `review.md` / `evidence.md` |  |
-| `brooks-sweep` | N/A | `review.md` / `evidence.md` | auto-fix 模式默认禁用 |
-| `awesome-codex-skills` selected patterns | TODO / USED / N/A | `spec.md` / `evidence.md` |  |
-| `ECC sidecar` selected patterns | TODO / USED / N/A | `evidence.md` | ECC optional；未安装时写 N/A reason |
+| 外部 Codex / Brooks / ECC | N/A | — | RZ 未引入 |
 
 ## 结论
 

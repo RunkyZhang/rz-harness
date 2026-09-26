@@ -46,6 +46,7 @@
 
 ```yaml
 control_plane: rz-harness
+lane: lanes/fullstack-crud.md
 frontend_repo: $RZ_REPO_MAP_SYSTEM
 backend_repo: $RZ_REPO_SFA_SALES_MANAGEMENT
 ```

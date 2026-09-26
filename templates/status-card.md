@@ -5,6 +5,7 @@
 
 | Item | Value |
 | --- | --- |
+| Lane | `lanes/bugfix-fast.md` / `lanes/fullstack-crud.md` / `none`（无匹配走整体工作流；`pc-e2e-smoke` 不是开工主 lane，命中 E2E Pack 再写入证据） |
 | 当前阶段 | `需求理解 / 方案确认 / 允许开工 / 实现中 / AI测试待确认 / 预发待发布 / 已收口` |
 | 下一步 | `<主 Agent 下一步要做什么>` |
 | 是否允许进入下一阶段 | `YES / NO` |

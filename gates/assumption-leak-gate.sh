@@ -101,7 +101,7 @@ is_implementation_file() {
 
 is_harness_meta_file() {
   case "$1" in
-    AGENTS.md|templates/*|rules/*|docs/README.md|docs/onboarding.md|gates/assumption-leak-gate.sh|scripts/harness-team-readiness-test.sh)
+    AGENTS.md|templates/*|rules/*|subagents/*|skills/*|hooks/*|lanes/*|gates/*)
       return 0
       ;;
     *)

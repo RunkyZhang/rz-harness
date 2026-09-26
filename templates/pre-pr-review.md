@@ -37,9 +37,9 @@
 
 在 `changes/<change-id>/evidence.md` 记录精确命令和结果。
 
-- [ ] 已创建 `changes/<change-id>/skill-usage.md`（`docs/skills-routing.md` RZ 未建 → 按 `subagents/` 人设，跳过该文件）。
+- [ ] 已创建 `changes/<change-id>/skill-usage.md`，并按 `skills/skills-routing.md` 记录命中的 harness skill。
 - [ ] 已执行 `gates/skill-usage-gate.sh changes/<change-id>`；没有遗留 TODO，N/A 行均有原因。
-- [ ] 如使用外部 Codex skill / Brooks lens，已按 `skills/third-party/external-codex-skills.md` 记录 USED / N/A；没有用外部 lens 替代 harness-local skill。
+- [ ] 如使用外部 Codex skill / Brooks lens：RZ 未引入 `skills/third-party/` → 本项 `N/A`。不得用外部 lens 替代 harness-local skill。
 - [ ] 未启用 `brooks-sweep`、PR/CI auto-fix loop 或外部 app real action 自动化。
 - [ ] 如涉及 Java 后端行为变更，已创建 `changes/<change-id>/backend-test-plan.md`，或记录 `NOT_APPLICABLE` 原因。
 - [ ] 后端测试矩阵已覆盖本次适用的 validation、permission、state transition、idempotency、async/job、adapter failure、rollback/error、mapper/update count。
@@ -152,7 +152,7 @@
 - [ ] 独立 Reviewer 已按 `skills/reviewer/SKILL.md` 审查 spec、contract、technical-solution、diff、evidence、skill usage、Tester、AI test report 和 PC E2E Smoke 证据。
 - [ ] `changes/<change-id>/review.md` 已记录 `technical_solution_alignment`、`harness_constraints`、`architecture_drift`、`comment_log_quality`、`maintainability_readability`、`test_evidence`、`high_risk_count` 和 `medium_risk_status`。
 - [ ] 已执行 `gates/reviewer-gate.sh changes/<change-id>`；`high_risk_count: 0`，所有必查面均为 `PASS`。
-- [ ] 如涉及 Pre-PR、架构债、技术债或测试质量审查，Reviewer 已读取 `skills/third-party/external-codex-skills.md`，并将 Brooks findings 归并到 HIGH / MEDIUM / LOW。
+- [ ] 外部 Codex / Brooks lens：RZ 未引入 `skills/third-party/` → 本项 `N/A`。
 - [ ] Reviewer HIGH 风险为 0；如存在 HIGH，当前 change 必须保持 `BLOCKED`，不得进入人工 review / PR。
 - [ ] Reviewer MEDIUM 风险已修复或记录。
 - [ ] Reviewer 之后，用户已做最终人工 review。

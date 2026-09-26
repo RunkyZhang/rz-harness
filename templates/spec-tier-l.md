@@ -85,6 +85,7 @@ non_blocking_questions:
 
 | Item | Value |
 | --- | --- |
+| Lane | `lanes/fullstack-crud.md` / `none`（写入后与 `status-card.md` 保持一致） |
 | Contract doc | `changes/<change-id>/contract.md` |
 | Technical solution doc | [QUESTION] `changes/<change-id>/technical-solution.md` 或飞书 Wiki 子文档 URL，必须按 `templates/technical-solution.md` 产出全栈技术方案 |
 | Verification map | `changes/<change-id>/verification-map.md`，必须按 `templates/verification-map.md` 把关键约束映射到验证方式 |

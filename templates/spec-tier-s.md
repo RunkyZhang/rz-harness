@@ -2,6 +2,12 @@
 
 > Tier S 适用于单仓小修或文档/配置外的低风险修复。面向人工 review / 用户确认的正文默认中文；代码标识、命令、API 路径、字段名、错误码、YAML key、日志 key 和引用原文保持原样。
 
+```yaml
+lane: lanes/bugfix-fast.md
+```
+
+无匹配 lane 时改为 `none`，并说明走 `AGENTS.md` 整体工作流。
+
 ## 一句话目标
 
 [QUESTION] 写清用户确认的目标。
