@@ -30,6 +30,7 @@
 
 # --- 用户 / 账号（明文密码不要写进 spec / evidence）---
 # export RZ_E2E_USERNAME=""
+# export RZ_E2E_PASSWORD=""                 # 仅本机测试密码；不要写进 spec / evidence
 # export RZ_E2E_PASSWORD_SOURCE="keychain" # 或 local-env / browser-session
 
 # --- 数据库（仅本文件或钥匙串）---

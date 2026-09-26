@@ -2,9 +2,8 @@
 
 本仓库是 RZ AI Harness **控制面**：规矩、模版、gate、子 Agent 人设、变更包工作目录。业务代码在各自 git 仓里，用磁盘路径引用，不要把业务仓 clone 或拷进本目录。
 
-## 控制面
+## 控制面（control plane）
 控制面 = 本仓库 `rz-harness`，harness 的载体。目录 / 内容分两类：
-
 - **配置类**：要按本机环境和使用的 runtime（Cursor / Codex / OpenCode）做本地化填写
   - 运行时参数：`config/runtime_local.sh` → 见「控制面 → 运行时参数」
   - Git 仓库：`git-registry.md`、`baselines/` → 见「控制面 → Git仓库」，「控制面 → Baseline」
@@ -46,7 +45,7 @@
 > 角色人设在 `subagents/<role>_agent.md`（Explorer / Reviewer / Test Strategy / Tester / Backend / Frontend / Mobile）。详见「子 Agent」。
 
 ### 知识与规则
-> 知识库在 `docs/`（如 `docs/pitfalls/`）；技术栈规则在 `rules/`；任务路线在 `lanes/`（rules/、lanes/ RZ 未建）。
+> 知识库在 `docs/`（如 `docs/pitfalls/`）；技术栈规则在 `rules/`（`rules/frontend-vue2.mdc`、`rules/frontends/legacy-sfa/`）；任务路线在 `lanes/`（`bugfix-fast` / `fullstack-crud`；`pc-e2e-smoke` 是 E2E Pack，不是开工主 lane）。技能路由正文在 `skills/skills-routing.md`（`docs/skills-routing.md` 只做指针）。`docs/standards/comment-logging.md` RZ 未建 → 注释/日志用 `scripts/code-comment-log-quality.sh`。
 
 ### runtime 的 Hook 机制
 > - 大多数 runtime（Cursor / Codex / OpenCode）都有自己的 hook 机制。用户可以自定义“当某事件发生时，让 runtime 执行某个脚本”。和 LLM 的 `tool_call` 不同，hook 是 runtime 的功能，不依赖 LLM 决策
@@ -268,15 +267,15 @@
 ### 文件列表：
 | # | 文件                                                | 从哪创建                                                                                                 | 何时出现 | 作用 | 谁写 | 谁检查 | 怎样算过 / 备注 |
 |---|---------------------------------------------------|------------------------------------------------------------------------------------------------------|---|---|---|---|---|
-| 1 | `spec.md`                                         | 拷 `templates/spec-tier-s.md` / `spec-tier-m.md` / `spec-tier-l.md`（scaffold）                         | 建包即有；需求理解时填。S/M/L 都要 | 目标、范围内外、三标签、`allowed_paths` | 主 Agent；Explorer 只读供料 | `confidence-gate.sh` | 阻塞 `[QUESTION]` 已清、`[ASSUMP]` 已确认并写成带来源的 `[FACT]` |
-| 2 | `status-card.md`                                   | 拷 `templates/status-card.md`；文首加 `artifact_profile` + `artifact_schema_version: 1`（scaffold 会写；手工建包也要写） | 建包即有；此后贯穿更新。S/M/L 都要 | 给人看的阶段、阻塞、下一步、Agent Roster | 主 Agent 跑 `changes/status-card.sh` 后写入 | 无单独「状态卡 gate」。marker 由 `gates/change-artifacts-gate.sh` 读 | 摘要不是拍板原文；脚本不覆盖 Roster |
+| 1 | `spec.md`                                         | 拷 `templates/spec-tier-s.md` / `spec-tier-m.md` / `spec-tier-l.md`（scaffold）                         | 建包即有；需求理解时填。S/M/L 都要 | 目标、范围内外、三标签、`lane`、`allowed_paths` | 主 Agent；Explorer 只读供料 | `confidence-gate.sh` | 阻塞 `[QUESTION]` 已清、`[ASSUMP]` 已确认并写成带来源的 `[FACT]` |
+| 2 | `status-card.md`                                   | 拷 `templates/status-card.md`；文首加 `artifact_profile` + `artifact_schema_version: 1`（scaffold 会写；手工建包也要写） | 建包即有；此后贯穿更新。S/M/L 都要 | 给人看的阶段、阻塞、下一步、`Lane`、Agent Roster | 主 Agent 跑 `changes/status-card.sh` 后写入 | 无单独「状态卡 gate」。marker 由 `gates/change-artifacts-gate.sh` 读 | 摘要不是拍板原文；脚本不覆盖 Roster |
 | 3 | `evidence.md`                                     | scaffold **当场生成空表**，无模板 md                                                                           | 建包即有；每跑命令就追加。S/M/L 都要 | 命令、结果摘要、阻塞。禁止密码/token | 主 Agent | 无单独过门；Reviewer 会看 | 只记摘要 |
 | 4 | `requirement-intake.md`                           | 条件命中时主 Agent 拷 `templates/requirement-intake.md`；scaffold / gate 都不创建                                | 条件：M/L 要结构化收需求时 | 把 PRD 收成结构化入口 | 主 Agent | `gates/requirement-intake-gate.sh` | 可无 |
 | 5 | `contract.md`                                     | 拷 `templates/api-contract.md` → 变更包内 `contract.md`（M/L scaffold 或手工拷）。RZ **只用这一条路径** | **空壳：** M/L 建包即有。**填写：** 契约冻结时 | 冻结 endpoint、字段、错误码、分页、空态 | 主 Agent；前端只读这份 | `contract-delta-gate.sh`（有增量时） | 未冻不得实现。不用 `docs/contracts/<id>-api.md` |
 | 6 | `technical-solution.md`                           | 拷 `templates/technical-solution.md`（M/L scaffold）                                                    | **空壳：** M/L 建包即有。**填写 / 确认：** 方案阶段 | 全栈技术方案 | 主 Agent | `technical-solution-gate.sh` | 用户对话确认后，主 Agent 写 `confirmation_status: CONFIRMED`（含 `confirmed_by` / `confirmed_at`，`allowed_next_stage` 非 `none`） |
 | 7 | `plan.md`                                         | 拷 `templates/plan-tier-m.md`（M/L scaffold）                                                           | **空壳：** M/L 建包即有。**填写：** 方案后、开工前 | 实现步骤、验证、回滚 | 主 Agent | 无单独过门；勿与状态卡两套打架 | v1 可把步骤写进状态卡 |
 | 8 | `verification-map.md`                             | 拷 `templates/verification-map.md`（M/L scaffold）                                                      | **空壳：** M/L 建包即有。**填写：** 同 plan | 每条约束怎么验（命令 / 人确认 / N/A） | 主 Agent | `verification-map-gate.sh` | 可与测试方案合并，标本是分开的 |
-| 9 | `skill-usage.md`                                  | 拷 `templates/skill-usage.md`（M/L scaffold）                                                           | **空壳：** M/L 建包即有。**填写：** 用到 skill 时；标本 M 强制 | 用过哪些 skill 或 N/A | 主 Agent | `skill-usage-gate.sh` | 未用写 N/A |
+| 9 | `skill-usage.md`                                  | 拷 `templates/skill-usage.md`（M/L scaffold）                                                           | **空壳：** M/L 建包即有。**填写：** 用到 skill 时；标本 M 强制 | 按 `skills/skills-routing.md` 记录用过哪些 skill 或 N/A | 主 Agent | `skill-usage-gate.sh` | 未用写 N/A |
 | 10 | `agent-dispatch-plan.md`                          | 拷 `templates/agent-dispatch-plan.md`（M/L scaffold）。RZ 不调标本 `agent-dispatch-plan.sh` / registry | **空壳：** M/L 建包即有。**填写：** 派子 Agent 前 | 准备派哪些子 Agent | 主 Agent | 标本另有 `agent-dispatch-plan-gate.sh`，**RZ 未拷**；派前对照 `subagents/dispatch_subagent.md` | 不派实现 Agent 也可写 N/A |
 | 11 | `capability-spec.md` / `behavior-spec.md`         | **无模板**，按 AGENTS 自建                                                                                  | 条件：复杂状态机 / 权限 / 跨端 | 行为或能力边界 | 主 Agent | 在 `verification-map.md` 映射 | 普通 CRUD 写 N/A |
 | 12 | `ai-test-plan.md`                                 | 拷 `templates/ai-test-plan.md`（M/L scaffold 空壳）                                                       | **空壳：** M/L 建包即有。**填写 / 确认：** 方案确认后、实现前 | AI 测试方案 | **Test Strategy** 填内容；主 Agent 不得代写。用户确认后主 Agent 写 `test_plan_status: CONFIRMED` | `ai-test-plan-gate.sh` | 未确认不得实现 |
@@ -303,7 +302,54 @@
 | 33 | `retro.md`                                        | 收口时主 Agent 拷 `templates/retro.md`；scaffold / gate 都不创建                                               | 收口时，可后补 | 复盘 | 主 Agent | 无单独过门 | 变更包不进 git；大文件仍放包内 `artifacts/` |
 | 34 | `handoff.md`                                      | **无 `templates/handoff.md`**；按 handoff skill 里的章节自建                                                  | **随时**：换线程、暂停、上下文压缩 | 留给**下一个主 Agent**的交接单 | 主 Agent | 无 gate | 不是 Explorer / Reviewer 之间的信箱 |
 
-## 强制工作流
+## 工作流
+
+### 整体工作流
+
+从需求进入 → 收口，阶段序列如下。每阶段的门禁细节见「停止点」与「强制工作流」，产物清单见「变更包 → 文件列表」。**lane 不能豁免 gates。**
+
+编号是清单，**不是**不可调换的时间轴：环境就绪（停止点 4）可提前准备，强制时点在真 E2E 前；复杂 UI（停止点 6）在可运行页面之后、宣称 UI 通过之前。
+
+**档位裁剪：** S 档步骤 5–8、11–12（契约 / 技术方案 / AI 测试方案 / 环境 / Tester / AI 测试报告）默认可写 `N/A` 和原因，但仍须 spec、`allowed_paths`、evidence，且不得在 `main`/`master` 改业务代码。M/L 不得用 lane 跳过停止点。无匹配 lane 时仍走本主线，再按档位裁剪——不是另有一套可退回的流程。
+
+业务工作开始前 `source config/runtime_local.sh`；路径空不要猜。M/L 建包后给用户的第一条回复须包含本次停止点（见「强制工作流」）。
+
+1. **定 `change-id`**：用业务含义命名，不要用 `demo` / `tbd` 这类默认名。
+2. **选 lane**：按任务类型选（见「lane工作流」），立刻写入 `spec.md` 和 `status-card.md`；无匹配则 `lane: none`，继续本主线。
+3. **建变更包**：`changes/change-scaffold.sh --tier S|M|L <change-id>`。
+4. **写 spec**：用户确认的写 `[FACT]`、推断写 `[ASSUMP]`、需拍板写 `[QUESTION]`，并写 `allowed_paths`（见「需求理解」）。（停止点 1）
+5. **冻结契约**：`changes/<change-id>/contract.md`。（S / 无 API 可 `N/A`）
+6. **技术方案**（M/L）：`technical-solution.md` + 用户确认。（停止点 2）
+7. **AI 测试方案**（M/L）：独立 Test Strategy 写 `ai-test-plan.md` + 用户确认。（停止点 3）
+8. **环境就绪**（真 E2E）：填 `environment-readiness.md`。（停止点 4；可提前）
+9. **开工门禁**：从业务仓远程主干 `origin/master`（或 `origin/main`）拉 `harness/<change-id>`；过四重开工门禁。（停止点 5）
+10. **实现 + 记证据**：只改 `allowed_paths` 内文件；命令记入 `changes/<change-id>/evidence.md`。命中复杂 UI 时写 `ui-confirmation.md`，用户看可运行页面后确认。（停止点 6）
+11. **Tester 验收**（M/L）：独立 Tester 对照已确认测试方案，直到 `GOAL_ACHIEVED`。（停止点 7）
+12. **AI 测试报告**（提测 / 预发）：`ai-test-report.md` + 用户确认。（停止点 8）
+13. **Reviewer 过门**：只读审查，`high_risk_count: 0`。（停止点 9；S 走 `bugfix-fast` 时仍建议 Reviewer）
+14. **人工 review / PR**。
+15. **retro 收口**。
+
+> `status-card.md` 贯穿全程：阶段切换 / 阻塞 / 用户问「下一步」时更新。
+
+### lane工作流
+> **lane = 某类任务的默认步骤清单（任务路线）**，放在 `lanes/`。与档位正交：lane 选步骤菜单，tier 选产物厚度。lane **不能豁免**「强制工作流」与 gates。
+
+选完立刻写入（换会话才找得到）：
+- `spec.md`：`lane: lanes/<name>.md`（无匹配写 `none`，并说明走整体工作流）
+- `status-card.md` 文首表：`Lane` 填同一路径
+
+**开工主 lane**（建包时选一条）：
+- 小修 / bugfix → `lanes/bugfix-fast.md`（常配档位 S）
+- 低风险全栈 CRUD → `lanes/fullstack-crud.md`（常配档位 M）
+
+**子 lane / Pack**（不是开工三选一；实现之后按触发条件套）：
+- PC 冒烟 → `lanes/pc-e2e-smoke.md`（CRUD 命中 E2E Pack 再读）
+
+无匹配：不编造新 lane，走「整体工作流」并按档位裁剪。
+
+
+### 强制工作流
 对档位 M/L、跨仓、后端行为、DB 或复杂 UI 工作，给用户的第一条回复必须包含「本次 harness 流程和停止点」：spec/contract/solution/test-plan/env/code-start/UI/DB/Tester/report/pre-merge 关卡。以 `changes/<change-id>/status-card.md` 作为用户可见的状态卡。
 
 写代码之前：阅读当前变更，业务工作加载 `config/runtime_local.sh`，确认允许的仓库/路径，区分 `[FACT]` / `[ASSUMP]` / `[QUESTION]`，未解决的假设/问题不得进入实现，并优先使用目标仓样板。
@@ -320,7 +366,7 @@
 行为/契约变更在实现前需要 spec、契约文档，
 以及 `changes/<change-id>/evidence.md` 中的证据。业务代码审查前应用注释/日志质量检查
 （`docs/standards/comment-logging.md` RZ 未建 → 用 `scripts/code-comment-log-quality.sh`）。
-本地 harness skills 路由（`docs/skills-routing.md` RZ 未建 → 按 `subagents/` 人设）；记录
+本地 harness skills 按 `skills/skills-routing.md` 路由；记录
 `changes/<change-id>/skill-usage.md` 并运行 `gates/skill-usage-gate.sh`。
 
 Java 后端行为变更在实现前需要 `backend-test-plan.md`，
@@ -362,10 +408,6 @@ Reviewer 关卡要求技术方案对齐、harness 约束、架构漂移、注释
 
 CodeGraph 是可选的，不是关卡，**RZ 未引入**（`codegraph-preflight` 等未拷）→ 本段 N/A；命中场景再从标本引入。届时：在业务 CodeGraph review 前运行 `scripts/codegraph-preflight.sh <repo-id-or-path>` 并作为 MCP `projectPath`；宽结构/路由问题优先 `codegraph_explore`，精确符号跟进用 node/search/callers/trace；未命中不是无影响的证明。
 
-## 置信度关卡
-
-`[FACT]` = 由 PRD/用户/代码/契约提供来源；`[ASSUMP]` = 未确认且不得进入实现；`[QUESTION]` = 需要用户决定。
-无来源的业务规则、字段、状态、权限、错误码、默认值或回滚规则不是事实。
 
 ## 受保护行为
 
@@ -376,7 +418,7 @@ CodeGraph 是可选的，不是关卡，**RZ 未引入**（`codegraph-preflight`
 合并前，对变更的业务文件运行 `gates/diff-hygiene-gate.sh <repo> [--base <ref>] <files...>` 和 `gates/temp-hardcode-scan.sh <files...>`。
 
 ## 子 Agent
-主 Agent 负责派发和管理子 Agent。创建靠 **runtime 内置工具**（例如：Cursor 为 `Task`）。子 Agent 使用新 session，默认看不到主对话；spec / diff 等必读材料写进派发 prompt 的 `Read inputs`，由子 Agent 读磁盘。
+> 主 Agent 负责派发和管理子 Agent。创建靠 **runtime 内置工具**（例如：Cursor 为 `Task`）。子 Agent 使用新 session，默认看不到主对话；spec / diff 等必读材料写进派发 prompt 的 `Read inputs`，由子 Agent 读磁盘。
 
 - 目录：`subagents/`
 - 派发协议（只给主 Agent）：`subagents/dispatch_subagent.md`
@@ -384,8 +426,7 @@ CodeGraph 是可选的，不是关卡，**RZ 未引入**（`codegraph-preflight`
 - 默认只读：**Explorer** / **Reviewer**。方案确认后、写代码前派 **Test Strategy**。实现后、发布前派 **Tester**。**Backend** / **Frontend** / **Mobile** 为候选实现角色，须契约 v0.1、allowed paths 与隔离 worktree 才派发。
 - 控制面默认只允许主 Agent 写。主 Agent 可以实施、集成和修复，但不得代替 Reviewer / Tester 的裁决。
 
-当前角色：
-
+现有角色：
 - **Explorer**（`subagents/explorer_agent.md`）：方案或实现前只读查证。对主 Agent输出 `[FACT]` / `[ASSUMP]` / `[QUESTION]` 进行专业的查证。值返回信息给主 Agent 不改 `spec.md` 文件。
 - **Reviewer**（`subagents/reviewer_agent.md`）：实现之后、人工 review / PR 之前只读审查。只写 `changes/<change-id>/review.md`；`high_risk_count` 为 0 才建议进人审。
 - **Test Strategy**（`subagents/test_strategy_agent.md`）：技术方案确认后、实现前编写 `ai-test-plan.md`，须用户确认；不写业务代码。
@@ -397,22 +438,9 @@ CodeGraph 是可选的，不是关卡，**RZ 未引入**（`codegraph-preflight`
 每个子 Agent 提示词必须以 `Agent Label: <change-id> / <role> / <scope>` 开头，并且必须声明写入范围、禁止路径、要求产出，以及该 Agent 是否只读。子 Agent 最终回复应以 `<role>: <DONE|PASS|BLOCKED|NEEDS_CONTEXT>` 开头；主 Agent 在 `changes/<change-id>/status-card.md` 的 Agent Roster 中记录相同的标签和状态。详细约定见 `subagents/dispatch_subagent.md`。
 
 ## 命令
-
 使用仓库特定的基线文件。初始候选：`mvn -DskipTests compile`、`scripts/frontend-lint-build.sh <repo> lint-files <files...>`、`scripts/frontend-dev-server.sh frontend-map-system 9527`、`npm run build:test`。
 先运行范围最窄的有用检查。
 
-## 尚未引入的脚本（命中场景再 copy）
-
-标本 `learning_objectives/scripts/` 里有、RZ 暂未引入的脚本。模板 / 人设里引用到它们时按“指引”理解；实际执行前需先从标本 copy 并做本地化适配（变量 `SFA_`→`RZ_`、gate 放 `gates/`、工具放 `scripts/`、配置 `repos.local`→`runtime_local`）：
-
-- 多 Agent / 多仓编排：`workstream-dispatch-gate.sh`、`parallel-worktree-gate.sh`、`agent-output-contract-gate.sh`（含 `lib/agent-registry.mjs`）、`agent-review-package.sh`、`agent-task-brief.sh`
-- CodeGraph：`codegraph-preflight.sh`、`codegraph-evidence-gate.sh`
-- GitNexus：`gitnexus-detect-changes.sh`、`gitnexus-impact.sh`
-
-**尚未建立的目录**：`docs/`（`skills-routing.md`、`standards/comment-logging.md`、`architecture/repo-registry.md`）、`rules/`、`lanes/`。涉及它们的检查或指引暂按 `N/A`：
-
-- `gates/swagger-model-documentation-gate.sh` 依赖 `rules/backends/*/manifest.yml`；没有 profile 时**不做检查、直接放行**，等 `rules/` 建起来后才生效。
-- `gates/knowledge-reference-gate.sh` 依赖 `docs/pitfalls/`、`docs/samples/`、`docs/decision-log/`；已建 `docs/pitfalls/`，其余命中再建。
 
 ## 完成定义
 
