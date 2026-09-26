@@ -2,42 +2,44 @@
 
 本仓库是 RZ AI Harness **控制面**：规矩、变更包、gate、子 Agent 人设。业务代码在各自 git 仓里，用磁盘路径引用，不要把业务仓 clone 或拷进本目录。
 
-## 运行时参数
+## 控制面
+> harness 配置，相当于 app 程序中的【设置】功能。包括运行时参数、语言政策、Git仓库、Baseline、Hook。本地化配置适用于你现在的开发环境。Hook 比较特殊，是 runtime（Cursor / Codex / OpenCode）的一部分，所以根据不同的 runtime 有不同的配置
+
+### 运行时参数
 - 本机配置：路径 `config/runtime_local.sh`，按当前开发环境填写。参数至少包括：业务仓绝对路径、账号/凭据**来源**、数据库连接信息、本地服务地址/代理/端口、本机工具命令等
 - 明文密码、token、cookie 等只放在 `config/runtime_local.sh` 或系统钥匙串。以上禁止写入 spec、evidence、状态卡或任何会进 git 仓库的文件
 
-## 语言政策
+### 语言政策
 - 给人工 review / 用户确认的文档默认使用简体中文
 - 代码标识、命令、API 路径、字段名、错误码、YAML key、日志 key 和引用这些原文保持原样不要翻译为英文
 
-## Git仓库
+### Git仓库
 先读 `git-registry.md`。当前仓库：
 - 后端代码：`sfa-sales-management`、`sfa-backend`、`sfa-root`、`sfa-base`、`arch-open`、`arch-event`、`sfa-common-sdk`
 - Web端代码：`mapSystem`
 - App端代码：`sign-up`、`sfa-ios`、`sfa-android`
 
-## Baseline
+### Baseline
+> 仓说明书在 `baselines/` 目录下。**不要一次读完全部。** 只读本次变更涉及的仓。
 
-仓说明书在 `baselines/`。**不要一次读完全部。** 只读本次变更涉及的仓。
+- 主 Agent 在写该仓 `allowed_paths`、选样板、第一次改业务代码之前读取对应文件。Explorer 下钻业务仓前先读。Backend / Frontend / Mobile 实现前必读。Reviewer 审查该仓 diff 时对照其中的分层、样板和受保护路径。
+- `mapSystem` 额外遵守 `baselines/frontend-map-system.md` 的 Node 版本、登录和临时路由约定。
 
-主 Agent 在写该仓 `allowed_paths`、选样板、第一次改业务代码之前读取对应文件。Explorer 下钻业务仓前先读。Backend / Frontend / Mobile 实现前必读。Reviewer 审查该仓 diff 时对照其中的分层、样板和受保护路径。
+### runtime 的 Hook 机制
+> 大多数 runtime（agent 程序，如 codex，cursor等）都有自己的 hook 机制。
 
-`mapSystem` 额外遵守 `baselines/frontend-map-system.md` 的 Node 版本、登录和临时路由约定。
 
 ## 领域名词
 
 ### harness / 控制面 / runtime
-
 | 词 | 是什么 | 负责什么                                      |
 |---|---|-------------------------------------------|
 | **runtime** | 真正跑起来的 agent 程序（Cursor / Codex / OpenCode） | 提供 agent 循环、读文件、跑 shell、权限、沙箱——**能跑**     |
 | **harness** | 套在 runtime 外面的工程系统（规则 + 工件 + 检查 + 流程） | 让 agent **在边界里跑**：改哪些文件、什么时候必须停、宣称完成拿什么证明 |
 | **控制面** | 本仓库 `rz-harness` 本身 | harness 的载体：包含规矩、模板、gate、子 Agent 人设文等文件   |
 
-
 ### 档位
-
-这次需求使用哪个档位分级，使用不同档位流程上会有不同的步骤。不一定代表需求大小，而是改动范围、风险和环境依赖。功能点少也可能是 L（例如改权限、动真实库）；页面很多也可能是 S（单仓低风险小修）。
+> 这次需求使用哪个档位分级，使用不同档位流程上会有不同的步骤。不一定代表需求大小，而是改动范围、风险和环境依赖。功能点少也可能是 L（例如改权限、动真实库）；页面很多也可能是 S（单仓低风险小修）。
 
 | 档 | 典型长什么样 | 流程上多什么                                  |
 |---|---|-----------------------------------------|
@@ -46,8 +48,7 @@
 | L | 跨仓、高风险、强依赖真实环境、发布前风险高 | 包括 M 档内容，再加环境就绪、测试报告、决策记录               |
 
 ### 需求理解（FACT/ASSUMP/QUESTION）
-
-主 Agent 把「PRD 写了的 / 代码里已有的 / 用户说的 / 模型猜的」拆开，写进 `changes/<change-id>/spec.md`。聊天不是事实源。没出处的业务规则、字段、状态、权限、错误码、默认值、回滚规则不是事实。
+> 主 Agent 把「PRD 写了的 / 代码里已有的 / 用户说的 / 模型猜的」拆开，写进 `changes/<change-id>/spec.md`。聊天不是事实源。没出处的业务规则、字段、状态、权限、错误码、默认值、回滚规则不是事实。
 
 | 标签 | 是什么 | 限制                                                             |
 |---|---|----------------------------------------------------------------|
@@ -55,7 +56,7 @@
 | `[ASSUMP]` | 模型推断、尚未确认 | 不阻塞开工，但这条不得作为实现依据；一旦渗进实现文件，`assumption-leak-gate.sh` 会检查出 FAIL |
 | `[QUESTION]` | 必须用户决定，Agent 不能代选 | 阻塞项未清，不得写业务代码                                                  |
 
-拿不准时写成 `[QUESTION]`，不要先标成 `[FACT]`。
+注意：拿不准时写成 `[QUESTION]`，不要先标成 `[FACT]`。
 
 **谁写：** 
 - 主 Agent 理解需求文档、定义全部三标签、写入 `spec.md`。
@@ -77,12 +78,11 @@
 | `confidence-gate.sh` | 只扫描  `spec.md` 判断是否还剩阻塞 `[QUESTION]` | 问题没答完，不能开工。**不会**因为 `spec.md` 里还留着未确认 `[ASSUMP]` 就不开工 |
 | `assumption-leak-gate.sh` | 检查实现文件里有没有 `[ASSUMP]` 字面标签，以及 spec 中假设的标识符有没有漏进实现代码   | 假设漏进实现                                                |
 
+
 ## 运行机制：Guides 与 Sensors
+> harness 不替代 agent，而是**围住** agent：行动前喂资料（Guides），行动后压检查（Sensors）
 
-harness 不替代 agent，而是**围住** agent：行动前喂资料（Guides），行动后压检查（Sensors）。
-
-### 一张图：两层控制怎么围住 agent
-
+### 一张图：两层控制怎么围住 agent 让其循环执行，判断
 ```text
         Guides（AGENTS / templates / baselines / subagents 人设 / lane）
                     ↓ 行动前喂进去
@@ -97,12 +97,10 @@ harness 不替代 agent，而是**围住** agent：行动前喂资料（Guides�
 - 需要人拍板的节点见「停止点」——本质是 loop 暂停、把控制权交回给人的时刻。
 
 ### Guides：行动前的引导（不自动拦）
-
-喂给 agent 读的说明，靠“读”起作用，**本身不 PASS/FAIL、不拦截**：`AGENTS.md`、`templates/`、`baselines/`、`subagents/` 人设、lane。
+> 喂给 agent 读的说明，靠“读”起作用，**本身不 PASS/FAIL、不拦截**：`AGENTS.md`、`templates/`、`baselines/`、`subagents/` 人设、lane。
 
 ### Sensors：行动后的检查（会拦）
-
-agent 动作后压回来的检查，判定失败就是反向压力，逼它重做：
+> agent 动作后压回来的检查，判定失败就是反向压力，逼它重做：
 
 | 层 | 例子 | 怎么判 |
 |---|---|---|
@@ -112,7 +110,6 @@ agent 动作后压回来的检查，判定失败就是反向压力，逼它重�
 设计时先问：这条约束能不能用脚本判？能 → 写成 gate；不能（代码好不好、架构漂不漂）→ 交 Reviewer。另外 gate 本身是**拉式**的：要有人 / agent 去跑它，自动跑要靠 hook。
 
 ### gate（门禁）
-
 > gate 是 Sensors 里最“确定性”的一类：只做能**算清**的判断（文件是否存在、字段是否填了、路径是否在白名单），写成脚本、放 `gates/`。
 
 检查变更包产出物或流程状态、输出 PASS/FAIL 的可执行脚本。主 Agent / hook 根据 exit code 判断流程继续或阻断。gate 只裁决不干活。
@@ -125,7 +122,6 @@ agent 动作后压回来的检查，判定失败就是反向压力，逼它重�
 - **fail-closed**：判定不了时默认 **FAIL**——文件缺失、字段没填、条件无法判定都不算通过；不许“找不到就跳过/放行”（反向的 fail-open 是明确禁止的）
 
 ### 停止点
-
 停止点和流程节点并不一一对应。流程中需要确认的点。停止点分两类：
 - **用户拍板类**：必须等用户在对话里确认才能进入下一阶段。口头确认后由**主 Agent**把确认状态写入对应文件，再跑 gate；用户不用自己改 YAML。
 - **自动关卡 / 独立角色类**：gate 或 Tester / Reviewer 放行。用户不逐项参与；`BLOCKED` 或 HIGH 才升级给用户。
@@ -149,8 +145,7 @@ agent 动作后压回来的检查，判定失败就是反向压力，逼它重�
 | 9 | Reviewer 过门 | 独立角色 | Reviewer 写 `review.md`。主 Agent 不得代裁                                                                | 自动点，无需用户参与 | `reviewer-gate.sh` | `high_risk_count: 0`。代码又变则审查过期，按需重跑 Tester 再重跑 Reviewer |
 
 ## 变更包（change）
-
-一次需求开始会创建目录 `changes/<change-id>/` ，相当于这次需求的本机工作目录。**整包不提交 git**（`.gitignore` 为 `/changes/*/`）。`changes/` 根下的 `change-scaffold.sh`、`status-card.sh`、`change-whitelist-spec.md` 是控制面，要进 git。
+> 一次需求开始会创建目录 `changes/<change-id>/` ，相当于这次需求的本机工作目录。**整包不提交 git**（`.gitignore` 为 `/changes/*/`）。`changes/` 根下的 `change-scaffold.sh`、`status-card.sh`、`change-whitelist-spec.md` 是控制面，要进 git。
 
 ### 脚本
 执行 `changes/change-scaffold.sh --tier S|M|L <change-id>` 。脚本会：
@@ -167,19 +162,15 @@ agent 动作后压回来的检查，判定失败就是反向压力，逼它重�
 - 大文件（截图、录屏、trace、长日志）放 `changes/<change-id>/artifacts/`，不要摊在包根、也不要放到仓库根的 `artifacts/`
 
 ### 状态卡（`status-card.md`）
-
-给人看的**单一流程入口**：这次需求走到哪、下一步是什么、卡在哪、要不要你拍板、子 Agent 在干什么。
+> 给人看的**单一流程入口**：这次需求走到哪、下一步是什么、卡在哪、要不要你拍板、子 Agent 在干什么。
 
 #### 作用
-
-把各产物上的真实状态抄成一张卡。方案是否 `CONFIRMED`、环境是否 `READY`、Tester 是否 `GOAL_ACHIEVED`，原文在各自 md 里。状态卡只镜像，不拍板。用户口头确认后，主 Agent 先改对应产物，再改状态卡，再跑对应 gate。不要只改状态卡就宣称过门。无单独「状态卡 gate」；它不 PASS/FAIL、不拦截。`BLOCKED` 写在卡上是合法停、升级给你，不是放行。
+> 把各产物上的真实状态抄成一张卡。方案是否 `CONFIRMED`、环境是否 `READY`、Tester 是否 `GOAL_ACHIEVED`，原文在各自 md 里。状态卡只镜像，不拍板。用户口头确认后，主 Agent 先改对应产物，再改状态卡，再跑对应 gate。不要只改状态卡就宣称过门。无单独「状态卡 gate」；它不 PASS/FAIL、不拦截。`BLOCKED` 写在卡上是合法停、升级给你，不是放行。
 
 #### 初始文件
-
-建包即有，S/M/L 都要。`changes/change-scaffold.sh` 拷 `templates/status-card.md` 到 `changes/<change-id>/status-card.md`，并在文首写入 `artifact_profile` 和 `artifact_schema_version: 1`。`gates/change-artifacts-gate.sh` 靠这两行识别档位。手工建包也要写这两行。
+> 建包即有，S/M/L 都要。`changes/change-scaffold.sh` 拷 `templates/status-card.md` 到 `changes/<change-id>/status-card.md`，并在文首写入 `artifact_profile` 和 `artifact_schema_version: 1`。`gates/change-artifacts-gate.sh` 靠这两行识别档位。手工建包也要写这两行。
 
 #### 触发时机
-
 主 Agent 在下列事件刷新状态卡，不必等你开口：
 
 - 你问「现在到哪了」「下一步是什么」或同类问题
@@ -194,31 +185,25 @@ agent 动作后压回来的检查，判定失败就是反向压力，逼它重�
 不是契约之后才出现的单独阶段，也不是收口时才写的总结。
 
 #### 动作
-
 1. 跑 `changes/status-card.sh changes/<change-id>` 脚本，脚本只收集当前变更包（`changes/<change-id>`）状态信息给主 Agent；
 2. 主 Agent 根据脚本收集的状态信息，并聚合其他信息更新 `status-card.md`（不要覆盖 Agent Roster）；
 
 #### 其他规则
-
 - 只**主 Agent**写状态卡。子 Agent 不得改；
 - 当前阶段取值：`需求理解 / 方案确认 / 允许开工 / 实现中 / AI测试待确认 / 预发待发布 / 已收口`；
 - 脚本自动推断上限是 `允许开工`；`实现中` 和 `已收口` 读不到业务仓和收口状态，由主 Agent 在实现开始、收口时手动置位；
 - scaffold 只给空壳。主 Agent 建包后立刻写入当前阶段（通常 `需求理解`）、下一步、是否允许进入下一阶段、当前阻塞、需要人工确认。Agent Roster 从主 Agent 那一行开始填。禁止写入 token、cookie、DB password。
 
 ### 证据（`evidence.md`）
-
-可复查的**命令痕迹**：证明“真的跑过、结果如何”，不是口头「测过了」。宣称跑过编译、lint、gate、冒烟或重启，本轮就要在这里留下命令和结果摘要。
+> 可复查的**命令痕迹**：证明“真的跑过、结果如何”，不是口头「测过了」。宣称跑过编译、lint、gate、冒烟或重启，本轮就要在这里留下命令和结果摘要。
 
 #### 作用
-
-把每一步关键命令和结果落盘，成为可复查的本机事实源（变更包不进 git）。Agent 的自我汇报不是证据；宣称完成必须能在这里找到本轮命令输出。它不是验收裁决（裁决由 Tester 写在 `test-agent-verification.md`），也不是 gate（无单独 evidence gate）。
+> 把每一步关键命令和结果落盘，成为可复查的本机事实源（变更包不进 git）。Agent 的自我汇报不是证据；宣称完成必须能在这里找到本轮命令输出。它不是验收裁决（裁决由 Tester 写在 `test-agent-verification.md`），也不是 gate（无单独 evidence gate）。
 
 #### 初始文件
-
-建包即有，S/M/L 都要。路径 `changes/<change-id>/evidence.md`。**没有** `templates/` md；`changes/change-scaffold.sh` **当场生成**空表，首行是建包记录 `Scaffold … PASS`。表头：`Check | Command / Source | Result | Summary`；`Result` 取 `PASS` / `FAIL` / `BLOCKED` / `N/A`。
+> 建包即有，S/M/L 都要。路径 `changes/<change-id>/evidence.md`。**没有** `templates/` md；`changes/change-scaffold.sh` **当场生成**空表，首行是建包记录 `Scaffold … PASS`。表头：`Check | Command / Source | Result | Summary`；`Result` 取 `PASS` / `FAIL` / `BLOCKED` / `N/A`。
 
 #### 触发时机
-
 主 Agent 每跑一条关键命令就**追加**，不必等收口：
 
 - 编译、lint、gate、冒烟、重启、扫描执行后
@@ -227,20 +212,17 @@ agent 动作后压回来的检查，判定失败就是反向压力，逼它重�
 不要覆盖整表，不要等收口再补。
 
 #### 动作
-
 1. 每条关键命令执行后，把 `Check / Command / Result / Summary` 追加进 `evidence.md`；
 2. 长输出只留关键摘要和 `changes/<change-id>/artifacts/` 路径，不整段贴；
 3. 注释/日志扫描的 warning 也可记这里，交 Reviewer 判断。
 
 #### 其他规则
-
 - 只**主 Agent**写；Tester 的复测结论写在 `test-agent-verification.md`，主 Agent 不得代裁 `GOAL_ACHIEVED`；
 - **禁止写入** token、cookie、DB password、客户资料、未脱敏 SQL 结果、原始私密 prompt。明文机密只放 `config/runtime_local.sh` 或系统钥匙串。长日志、截图、录屏、trace 放 `changes/<change-id>/artifacts/` 或外部存储，evidence 只记路径和结论；
 - `gates/reviewer-gate.sh` 要求 `review.md` 引用 `evidence.md`，否则 Reviewer 关卡 FAIL——evidence 不是“有空才看”；
 - 与证据家族其他文件区分：`test-agent-verification.md`（Tester 裁决）、`verification-run-report.md`（verification-map 执行报告，脚本生成）、`codegraph-evidence.md`（结构影响线索）、`pc-e2e-smoke-report.md`（冒烟摘要）；
 
 ### 文件列表：
-
 | # | 文件                                                | 从哪创建                                                                                                 | 何时出现 | 作用 | 谁写 | 谁检查 | 怎样算过 / 备注 |
 |---|---------------------------------------------------|------------------------------------------------------------------------------------------------------|---|---|---|---|---|
 | 1 | `spec.md`                                         | 拷 `templates/spec-tier-s.md` / `spec-tier-m.md` / `spec-tier-l.md`（scaffold）                         | 建包即有；需求理解时填。S/M/L 都要 | 目标、范围内外、三标签、`allowed_paths` | 主 Agent；Explorer 只读供料 | `confidence-gate.sh` | 阻塞 `[QUESTION]` 已清、`[ASSUMP]` 已确认并写成带来源的 `[FACT]` |
@@ -279,8 +261,7 @@ agent 动作后压回来的检查，判定失败就是反向压力，逼它重�
 | 34 | `handoff.md`                                      | **无 `templates/handoff.md`**；按 handoff skill 里的章节自建                                                  | **随时**：换线程、暂停、上下文压缩 | 留给**下一个主 Agent**的交接单 | 主 Agent | 无 gate | 不是 Explorer / Reviewer 之间的信箱 |
 
 ## 模版文件
-
-全部模板文件保存在目录 `templates/`，用来生成 change 变更包所需文件。`templates/template_directory.md` 为字典目录（每个 template 作用是什么、用在哪段流程、拷到变更包后叫什么）。
+> 全部模板文件保存在目录 `templates/`，用来生成 change 变更包所需文件。`templates/template_directory.md` 为字典目录（每个 template 作用是什么、用在哪段流程、拷到变更包后叫什么）。
 
 ## 强制工作流
 对档位 M/L、跨仓、后端行为、DB 或复杂 UI 工作，给用户的第一条回复必须包含「本次 harness 流程和停止点」：spec/contract/solution/test-plan/env/code-start/UI/DB/Tester/report/pre-merge 关卡。以 `changes/<change-id>/status-card.md` 作为用户可见的状态卡。
