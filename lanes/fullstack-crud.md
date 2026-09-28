@@ -2,7 +2,7 @@
 
 > 适用于 1 个 Vue2 页面 + 1-2 个 Java 接口 + 不动复杂状态机的低风险后台 CRUD。
 >
-> **RZ 本地化说明**：契约只写 `changes/<change-id>/contract.md`。`gitnexus-*` / `codegraph-*` / `workstream-dispatch-gate` / `parallel-worktree-gate` RZ 未引入 → 相关步骤记 `N/A`，**不得当 FAIL**。Skill 路由：`skills/skills-routing.md`。前端规则：`rules/frontend-vue2.mdc`、`rules/frontends/legacy-sfa/`。本 lane 常配档位 M，**不能豁免**技术方案、AI 测试方案、Tester、Reviewer。PC 冒烟不是开工主 lane，命中 E2E Pack 再读 `lanes/pc-e2e-smoke.md`。
+> **RZ 本地化说明**：契约只写 `changes/<change-id>/contract.md`。`gitnexus-*` / `codegraph-*` / `workstream-dispatch-gate` / `parallel-worktree-gate` RZ 未引入 → 相关步骤记 `N/A`，**不得当 FAIL**。Skill 路由：`skills/skill_directory.md`。前端规则：`rules/frontend-vue2.mdc`、`rules/frontends/legacy-sfa/`。本 lane 常配档位 M，**不能豁免**技术方案、AI 测试方案、Tester、Reviewer。PC 冒烟不是开工主 lane，命中 E2E Pack 再读 `lanes/pc-e2e-smoke.md`。
 
 ## 适用条件
 
@@ -23,7 +23,7 @@
 6. 填写 `technical-solution.md`，用户确认后写成 `CONFIRMED`，运行 `gates/technical-solution-gate.sh`。（停止点 2）
 7. 独立 Test Strategy 填写 `ai-test-plan.md`；用户确认后主 Agent 写成 `test_plan_status: CONFIRMED`，运行 `gates/ai-test-plan-gate.sh`。（停止点 3）主 Agent 不得代写测试方案正文。
 8. 填写 `plan.md`、`verification-map.md`。
-9. 填写 `skill-usage.md`；按 `skills/skills-routing.md` 读取命中 skill，运行 `gates/skill-usage-gate.sh changes/<change-id>`。
+9. 填写 `skill-usage.md`；按 `skills/skill_directory.md` 读取命中 skill，运行 `gates/skill-usage-gate.sh changes/<change-id>`。
 10. 运行 `gates/confidence-gate.sh`、`gates/assumption-leak-gate.sh`、`gates/verification-map-gate.sh changes/<change-id>` 和 `gates/allowed-paths.sh`。
 11. 业务仓首次改代码前从远程主干拉 `harness/<change-id>`，运行 `gates/business-code-start-gate.sh`；禁止在 `main`/`master` 改业务代码。脏仓先写 `dirty-worktree-ledger.md` 并过 `business-dirty-worktree-gate.sh`。（停止点 5）
 12. 按 `git-registry.md` 和目标仓 `baselines/` 读规则；`mapSystem` 读 `rules/frontends/legacy-sfa/manifest.yml` 中的 `legacy-sfa-web`。

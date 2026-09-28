@@ -66,7 +66,7 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 - [ ] 需要派发子 Agent 时，已填写 `changes/<change-id>/agent-dispatch-plan.md`（scaffold 空壳来自 `templates/agent-dispatch-plan.md`），并对照 `subagents/dispatch_subagent.md`。标本 `agent-dispatch-plan-gate.sh` RZ 未拷。candidate implementation 只有在 contract、allowed paths、隔离分支和 code-start gate 满足后，复制并确认 `templates/agent-candidate-confirmation.md`。
 - [ ] 业务仓首次改代码前已运行 `gates/business-code-start-gate.sh changes/<change-id> <changed-files...>`；业务仓不在 `main/master`，且文件在 `spec.md` 的 `allowed_paths` 内。
 - [ ] 如业务仓已有 dirty diff，已复制 `templates/dirty-worktree-ledger.md` 到 `changes/<change-id>/dirty-worktree-ledger.md`，并运行 `gates/business-dirty-worktree-gate.sh <repo> --ledger changes/<change-id>/dirty-worktree-ledger.md`。
-- [ ] 已按 `skills/skills-routing.md` 读取命中的 harness skill，并复制 `templates/skill-usage.md` 到 `changes/<change-id>/skill-usage.md`。
+- [ ] 已按 `skills/skill_directory.md` 读取命中的 harness skill，并复制 `templates/skill-usage.md` 到 `changes/<change-id>/skill-usage.md`。
 - [ ] `gates/skill-usage-gate.sh changes/<change-id>` 已通过；命中场景未使用 skill 时已写 N/A reason。
 - [ ] 所有 `[ASSUMP]` 已确认、删除或降级为非实现项。
 - [ ] 需求理解流程图已写入 spec 或 plan；涉及异步、审批、待办、通知、定时任务/MQ 或跨仓流程时必须覆盖主路径和异常分支。
@@ -116,7 +116,7 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 ## 实施步骤
 
 1. 后端样板确认：列出 controller、service、DTO、test 参考路径。
-2. Skill 路由：按 `skills/skills-routing.md` 记录 `grill` / `explorer` / `diagnose` / `tdd` / `reviewer` / `handoff` 的 USED 或 N/A。
+2. Skill 路由：按 `skills/skill_directory.md` 记录 `grill` / `explorer` / `diagnose` / `tdd` / `reviewer` / `handoff` 的 USED 或 N/A。
 3. 前端样板确认：先记录用户是否指定 UI 参考页；如用户指定 URL、截图或页面路径，该参考页优先级高于 harness 默认样板，必须写明实际复用的页面骨架和全局 class；如用户未指定，再列出 2-3 个同模块页面样板。临时路由、审核/运营类后台页优先确认是否应参考 `src/views/audit/rectification/list.vue` 与 `src/views/audit/rectification/detail.vue`。
 4. 复杂 UI 判定：如触发复杂 UI，先复制 `templates/ui-confirmation.md` 到 `changes/<change-id>/ui-confirmation.md`，再生成 `changes/<change-id>/artifacts/ui-prototype/frontend-ui-prototype.html` 或 plan 指定的等价可运行页面，用 mock 数据覆盖核心布局、主路径交互、空态 / 错误态和关键状态反馈；人工 / 工人确认结论写入 `ui-confirmation.md` 和 evidence 后，才能进入正式 Vue 页面实现。
 5. 全栈技术方案确认：按 `templates/technical-solution.md` 先做 PRD 端到端覆盖矩阵，再汇总范围分工、关键业务结论、跨端主流程、后端设计、PC Web/H5/小程序/APP 页面方案、数据模型、API、导出、埋点/分析、测试、发布、回滚和风险；给人工确认。飞书文档中的主流程图、ER 图和状态/关系图必须用 `whiteboard`，不能用 Mermaid 代码块。
