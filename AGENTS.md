@@ -301,7 +301,7 @@
 ### 整体工作流
 > - 每阶段的门禁细节见「停止点」与「强制工作流」，产物清单见「变更包 → 文件列表」。
 > - 未命中条件的步骤写 `N/A` 和原因后跳过。
-> - S 档步骤 5–8、11–12（契约 / 技术方案 / AI 测试方案 / plan 与 verification-map / Tester / AI 测试报告）默认可写 `N/A` 和原因，但仍须 spec、`allowed_paths`、evidence。
+> - S 档：契约 / 技术方案 / AI 测试方案 / plan 与 verification-map / Tester / AI 测试报告 默认可写 `N/A` 和原因，但仍须 spec、`allowed_paths`、evidence。
 > - 真 E2E 前环境必须 `READY`（停止点 4），材料可提前准备。浏览器冒烟在实现之后，见 E2E Pack。未做真 E2E 时写 `N/A`。
 > - 飞书同步、Java `backend-test-plan.md`、Swagger、DB 模型命中才做，见「强制工作流」④。合并前卫生扫描见「受保护行为」。这些都不单列成步。
 
@@ -314,20 +314,20 @@
 7. **AI 测试方案**（M/L）：独立 Test Strategy 写 `ai-test-plan.md`。主 Agent 不得代写。用户确认后，主 Agent 写成 `test_plan_status: CONFIRMED`。（停止点 3）
 8. **plan 与 verification-map**（M/L）：方案确认后、开工前填写 `plan.md`、`verification-map.md`。S 可 `N/A`。
 9. **开工门禁**：从业务仓远程主干 `origin/master`（或 `origin/main`）拉 `harness/<change-id>`；过开工门禁（S 三重 / M/L 四重，见「强制工作流」②）。（停止点 5）
-10. **实现 + 记证据**：只改 `allowed_paths` 内文件；命令记入 `changes/<change-id>/evidence.md`。PRD 有界面时，写代码前先写 `ui-rule-checklist.md`，规则缺口停下等用户。实现完成后、进入第 11 步前：编译、定向测试、窄范围 lint（前端 `scripts/frontend-lint-build.sh` 的 `lint-files`，后端 `scripts/mvn-targeted-test.sh`）；`verification-map.md` 有可执行行时跑 `scripts/verification-run.sh`。跑不了写 `BLOCKED` 和原因。已选 lane 时验证命令以该 lane 为准。复杂 UI 在页面可运行后写 `ui-confirmation.md`，用户看过再确认。（停止点 6）S 档第 11 步为 `N/A` 时，上述验证在第 13 步前完成。
+10. **实现 + 记证据**：只改 `allowed_paths` 内文件；命令记入 `changes/<change-id>/evidence.md`。PRD 有界面时，写代码前先写 `ui-rule-checklist.md`，规则缺口停下等用户。（停止点 6）
+    - **常规验证**（进入第 11 步前）：编译、定向测试、窄范围 lint（前端 `scripts/frontend-lint-build.sh` 的 `lint-files`，后端 `scripts/mvn-targeted-test.sh`）；`verification-map.md` 有可执行行时跑 `scripts/verification-run.sh`。跑不了写 `BLOCKED` 和原因。已选 lane 时以该 lane 为准。S 档第 11 步为 `N/A` 时，本节验证在第 13 步前完成。
+    - **复杂 UI**：页面可运行后写 `ui-confirmation.md`，用户看过再确认。
+    - **Optional Pack（命中才跑）**：E2E → 按 `lanes/pc-e2e-smoke.md`；Impact / Parallel（CodeGraph/GitNexus、多 Agent worktree）→ RZ 未引入 → `N/A`。
 11. **Tester 验收**（M/L）：独立 Tester 对照已确认测试方案，由 Tester 填写 `test-agent-verification.md`。主 Agent 只修代码、补 evidence，不得代填、不得自称 `GOAL_ACHIEVED`。未达到则回到第 10 步改代码再测。`BLOCKED` 升级给用户，不算过。（停止点 7）
 12. **AI 测试报告**（提测 / 预发）：`ai-test-report.md` + 用户确认。（停止点 8）
 13. **Reviewer 过门**：只读审查，`high_risk_count: 0`。（停止点 9；S 走 `bugfix-fast` 时仍建议 Reviewer）
-14. **人工 review / PR**。
+14. **人工 review / PR / SIT**。
 15. **retro 收口**。
 
 ### lane工作流
 > **lane = 某类任务的默认步骤清单（任务路线）**，放在 `lanes/`。与档位正交：lane 选步骤菜单，tier 选产物厚度。lane **只能选路线，不能豁免「命中的停止点 / 条件关卡」**。
 
-建包后立刻把 spec 文首 `lane: TODO` 改成唯一值。状态卡 `Lane` 只照抄，spec 为准；不一致时先改状态卡再继续。
-- `lanes/bugfix-fast.md`
-- `lanes/fullstack-crud.md`
-- `none`（步骤用整体工作流；强制工作流照旧）
+建包后立刻把 spec 文首 `lane: TODO` 改成唯一值（合法值见下方「开工主 lane」+ `none`）。状态卡 `Lane` 只照抄，spec 为准；不一致时先改状态卡再继续。
 
 新会话先读 spec 的 `lane`。是路径就打开该文件，从状态卡「下一步」继续，不从 lane 第 1 步重跑。是 `none` 就用整体工作流。`gates/confidence-gate.sh` 会核对这个值，并要求与状态卡一致；仍是 `TODO` 不能开工。
 
