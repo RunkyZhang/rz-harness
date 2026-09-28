@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RZ AI Harness 说明</title>
+  <style>
+    :root {
+      --ink: #1c2834;
+      --muted: #5c6b7a;
+      --line: #d7e0ea;
+      --bg: #f4f7fb;
+      --card: #fff;
+      --blue: #1f4e89;
+      --blue-soft: #e8f1fb;
+      --gate: #c45c32;
+      --gate-soft: #fff4ee;
+      --test: #1f7a45;
+      --test-soft: #eef8f2;
+      --review: #5b458e;
+      --review-soft: #f4effb;
+      --warn: #8a5a12;
+      --warn-soft: #fff8ee;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font: 16px/1.65 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    a { color: var(--blue); }
+    code, .path {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em;
+      background: #eef3f8;
+      padding: 0.05em 0.35em;
+      border-radius: 4px;
+    }
+    header.top {
+      background: #14365f;
+      color: #fff;
+      padding: 36px 24px 28px;
+    }
+    header.top h1 { margin: 0 0 8px; font-size: 32px; letter-spacing: 0.02em; }
+    header.top p { margin: 0; max-width: 920px; color: #d5e4f5; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px 64px; }
+    nav.toc {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin: -22px 0 28px;
+      position: relative;
+    }
+    nav.toc strong { display: block; margin-bottom: 8px; }
+    nav.toc a { display: inline-block; margin: 2px 12px 2px 0; text-decoration: none; }
+    nav.toc a:hover { text-decoration: underline; }
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 22px 22px 8px;
+      margin: 0 0 18px;
+    }
+    h2 { margin: 0 0 12px; font-size: 22px; color: #14365f; }
+    h3 { margin: 18px 0 8px; font-size: 17px; }
+    p { margin: 0 0 12px; }
+    ul, ol { margin: 0 0 14px; padding-left: 1.3em; }
+    li { margin: 4px 0; }
+    .note {
+      background: var(--blue-soft);
+      border-left: 4px solid var(--blue);
+      padding: 10px 12px;
+      margin: 0 0 14px;
+      border-radius: 0 8px 8px 0;
+    }
+    .warn {
+      background: var(--warn-soft);
+      border-left: 4px solid var(--warn);
+      padding: 10px 12px;
+      margin: 0 0 14px;
+      border-radius: 0 8px 8px 0;
+    }
+    figure {
+      margin: 8px 0 16px;
+      overflow-x: auto;
+      background: #f8fbff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+    }
+    figcaption { color: var(--muted); font-size: 13px; padding: 4px 6px 2px; }
+    table { width: 100%; border-collapse: collapse; margin: 0 0 16px; font-size: 14px; }
+    th, td { border: 1px solid var(--line); padding: 8px 10px; vertical-align: top; text-align: left; }
+    th { background: #eef4fb; }
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
+    .chip { font-size: 13px; border-radius: 999px; padding: 2px 10px; border: 1px solid var(--line); }
+    .chip.phase { background: #fff; }
+    .chip.user { background: var(--gate-soft); border-color: #f0c2ae; }
+    .chip.auto { background: var(--warn-soft); border-color: #edd7b0; }
+    .chip.test { background: var(--test-soft); border-color: #b7e0c6; }
+    .chip.review { background: var(--review-soft); border-color: #d4c6ee; }
+    footer { color: var(--muted); font-size: 13px; padding: 8px 4px 24px; }
+  </style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap" style="padding-bottom:28px">
+    <h1>RZ AI Harness 说明</h1>
+    <p>给人看的控制面说明书。内容整理自仓库根目录 <code>AGENTS.md</code>。Agent 执行时仍以 <code>AGENTS.md</code> 为准；两边若有出入，先改 <code>AGENTS.md</code>，再改本页。</p>
+  </div>
+</header>
+<div class="wrap">
+<nav class="toc">
+  <strong>目录</strong>
+  <a href="#what">控制面</a>
+  <a href="#layout">目录怎么分</a>
+  <a href="#words">领域名词</a>
+  <a href="#tags">三标签</a>
+  <a href="#loop">Guides 与 Sensors</a>
+  <a href="#stops">停止点</a>
+  <a href="#flow">整体工作流</a>
+  <a href="#lane">lane</a>
+  <a href="#mandatory">强制工作流</a>
+  <a href="#change">变更包</a>
+  <a href="#files">文件列表</a>
+  <a href="#protect">受保护行为</a>
+  <a href="#agents">子 Agent</a>
+  <a href="#done">完成定义</a>
+</nav>
+
+<section id="what">
+  <h2>这是什么</h2>
+  <p>本仓库 <code>rz-harness</code> 是 RZ AI Harness 的<strong>控制面</strong>：规矩、模版、gate、子 Agent 人设、变更包工作目录。业务代码在各自的 git 仓里，用磁盘路径引用，不要把业务仓 clone 或拷进本目录。</p>
+  <p><strong>runtime</strong> 是真正跑起来的程序（Cursor / Codex / OpenCode），负责读文件、跑命令、权限和沙箱。<strong>harness</strong> 套在 runtime 外面，规定改哪些文件、什么时候必须停、宣称完成要拿出什么证明。</p>
+</section>
+
+<section id="layout">
+  <h2>目录怎么分</h2>
+  <table>
+    <thead><tr><th>类</th><th>含义</th><th>放哪</th></tr></thead>
+    <tbody>
+      <tr><td>配置类</td><td>按本机环境和所用 runtime 填写</td><td>要每人填写、且不进 git 的，是 <code>config/runtime_local.sh</code>（仓的绝对路径、端口、凭据来源）以及各 runtime 自己的接线文件（<code>.cursor/hooks.json</code>、<code>.codex/hooks.json</code>、OpenCode plugin）。仓名单 <code>git-registry.md</code> 和 <code>hooks/</code> 里的检查脚本是全员同一份，要进 git。</td></tr>
+      <tr><td>静态类</td><td>装好即用，不按机器改</td><td>语言政策、<code>templates/</code>、<code>gates/</code>、<code>scripts/</code>、<code>skills/</code>、子 Agent、<code>baselines/</code>、<code>rules/</code>、本页所在的 <code>docs/</code></td></tr>
+    </tbody>
+  </table>
+  <h3>本机要填的</h3>
+  <ul>
+    <li>复制 <code>config/runtime_local.example.sh</code> 为 <code>config/runtime_local.sh</code>。至少填：业务仓绝对路径、账号/凭据<strong>来源</strong>、数据库连接信息、本地服务地址/代理/端口、本机工具命令。</li>
+    <li>明文密码、token、cookie 只放在这个文件或系统钥匙串。禁止写入 spec、evidence、状态卡或任何会进 git 的文件。</li>
+  </ul>
+  <h3>语言</h3>
+  <p>给人工 review 和用户确认的文档用简体中文。代码标识、命令、API 路径、字段名、错误码、YAML key、日志 key 保持原文。</p>
+  <h3>Git 仓库</h3>
+  <p>名单以 <a href="../git-registry.md"><code>git-registry.md</code></a> 为准。登记表写仓名和变量名（如 <code>$RZ_REPO_SFA_IOS</code>）；每人本机路径写在 <code>config/runtime_local.sh</code>。当前范围：</p>
+  <ul>
+    <li>后端：<code>sfa-sales-management</code>、<code>sfa-backend</code>、<code>sfa-root</code>、<code>sfa-base</code>、<code>arch-open</code>、<code>arch-event</code>、<code>sfa-common-sdk</code></li>
+    <li>Web：<code>mapSystem</code></li>
+    <li>App：<code>sign-up</code>、<code>sfa-ios</code>、<code>sfa-android</code></li>
+  </ul>
+  <h3>按需打开的字典</h3>
+  <ul>
+    <li>仓说明书：<code>baselines/</code>。只读本次改到的仓。写 <code>allowed_paths</code>、选样板、第一次改业务代码之前要读。Reviewer 审查该仓 diff 时对照分层、样板和受保护路径。<code>mapSystem</code> 还要遵守 <code>baselines/frontend-map-system.md</code> 的 Node 版本、登录和临时路由。</li>
+    <li>模版：<code>templates/</code>，字典 <code>templates/template_directory.md</code></li>
+    <li>门禁：<code>gates/</code>，字典 <code>gates/gate_directory.md</code></li>
+    <li>脚本：<code>scripts/</code>，字典 <code>scripts/script_directory.md</code></li>
+    <li>skill：<code>skills/</code>，字典 <code>skills/skill_directory.md</code></li>
+    <li>给人看的文档：<code>docs/</code>。给模型生成代码时参考的规则：<code>rules/</code></li>
+  </ul>
+  <h3>Hook</h3>
+  <p>Hook 是 runtime 的功能：到了某个事件点，runtime 一定会去跑脚本，不靠模型记得。Gate 是检查内容；hook 是触发时机。接线按 <code>hooks/hook_setup.md</code>。本仓不提交各 runtime 的接线文件。</p>
+  <figure>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 250" width="920" role="img" aria-label="Hook 接线流程">
+      <defs>
+        <marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#5677aa"/></marker>
+        <style>
+          .b { fill:#fff; stroke:#7ca7e8; stroke-width:1.6; }
+          .h { font:700 14px "PingFang SC","Microsoft YaHei",sans-serif; fill:#14365f; }
+          .s { font:12px "PingFang SC","Microsoft YaHei",sans-serif; fill:#334; }
+          .a { stroke:#5677aa; stroke-width:1.6; fill:none; marker-end:url(#ah); }
+        </style>
+      </defs>
+      <rect class="b" x="16" y="78" width="150" height="78" rx="10"/>
+      <text class="h" x="91" y="108" text-anchor="middle">runtime 事件点</text>
+      <text class="s" x="91" y="130" text-anchor="middle">一定会触发</text>
+      <path class="a" d="M166 117 H196"/>
+      <rect class="b" x="196" y="54" width="200" height="126" rx="10"/>
+      <text class="h" x="296" y="80" text-anchor="middle">各 runtime 接线</text>
+      <text class="s" x="296" y="102" text-anchor="middle">Cursor .cursor/hooks.json</text>
+      <text class="s" x="296" y="122" text-anchor="middle">Codex .codex/hooks.json</text>
+      <text class="s" x="296" y="142" text-anchor="middle">OpenCode 本机 plugin</text>
+      <text class="s" x="296" y="162" text-anchor="middle">见 hooks/hook_setup.md</text>
+      <path class="a" d="M396 117 H426"/>
+      <rect class="b" x="426" y="78" width="180" height="78" rx="10"/>
+      <text class="h" x="516" y="108" text-anchor="middle">hook_adapter.sh</text>
+      <text class="s" x="516" y="130" text-anchor="middle">只路由</text>
+      <path class="a" d="M606 117 H636"/>
+      <rect class="b" x="636" y="40" width="268" height="168" rx="10"/>
+      <text class="h" x="770" y="68" text-anchor="middle">harness-sensor-runner.sh</text>
+      <text class="s" x="770" y="94" text-anchor="middle">pre：能硬停</text>
+      <text class="s" x="770" y="114" text-anchor="middle">拦 commit / 危险命令</text>
+      <text class="s" x="770" y="140" text-anchor="middle">post：只能警告、拦下一步</text>
+      <text class="s" x="770" y="160" text-anchor="middle">不能撤销已经发生的事</text>
+      <text class="s" x="770" y="186" text-anchor="middle">含 rm -rf、git push --force</text>
+    </svg>
+    <figcaption>图 1　Hook：runtime 推式触发，adapter 转发，runner 做检查。</figcaption>
+  </figure>
+</section>
+
+<section id="words">
+  <h2>领域名词</h2>
+  <h3>档位</h3>
+  <p>档位看的是改动范围、风险和环境依赖，不看功能点多少。改权限或动真实库可以是 L；页面很多的单仓低风险小修可以是 S。</p>
+  <table>
+    <thead><tr><th>档</th><th>典型样子</th><th>流程上多什么</th></tr></thead>
+    <tbody>
+      <tr><td>S</td><td>单仓小修、文档、低风险脚本</td><td>spec、状态卡、证据</td></tr>
+      <tr><td>M</td><td>普通全栈或多文件业务，大约 1～2 个 API</td><td>在 S 上再加强制方案、契约、测试方案、Tester、Reviewer</td></tr>
+      <tr><td>L</td><td>跨仓、高风险、强依赖真实环境、发布前风险高</td><td>在 M 上再加环境就绪、测试报告、决策记录</td></tr>
+    </tbody>
+  </table>
+  <p>S 档这些默认可写 <code>N/A</code> 和原因：契约、技术方案、AI 测试方案、plan 与 verification-map、Tester、AI 测试报告。spec、<code>allowed_paths</code>、evidence 仍然要有。</p>
+</section>
+
+<section id="tags">
+  <h2>需求理解：FACT / ASSUMP / QUESTION</h2>
+  <p>主 Agent 把「PRD 写了的 / 代码里已有的 / 用户说的 / 模型猜的」拆开，写进 <code>changes/&lt;change-id&gt;/spec.md</code>。聊天不是事实源。没出处的业务规则、字段、状态、权限、错误码、默认值、回滚规则不是事实。拿不准时写成 <code>[QUESTION]</code>。</p>
+  <table>
+    <thead><tr><th>标签</th><th>是什么</th><th>限制</th></tr></thead>
+    <tbody>
+      <tr><td><code>[FACT]</code></td><td>有出处：PRD、用户确认、现有代码、已冻契约、线上已有行为</td><td>只有这类可以进实现</td></tr>
+      <tr><td><code>[ASSUMP]</code></td><td>模型推断、尚未确认</td><td>不挡开工，但不得作为实现依据。渗进实现文件时 <code>gates/assumption-leak-gate.sh</code> 会 FAIL</td></tr>
+      <tr><td><code>[QUESTION]</code></td><td>必须用户决定，Agent 不能代选</td><td>阻塞项未清，不得写业务代码</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li>三种标签都必须出现。没有假设就写 <code>[ASSUMP] None.</code></li>
+    <li>不影响本次实现的问题放到 <code>non_blocking_questions:</code>，默认不拦开工。吃不准是否阻塞，就放正文当阻塞项。</li>
+    <li>建包时模板里的标签只是占位，不是已经问过用户。需求理解阶段写实质内容，然后停下来问。用户答完，主 Agent <strong>原地</strong>把该行改成带来源的 <code>[FACT]</code>，再跑 <code>gates/confidence-gate.sh</code>。口头「ok」不算过。</li>
+    <li>契约、技术方案模板里的 <code>[QUESTION]</code> 只是空格，confidence-gate 不扫那些文件。</li>
+    <li>Explorer 可选、只读、不改 <code>spec.md</code>。它在对话里按三标签供料。主 Agent 决定采纳后再落文件。</li>
+  </ul>
+  <table>
+    <thead><tr><th>Gate</th><th>查什么</th><th>不过意味着</th></tr></thead>
+    <tbody>
+      <tr><td><code>gates/confidence-gate.sh</code></td><td>阻塞 <code>[QUESTION]</code> 是否还在；<code>lane</code> 是否为唯一合法值，且与状态卡 <code>Lane</code> 一致</td><td>问题没答完，或 lane 仍是 <code>TODO</code> / 与状态卡不一致，不能开工。未确认的 <code>[ASSUMP]</code> 本身不挡开工</td></tr>
+      <tr><td><code>gates/assumption-leak-gate.sh</code></td><td>实现文件里有没有 <code>[ASSUMP]</code> 字面标签，以及 spec 里假设的标识符有没有漏进实现</td><td>假设漏进实现</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="loop">
+  <h2>Guides 与 Sensors</h2>
+  <p>Harness 围住 Agent：行动前喂资料（Guides），行动后压检查（Sensors）。Guides 靠读起作用，本身不拦截。模型可能不读，或读了仍违反，所以要有 Sensors。需要人拍板的节点是停止点：循环暂停，把控制权交回给人。</p>
+  <figure>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 300" width="880" role="img" aria-label="Guides 与 Sensors 循环">
+      <defs>
+        <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#5677aa"/></marker>
+        <style>
+          .gb { fill:#e8f1fb; stroke:#1f4e89; stroke-width:1.6; }
+          .ab { fill:#fff; stroke:#7ca7e8; stroke-width:1.6; }
+          .sb { fill:#fff4ee; stroke:#c45c32; stroke-width:1.6; }
+          .hh { font:700 15px "PingFang SC","Microsoft YaHei",sans-serif; fill:#14365f; }
+          .ss { font:13px "PingFang SC","Microsoft YaHei",sans-serif; fill:#334; }
+          .aa { stroke:#5677aa; stroke-width:1.6; fill:none; marker-end:url(#ag); }
+        </style>
+      </defs>
+      <rect class="gb" x="40" y="30" width="240" height="88" rx="12"/>
+      <text class="hh" x="160" y="62" text-anchor="middle">Guides</text>
+      <text class="ss" x="160" y="86" text-anchor="middle">AGENTS / 模版 / baseline</text>
+      <text class="ss" x="160" y="106" text-anchor="middle">人设 / lane　行动前喂入</text>
+      <path class="aa" d="M280 74 H330"/>
+      <rect class="ab" x="330" y="30" width="200" height="88" rx="12"/>
+      <text class="hh" x="430" y="70" text-anchor="middle">Agent 干活</text>
+      <text class="ss" x="430" y="94" text-anchor="middle">产出 / 动作</text>
+      <path class="aa" d="M530 74 H580"/>
+      <rect class="sb" x="580" y="24" width="260" height="100" rx="12"/>
+      <text class="hh" x="710" y="52" text-anchor="middle">Sensors</text>
+      <text class="ss" x="710" y="76" text-anchor="middle">gate / 编译 / lint / 测试</text>
+      <text class="ss" x="710" y="96" text-anchor="middle">Reviewer</text>
+      <text class="ss" x="710" y="116" text-anchor="middle">FAIL 压回重做，PASS 继续</text>
+      <path class="aa" d="M710 124 V180 H430 V118"/>
+      <text class="ss" x="560" y="172">FAIL → 重做</text>
+      <path class="aa" d="M840 74 H860"/>
+      <text class="ss" x="700" y="230">确定性：脚本可重复判定（gate、编译、lint、测试）</text>
+      <text class="ss" x="700" y="252">推断性：Reviewer。能用脚本判的写成 gate</text>
+      <text class="ss" x="40" y="230">gate 是拉式的：要有人去跑。</text>
+      <text class="ss" x="40" y="252">自动跑靠 hook。判定不了时默认 FAIL。</text>
+    </svg>
+    <figcaption>图 2　行动前是 Guides，行动后是 Sensors。fail-closed：文件缺失、字段没填、条件无法判定，都不算通过。</figcaption>
+  </figure>
+  <h3>gate</h3>
+  <ul>
+    <li>位置 <code>gates/</code>，字典 <code>gates/gate_directory.md</code>。bash 脚本。exit code <code>0</code> 是 PASS，非 0 是 FAIL。</li>
+    <li>FAIL 输出四要素：<code>FAIL / CODE / FIX / SAMPLE</code>（问题、错误码、怎么修、参考）。</li>
+    <li>gate 只裁决，不干活。检查对象是 <code>changes/&lt;change-id&gt;/</code> 下的产物。命令痕迹记在 evidence，不由 gate 承载。</li>
+  </ul>
+</section>
+
+<section id="stops">
+  <h2>停止点</h2>
+  <p>停止点和下面 15 个步骤的编号不是一一对应。停止点分两类：用户拍板（口头确认后由主 Agent 写入对应文件，再跑 gate，用户不用改 YAML）；自动关卡或独立角色（gate、Tester、Reviewer）。<code>BLOCKED</code> 是合法停、升级给人，不是放行。状态卡只镜像进度，不是拍板原文。</p>
+  <p>用户平时要做的：答 QUESTION（1）→ 确认方案（2）→ 确认测试方案（3）→ 条件触发时确认 UI（6）→ 确认测试报告（8）→ 人工 review。4 / 5 / 7 / 9 平时不用逐项参与。</p>
+  <figure>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 150" width="980" role="img" aria-label="用户拍板节奏">
+      <defs>
+        <marker id="as" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#c45c32"/></marker>
+        <style>
+          .ub { fill:#fff4ee; stroke:#c45c32; stroke-width:1.6; }
+          .uh { font:700 13px "PingFang SC","Microsoft YaHei",sans-serif; fill:#8a3418; }
+          .us { font:12px "PingFang SC","Microsoft YaHei",sans-serif; fill:#334; }
+          .ua { stroke:#c45c32; stroke-width:1.6; fill:none; marker-end:url(#as); }
+        </style>
+      </defs>
+      <rect class="ub" x="8" y="36" width="140" height="70" rx="10"/>
+      <text class="uh" x="78" y="64" text-anchor="middle">1 答 QUESTION</text>
+      <text class="us" x="78" y="86" text-anchor="middle">spec 三标签</text>
+      <path class="ua" d="M148 71 H168"/>
+      <rect class="ub" x="168" y="36" width="140" height="70" rx="10"/>
+      <text class="uh" x="238" y="64" text-anchor="middle">2 确认方案</text>
+      <text class="us" x="238" y="86" text-anchor="middle">仅 M/L</text>
+      <path class="ua" d="M308 71 H328"/>
+      <rect class="ub" x="328" y="36" width="150" height="70" rx="10"/>
+      <text class="uh" x="403" y="64" text-anchor="middle">3 确认测试方案</text>
+      <text class="us" x="403" y="86" text-anchor="middle">仅 M/L</text>
+      <path class="ua" d="M478 71 H498"/>
+      <rect class="ub" x="498" y="36" width="140" height="70" rx="10"/>
+      <text class="uh" x="568" y="64" text-anchor="middle">6 确认 UI</text>
+      <text class="us" x="568" y="86" text-anchor="middle">条件触发</text>
+      <path class="ua" d="M638 71 H658"/>
+      <rect class="ub" x="658" y="36" width="150" height="70" rx="10"/>
+      <text class="uh" x="733" y="64" text-anchor="middle">8 确认测试报告</text>
+      <text class="us" x="733" y="86" text-anchor="middle">提测 / 预发</text>
+      <path class="ua" d="M808 71 H828"/>
+      <rect class="ub" x="828" y="36" width="140" height="70" rx="10"/>
+      <text class="uh" x="898" y="64" text-anchor="middle">人工 review</text>
+      <text class="us" x="898" y="86" text-anchor="middle">PR / SIT</text>
+    </svg>
+    <figcaption>图 3　需要人出面的节奏。环境就绪（4）、开工（5）、Tester（7）、Reviewer（9）是自动关卡或独立角色。</figcaption>
+  </figure>
+  <p>环境材料可以提前准备，强制时点在真实 E2E 之前。Code start 先于 E2E。验收阶段可以同时挂 Tester、测试报告、Reviewer。契约冻结不在这 9 个编号里，未冻不得实现。真实库写入的二次确认挂在实现阶段，仍由用户拍板。合并前卫生扫描是检查项，不是决策停止点。</p>
+  <table>
+    <thead><tr><th>#</th><th>停止点</th><th>类型</th><th>谁写</th><th>用户做什么</th><th>怎样算过</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Spec 三标签</td><td>拍板 + gate</td><td>主 Agent 写 spec；Explorer 只读供料。答完后原地改成带来源的 FACT</td><td>答阻塞 QUESTION、确认 ASSUMP</td><td><code>confidence-gate.sh</code>：阻塞项已清，lane 合法且与状态卡一致。未清不得进实现</td></tr>
+      <tr><td>2</td><td>技术方案（仅 M/L）</td><td>拍板 + gate</td><td>主 Agent 写 <code>technical-solution.md</code>。确认后写 <code>confirmation_status: CONFIRMED</code>，以及 <code>confirmed_by</code> / <code>confirmed_at</code>，<code>allowed_next_stage</code> 不能是 <code>none</code></td><td>审方案，对话里确认或要求改</td><td><code>technical-solution-gate.sh</code>。未过不得写业务代码。S 为 N/A</td></tr>
+      <tr><td>3</td><td>AI 测试方案（仅 M/L）</td><td>拍板 + gate</td><td>Test Strategy 写 <code>ai-test-plan.md</code>。用户确认后主 Agent 只改 <code>test_plan_status: CONFIRMED</code></td><td>审测试方案</td><td><code>ai-test-plan-gate.sh</code>。未过不得实现。S 为 N/A</td></tr>
+      <tr><td>4</td><td>环境就绪</td><td>自动关卡，仅真 E2E</td><td>主 Agent 写 <code>environment-readiness.md</code>，账号只写来源</td><td>不用参与</td><td><code>environment_status: READY</code>。真 E2E 前必须 READY</td></tr>
+      <tr><td>5</td><td>Code start</td><td>自动关卡</td><td>从远程主干 <code>origin/master</code> 或 <code>origin/main</code> 拉 <code>harness/&lt;id&gt;</code>。脏仓先写 <code>dirty-worktree-ledger.md</code></td><td>不用参与</td><td>S 三重：confidence、assumption-leak、allowed-paths。M/L 再加 business-code-start。脏仓再加 business-dirty-worktree。未过不得改业务文件</td></tr>
+      <tr><td>6</td><td>复杂 UI 确认</td><td>拍板，条件触发</td><td>主 Agent 写 <code>ui-confirmation.md</code>。用户看过可运行页面后，判定表写成 <code>Status: CONFIRMED</code>，人工确认表加一行 Decision=<code>CONFIRMED</code></td><td>看可运行页面。PC smoke 不能替代</td><td><code>ui-confirmation-gate.sh</code>。规则缺口走 <code>ui-rule-gate.sh</code>。未确认不得声称 UI 通过</td></tr>
+      <tr><td>7</td><td>Tester 验收（仅 M/L）</td><td>独立角色</td><td>Tester 写 <code>test-agent-verification.md</code>。主 Agent 只修代码、补证据，不得代裁，不得自称 <code>GOAL_ACHIEVED</code></td><td>不用参与；BLOCKED 才升级</td><td>仅 <code>GOAL_ACHIEVED</code> 放行。此后改代码必须重跑。S 可 N/A</td></tr>
+      <tr><td>8</td><td>AI 测试报告</td><td>拍板 + gate。L 强制；M 在提测/预发时要</td><td>主 Agent 写 <code>ai-test-report.md</code>。确认后写 <code>confirmation_status: CONFIRMED</code>。进预发还要 <code>recommendation: 允许进入预发</code></td><td>审报告、残余风险、是否进预发</td><td><code>ai-test-report-gate.sh</code>。未确认不得进测试/预发</td></tr>
+      <tr><td>9</td><td>Reviewer 过门</td><td>独立角色。M/L 强制；S 建议</td><td>Reviewer 写 <code>review.md</code>。主 Agent 不得代裁</td><td>不用参与</td><td><code>reviewer-gate.sh</code>，<code>high_risk_count: 0</code>。代码又变则审查过期，按需重跑 Tester 再重跑 Reviewer</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="flow">
+  <h2>整体工作流</h2>
+  <div class="note">这 15 步是索引。有匹配的 lane 时，步骤菜单用那份 lane，这 15 步用来核对停止点有没有被跳过。没有匹配则 <code>lane: none</code>，用这 15 步，再按档位裁剪。门禁细节见停止点和强制工作流，产物见文件列表。未命中的步骤写 <code>N/A</code> 和原因。</div>
+  <div class="legend">
+    <span class="chip phase">普通步骤</span>
+    <span class="chip user">要人确认</span>
+    <span class="chip auto">自动关卡</span>
+    <span class="chip test">Tester</span>
+    <span class="chip review">Reviewer</span>
+  </div>
+  <figure>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 560" width="1040" role="img" aria-label="十五步整体工作流">
+      <defs>
+        <marker id="af" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#5677aa"/></marker>
+        <style>
+          .p { fill:#fff; stroke:#7ca7e8; stroke-width:1.6; }
+          .u { fill:#fff4ee; stroke:#c45c32; stroke-width:1.6; }
+          .g { fill:#fff8ee; stroke:#c4a15a; stroke-width:1.6; }
+          .t { fill:#eef8f2; stroke:#1f7a45; stroke-width:1.6; }
+          .r { fill:#f4effb; stroke:#5b458e; stroke-width:1.6; }
+          .ht { font:700 13px "PingFang SC","Microsoft YaHei",sans-serif; fill:#14365f; }
+          .st { font:11px "PingFang SC","Microsoft YaHei",sans-serif; fill:#3d4c5c; }
+          .ln { stroke:#5677aa; stroke-width:1.5; fill:none; marker-end:url(#af); }
+          .dash { stroke:#1f7a45; stroke-width:1.4; fill:none; stroke-dasharray:5 4; marker-end:url(#af); }
+        </style>
+      </defs>
+      <!-- row 1 -->
+      <rect class="p" x="16" y="16" width="184" height="72" rx="10"/>
+      <text class="ht" x="108" y="42" text-anchor="middle">1 定 change-id</text>
+      <text class="st" x="108" y="64" text-anchor="middle">不用 demo / tbd</text>
+      <path class="ln" d="M200 52 H216"/>
+      <rect class="p" x="216" y="16" width="184" height="72" rx="10"/>
+      <text class="ht" x="308" y="42" text-anchor="middle">2 选 lane</text>
+      <text class="st" x="308" y="64" text-anchor="middle">匹配则用 lane 菜单</text>
+      <path class="ln" d="M400 52 H416"/>
+      <rect class="p" x="416" y="16" width="184" height="72" rx="10"/>
+      <text class="ht" x="508" y="42" text-anchor="middle">3 建变更包</text>
+      <text class="st" x="508" y="64" text-anchor="middle">scaffold 后写入 lane</text>
+      <path class="ln" d="M600 52 H616"/>
+      <rect class="u" x="616" y="16" width="184" height="72" rx="10"/>
+      <text class="ht" x="708" y="42" text-anchor="middle">4 写 spec</text>
+      <text class="st" x="708" y="64" text-anchor="middle">停下来问用户</text>
+      <path class="ln" d="M800 52 H816"/>
+      <rect class="p" x="816" y="16" width="200" height="72" rx="10"/>
+      <text class="ht" x="916" y="42" text-anchor="middle">5 冻结契约</text>
+      <text class="st" x="916" y="64" text-anchor="middle">S / 无 API 可 N/A</text>
+      <path class="ln" d="M916 88 V124"/>
+      <rect class="u" x="816" y="124" width="200" height="72" rx="10"/>
+      <text class="ht" x="916" y="150" text-anchor="middle">6 技术方案</text>
+      <text class="st" x="916" y="172" text-anchor="middle">M/L，用户确认</text>
+      <path class="ln" d="M816 160 H800"/>
+      <rect class="u" x="616" y="124" width="184" height="72" rx="10"/>
+      <text class="ht" x="708" y="150" text-anchor="middle">7 AI 测试方案</text>
+      <text class="st" x="708" y="172" text-anchor="middle">Test Strategy 写</text>
+      <path class="ln" d="M616 160 H600"/>
+      <rect class="p" x="416" y="124" width="184" height="72" rx="10"/>
+      <text class="ht" x="508" y="150" text-anchor="middle">8 plan 与 map</text>
+      <text class="st" x="508" y="172" text-anchor="middle">开工前，S 可 N/A</text>
+      <path class="ln" d="M416 160 H400"/>
+      <rect class="g" x="216" y="124" width="184" height="72" rx="10"/>
+      <text class="ht" x="308" y="150" text-anchor="middle">9 开工门禁</text>
+      <text class="st" x="308" y="172" text-anchor="middle">切 harness 分支</text>
+      <path class="ln" d="M216 160 H200"/>
+      <rect class="p" x="16" y="124" width="184" height="72" rx="10"/>
+      <text class="ht" x="108" y="146" text-anchor="middle">10 实现</text>
+      <text class="st" x="108" y="166" text-anchor="middle">验证 / UI / Pack</text>
+      <text class="st" x="108" y="184" text-anchor="middle">只改 allowed_paths</text>
+      <path class="ln" d="M108 196 V228"/>
+      <!-- row 3 -->
+      <rect class="t" x="16" y="236" width="184" height="78" rx="10"/>
+      <text class="ht" x="108" y="264" text-anchor="middle">11 Tester</text>
+      <text class="st" x="108" y="286" text-anchor="middle">M/L 独立验收</text>
+      <text class="st" x="108" y="304" text-anchor="middle">未过回到第 10 步</text>
+      <path class="ln" d="M200 275 H216"/>
+      <rect class="u" x="216" y="236" width="184" height="78" rx="10"/>
+      <text class="ht" x="308" y="268" text-anchor="middle">12 AI 测试报告</text>
+      <text class="st" x="308" y="290" text-anchor="middle">提测 / 预发</text>
+      <path class="ln" d="M400 275 H416"/>
+      <rect class="r" x="416" y="236" width="184" height="78" rx="10"/>
+      <text class="ht" x="508" y="268" text-anchor="middle">13 Reviewer</text>
+      <text class="st" x="508" y="290" text-anchor="middle">high_risk_count = 0</text>
+      <path class="ln" d="M600 275 H616"/>
+      <rect class="u" x="616" y="236" width="184" height="78" rx="10"/>
+      <text class="ht" x="708" y="268" text-anchor="middle">14 人工 review</text>
+      <text class="st" x="708" y="290" text-anchor="middle">PR / SIT</text>
+      <path class="ln" d="M800 275 H816"/>
+      <rect class="p" x="816" y="236" width="200" height="78" rx="10"/>
+      <text class="ht" x="916" y="268" text-anchor="middle">15 retro 收口</text>
+      <text class="st" x="916" y="290" text-anchor="middle">复盘</text>
+      <path class="dash" d="M108 314 V390 H8 V160 H16"/>
+      <text class="st" x="250" y="352">Tester 未达到：回到第 10 步改代码，再验证、再测</text>
+      <text class="st" x="16" y="420">第 4 步：阻塞 QUESTION 未清，不得进入第 9 步。未确认的 ASSUMP 不挡开工，不得进入第 10 步业务代码。</text>
+      <text class="st" x="16" y="444">第 10 步里：先常规验证，再做复杂 UI 确认。S 档没有 Tester 时，验证改在第 13 步 Reviewer 之前。</text>
+      <text class="st" x="16" y="468">真 E2E 前环境必须 READY。浏览器冒烟在实现之后，走 E2E Pack。飞书、Java 测试计划、Swagger、DB、合并前卫生扫描不单列成步。</text>
+      <text class="st" x="16" y="492">代码再变：Tester 重跑；Reviewer 之后代码又变，审查过期，重跑 Tester 再重跑 Reviewer。</text>
+      <text class="st" x="16" y="530">用户说「开始 / 下一步 / 确认 / ok」只推进到下一个已经满足的关卡，不能跳关。</text>
+    </svg>
+    <figcaption>图 4　十五步索引。第二行从右往左读：5 的下一步是 6。绿色虚线是 Tester 失败后的返回。</figcaption>
+  </figure>
+  <ol>
+    <li><strong>定 change-id</strong>：用业务含义命名。</li>
+    <li><strong>选 lane</strong>：见下一节。有匹配时步骤菜单用该 lane。</li>
+    <li><strong>建变更包</strong>：<code>changes/change-scaffold.sh --tier S|M|L &lt;change-id&gt;</code>。建包后把 spec 文首 <code>lane: TODO</code> 改成唯一合法值，状态卡 <code>Lane</code> 照抄。同时写入阶段、下一步、阻塞。</li>
+    <li><strong>写 spec</strong>：用户确认的写 FACT，推断写 ASSUMP，需拍板写 QUESTION，并写 <code>allowed_paths</code>。写完停下来问。答完后原地改成带来源的 FACT，再跑 confidence-gate。口头 ok 不算过。（停止点 1）</li>
+    <li><strong>冻结契约</strong>：<code>changes/&lt;change-id&gt;/contract.md</code>。S 或无 API 可 N/A。未冻不得实现。</li>
+    <li><strong>技术方案</strong>（M/L）：<code>technical-solution.md</code> 加用户确认。（停止点 2）</li>
+    <li><strong>AI 测试方案</strong>（M/L）：独立 Test Strategy 写 <code>ai-test-plan.md</code>。主 Agent 不得代写。用户确认后，主 Agent 写成 <code>test_plan_status: CONFIRMED</code>。（停止点 3）</li>
+    <li><strong>plan 与 verification-map</strong>（M/L）：方案确认后、开工前填写。S 可 N/A。</li>
+    <li><strong>开工门禁</strong>：从远程主干拉 <code>harness/&lt;change-id&gt;</code>。S 三重，M/L 四重。不在主干上改。（停止点 5）</li>
+    <li><strong>实现 + 记证据</strong>：只改 <code>allowed_paths</code> 内文件，命令记入 evidence。PRD 有界面时，写代码前先写 <code>ui-rule-checklist.md</code>，规则缺口停下等用户。（停止点 6）
+      <ul>
+        <li><strong>常规验证</strong>（进入 Tester 前）：编译、定向测试、窄范围 lint。前端用 <code>scripts/frontend-lint-build.sh</code> 的 <code>lint-files</code>，后端用 <code>scripts/mvn-targeted-test.sh</code>。<code>verification-map.md</code> 有可执行行时跑 <code>scripts/verification-run.sh</code>。跑不了写 <code>BLOCKED</code> 和原因。已选 lane 时以该 lane 的验证命令为准。S 档没有 Tester 时，这项改在 Reviewer 之前完成。</li>
+        <li><strong>复杂 UI</strong>：页面可运行后写 <code>ui-confirmation.md</code>，用户看过再确认。</li>
+        <li><strong>Optional Pack</strong>：E2E 按 <code>lanes/pc-e2e-smoke.md</code>。Impact / Parallel（CodeGraph、GitNexus、多 Agent worktree）本仓未引入，写 N/A。</li>
+      </ul>
+    </li>
+    <li><strong>Tester 验收</strong>（M/L）：Tester 填写 <code>test-agent-verification.md</code>。主 Agent 不得代填、不得自称 <code>GOAL_ACHIEVED</code>。未达到则回到第 10 步。<code>BLOCKED</code> 升级给用户。（停止点 7）</li>
+    <li><strong>AI 测试报告</strong>（提测 / 预发）：<code>ai-test-report.md</code> 加用户确认。（停止点 8）</li>
+    <li><strong>Reviewer 过门</strong>：只读审查，<code>high_risk_count: 0</code>。S 走 bugfix-fast 时仍建议 Reviewer。（停止点 9）审查前跑 <code>scripts/code-comment-log-quality.sh</code>。</li>
+    <li><strong>人工 review / PR / SIT</strong>。合并前卫生扫描见受保护行为。</li>
+    <li><strong>retro 收口</strong>。</li>
+  </ol>
+</section>
+
+<section id="lane">
+  <h2>lane</h2>
+  <p>lane 是某类任务的默认步骤清单，放在 <code>lanes/</code>。它和档位正交：lane 选步骤菜单，tier 选产物厚度。lane 只能选路线，不能豁免已经命中的停止点或条件关卡。</p>
+  <figure>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 280" width="980" role="img" aria-label="lane 选择">
+      <defs>
+        <marker id="al" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#5677aa"/></marker>
+        <style>
+          .pb { fill:#fff; stroke:#7ca7e8; stroke-width:1.6; }
+          .qb { fill:#fff8ee; stroke:#c4a15a; stroke-width:1.6; }
+          .lh { font:700 14px "PingFang SC","Microsoft YaHei",sans-serif; fill:#14365f; }
+          .ls { font:12px "PingFang SC","Microsoft YaHei",sans-serif; fill:#334; }
+          .la { stroke:#5677aa; stroke-width:1.5; fill:none; marker-end:url(#al); }
+        </style>
+      </defs>
+      <rect class="qb" x="16" y="96" width="150" height="72" rx="10"/>
+      <text class="lh" x="91" y="126" text-anchor="middle">建包之后</text>
+      <text class="ls" x="91" y="148" text-anchor="middle">lane 还是 TODO</text>
+      <path class="la" d="M166 132 H196"/>
+      <rect class="pb" x="196" y="16" width="230" height="78" rx="10"/>
+      <text class="lh" x="311" y="44" text-anchor="middle">小修 / bugfix</text>
+      <text class="ls" x="311" y="66" text-anchor="middle">lanes/bugfix-fast.md</text>
+      <text class="ls" x="311" y="84" text-anchor="middle">常配档位 S</text>
+      <path class="la" d="M166 120 C180 70 184 55 196 55"/>
+      <rect class="pb" x="196" y="108" width="230" height="78" rx="10"/>
+      <text class="lh" x="311" y="136" text-anchor="middle">低风险全栈 CRUD</text>
+      <text class="ls" x="311" y="158" text-anchor="middle">lanes/fullstack-crud.md</text>
+      <text class="ls" x="311" y="176" text-anchor="middle">常配档位 M</text>
+      <path class="la" d="M166 148 C180 200 184 214 196 214"/>
+      <rect class="pb" x="196" y="200" width="230" height="64" rx="10"/>
+      <text class="lh" x="311" y="226" text-anchor="middle">对不上</text>
+      <text class="ls" x="311" y="248" text-anchor="middle">lane: none，用整体工作流</text>
+      <path class="la" d="M426 55 H456"/>
+      <path class="la" d="M426 147 H456"/>
+      <path class="la" d="M426 232 H456"/>
+      <rect class="qb" x="456" y="70" width="250" height="120" rx="10"/>
+      <text class="lh" x="581" y="100" text-anchor="middle">写入 spec</text>
+      <text class="ls" x="581" y="124" text-anchor="middle">状态卡 Lane 只照抄</text>
+      <text class="ls" x="581" y="146" text-anchor="middle">不一致时先改状态卡</text>
+      <text class="ls" x="581" y="168" text-anchor="middle">TODO 不能开工</text>
+      <path class="la" d="M706 130 H736"/>
+      <rect class="pb" x="736" y="78" width="220" height="104" rx="10"/>
+      <text class="lh" x="846" y="108" text-anchor="middle">新会话</text>
+      <text class="ls" x="846" y="132" text-anchor="middle">读 spec 的 lane</text>
+      <text class="ls" x="846" y="154" text-anchor="middle">从状态卡「下一步」续</text>
+      <text class="ls" x="846" y="176" text-anchor="middle">不从 lane 第 1 步重跑</text>
+    </svg>
+    <figcaption>图 5　开工只选一条主 lane。<code>confidence-gate.sh</code> 只接受 <code>lanes/bugfix-fast.md</code>、<code>lanes/fullstack-crud.md</code>、<code>none</code>。</figcaption>
+  </figure>
+  <p>PC 冒烟是子 lane / Pack，不是开工三选一。CRUD 命中 E2E Pack 后再读 <code>lanes/pc-e2e-smoke.md</code>。不改 <code>lane</code>，进度写在状态卡「下一步」。不要编造新的 lane 文件名。</p>
+</section>
+
+<section id="mandatory">
+  <h2>强制工作流</h2>
+  <p>适用档位 M/L、跨仓、后端行为、DB、复杂 UI。带全局性质的规则 S/M/L 都适用。档位裁剪只决定产物厚度，不改变这些规则。</p>
+  <h3>① 开场</h3>
+  <p>第一条回复列出本次会碰到的关卡（用停止点表，不要手写一套混合名单），并用 <code>changes/&lt;change-id&gt;/status-card.md</code> 作为用户看得见的状态卡。</p>
+  <h3>② 开工前</h3>
+  <ul>
+    <li>读当前变更；<code>source config/runtime_local.sh</code>；确认允许的仓库和路径。路径空不要猜。</li>
+    <li>区分三标签。未决的假设和问题不得进实现。优先用目标仓样板。</li>
+    <li>每个业务仓第一次改代码：从 <code>origin/master</code> 或 <code>origin/main</code> 切 <code>harness/&lt;change-id&gt;</code>，记下基线分支和 commit。不在主干改。</li>
+    <li>S/M/L 都跑：<code>confidence-gate.sh</code>、<code>assumption-leak-gate.sh</code>、<code>allowed-paths.sh</code>。</li>
+    <li>M/L 再加：<code>business-code-start-gate.sh</code>（它会校验技术方案已经确认）。S 不要跑这个 gate。</li>
+    <li>脏仓再加：<code>business-dirty-worktree-gate.sh</code>。参数见 <code>gates/gate_directory.md</code>。</li>
+  </ul>
+  <h3>③ 不可豁免</h3>
+  <ul>
+    <li>口头「ok / 确认」不能跳过档位需要或条件命中的关卡。命中飞书 PRD 时含飞书同步。</li>
+    <li>状态卡在阶段变化、阻塞出现或解除、人工确认前后、Tester / Reviewer 返回、验证失效、进入预发、派发子 Agent 时更新。</li>
+    <li>代码再变，旧结论作废。</li>
+    <li>主 Agent 可以实施和修复，不得代替 Tester / Reviewer 下结论。</li>
+  </ul>
+  <h3>④ 强制项</h3>
+  <p>M/L 默认：全栈技术方案需 <code>CONFIRMED</code>（前端、APP、导出、分析、跨仓行为在范围内时，只有后端方案不算数）；Test Strategy 的测试方案需用户确认；按 <code>skills/skill_directory.md</code> 记录 <code>skill-usage.md</code>，未用写 N/A，并跑 <code>skill-usage-gate.sh</code>。</p>
+  <p>命中才做：</p>
+  <ul>
+    <li>行为或契约变更：实现前要有 spec 和契约。宣称跑过的检查必须落 evidence。</li>
+    <li>Java 后端行为变更：<code>backend-test-plan.md</code> 或明确 N/A。只编译不够。</li>
+    <li>Swagger 对外 VO：仅当后端仓有活动的 <code>rules/backends/*/manifest.yml</code> profile 时，扫该 profile 的响应根；新增对外 <code>*VO.java</code> 用 <code>@ApiModel</code> 和每字段 <code>@ApiModelProperty</code>。不含导出模型和基础设施 DTO。pre-commit 跑 <code>swagger-model-documentation-gate.sh</code>。</li>
+    <li>前端 / UI：先判复杂度。PRD UI 要 <code>ui-rule-checklist.md</code> 和 <code>ui-rule-gate.sh</code>。复杂 UI 要可运行页面和 <code>ui-confirmation.md</code>。<code>mapSystem</code> 用 <code>scripts/frontend-dev-server.sh frontend-map-system 9527</code>（Node 14.21.3、产品组登录、临时路由；<code>HomeIndex</code> 重定向即失败）。</li>
+    <li>DB：带 ER 的数据模型、可执行 SQL、规范化检查、自包含注释、字段来源。真实库写入要用户第二次确认。</li>
+    <li>飞书 PRD：<code>scripts/technical-solution-feishu-sync.sh</code> 同步到飞书子文档，改后重同步，否则技术方案关卡不过。流程图、ER、状态图用白板，不用 Mermaid。</li>
+    <li>复杂行为或能力边界：写 <code>capability-spec.md</code> / <code>behavior-spec.md</code>，并在 verification-map 里映射。普通 CRUD 写 N/A。</li>
+  </ul>
+  <h3>⑤ 环境与就绪</h3>
+  <p>真实 E2E 前填写 <code>environment-readiness.md</code> 并跑 <code>environment-readiness-gate.sh</code>：环境、系统、拓扑、账号来源、数据、写库边界、回滚、设备、阻塞、无可复用凭据。本地后端「可验收」只在 <code>scripts/local-service-lifecycle.sh</code> 的 HEALTH=UP 且 check-web-stack 成功之后才能说。Maven、nohup、端口单独成功都不算。</p>
+  <h3>⑥ 验收与审查</h3>
+  <ul>
+    <li>业务代码审查前跑 <code>scripts/code-comment-log-quality.sh</code>。</li>
+    <li>Tester 对照已确认的测试方案，直到 <code>GOAL_ACHIEVED</code>。</li>
+    <li>提测 / 预发前写测试报告并过 <code>ai-test-report-gate.sh</code>。前置是测试方案已确认，且 Tester 为 <code>GOAL_ACHIEVED</code>。进预发还要建议「允许进入预发」。</li>
+    <li>Reviewer 只读，过 <code>reviewer-gate.sh</code>，<code>high_risk_count: 0</code>。</li>
+  </ul>
+  <h3>⑦ 全局禁令</h3>
+  <ul>
+    <li>只用 <code>changes/&lt;change-id&gt;/</code>。不建顶层 <code>openspec/</code>。旧产物放 <code>changes/&lt;id&gt;/legacy-openspec/</code>。</li>
+    <li>永不记录明文密码、token、cookie。</li>
+    <li>CodeGraph 未引入，相关步骤写 N/A。</li>
+  </ul>
+</section>
+
+<section id="change">
+  <h2>变更包</h2>
+  <p>一次需求一个目录 <code>changes/&lt;change-id&gt;/</code>，是这次需求的本机工作目录。<strong>整包不提交 git</strong>（<code>.gitignore</code> 为 <code>/changes/*/</code>）。<code>changes/</code> 根下的 <code>change-scaffold.sh</code>、<code>status-card.sh</code>、<code>change-whitelist-spec.md</code> 是控制面，要进 git。</p>
+  <h3>建包脚本会做什么</h3>
+  <ul>
+    <li>新建目录，并预建 <code>artifacts/</code>，放大文件（截图、录屏、trace、长日志）。</li>
+    <li>按档位把模版从 <code>templates/</code> 拷进变更包。</li>
+    <li>当场生成空的 <code>evidence.md</code>，首行是建包记录。</li>
+    <li>M/L 同时拷 <code>agent-dispatch-plan.md</code> 空壳。</li>
+  </ul>
+  <p>白名单由 <code>changes/change-whitelist-spec.md</code> 定义，<code>gates/change-artifacts-gate.sh</code> 检查有没有名单外的文件。大文件不要摊在包根，也不要放到仓库根的 <code>artifacts/</code>。</p>
+  <h3>状态卡</h3>
+  <p>给人看的单一入口：走到哪、下一步、卡在哪、要不要拍板、子 Agent 在干什么。方案是否 CONFIRMED、环境是否 READY、Tester 是否 GOAL_ACHIEVED，原文在各自 md 里。用户口头确认后，主 Agent 先改对应产物，再改状态卡，再跑 gate。不要只改状态卡就宣称过门。只有主 Agent 能写。子 Agent 不得改。</p>
+  <p>当前阶段取值：<code>需求理解 / 方案确认 / 允许开工 / 实现中 / AI测试待确认 / 预发待发布 / 已收口</code>。收集脚本 <code>changes/status-card.sh</code> 只读、不裁决，自动推断上限是「允许开工」；「实现中」和「已收口」由主 Agent 在实现开始和收口时手动置位。不要覆盖 Agent Roster。禁止写入 token、cookie、DB password。</p>
+  <p>这些时候要刷新：有人问「现在到哪了」；阶段切换；阻塞出现或解除；人工确认前后；Tester / Reviewer 返回；审查之后又改了代码；进入预发前；派发、完成或阻塞子 Agent。</p>
+  <h3>证据</h3>
+  <p><code>evidence.md</code> 是可复查的命令痕迹，不是口头「测过了」。表头：<code>Check | Command / Source | Result | Summary</code>。Result 取 <code>PASS / FAIL / BLOCKED / N/A</code>。每跑一条关键命令就追加，不要覆盖整表，不要等收口再补。长输出只留摘要和 <code>artifacts/</code> 路径。</p>
+  <p>它不是验收裁决（那是 Tester 的 <code>test-agent-verification.md</code>），也没有单独的 evidence gate。Reviewer 关卡要求 <code>review.md</code> 引用 evidence。禁止写入 token、cookie、DB password、客户资料、未脱敏 SQL、原始私密 prompt。</p>
+</section>
+
+<section id="files">
+  <h2>文件列表</h2>
+  <p>下面是一次变更里可能出现的文件。空壳和填写不是同一时刻：M/L 建包时很多文件已经拷进来，内容要到对应阶段才填。</p>
+  <table>
+    <thead><tr><th>#</th><th>文件</th><th>何时</th><th>谁写</th><th>怎样算过</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><code>spec.md</code></td><td>建包即有，需求理解时填。S/M/L 都要</td><td>主 Agent；Explorer 只读供料</td><td>阻塞 QUESTION 已清；ASSUMP 确认后写成带来源的 FACT。含 lane、allowed_paths</td></tr>
+      <tr><td>2</td><td><code>status-card.md</code></td><td>建包即有，贯穿更新</td><td>主 Agent</td><td>文首要有 <code>artifact_profile</code> 和 <code>artifact_schema_version: 1</code>。摘要不是拍板原文</td></tr>
+      <tr><td>3</td><td><code>evidence.md</code></td><td>建包即有，每跑命令就追加</td><td>主 Agent</td><td>只记摘要。无单独过门；Reviewer 会看</td></tr>
+      <tr><td>4</td><td><code>requirement-intake.md</code></td><td>M/L 要结构化收需求时</td><td>主 Agent</td><td><code>requirement-intake-gate.sh</code>。可无</td></tr>
+      <tr><td>5</td><td><code>contract.md</code></td><td>M/L 建包有空壳；契约冻结时填写</td><td>主 Agent；前端只读这份</td><td>未冻不得实现。只用变更包内这一条路径</td></tr>
+      <tr><td>6</td><td><code>technical-solution.md</code></td><td>M/L 空壳；方案阶段填写并确认</td><td>主 Agent</td><td><code>CONFIRMED</code> 且 <code>allowed_next_stage</code> 不是 none</td></tr>
+      <tr><td>7</td><td><code>plan.md</code></td><td>方案后、开工前</td><td>主 Agent</td><td>无单独过门。不要和状态卡写成两套步骤</td></tr>
+      <tr><td>8</td><td><code>verification-map.md</code></td><td>同 plan</td><td>主 Agent</td><td><code>verification-map-gate.sh</code>。每条约束怎么验</td></tr>
+      <tr><td>9</td><td><code>skill-usage.md</code></td><td>用到 skill 时；M 强制有此文件</td><td>主 Agent</td><td><code>skill-usage-gate.sh</code>。未用写 N/A</td></tr>
+      <tr><td>10</td><td><code>agent-dispatch-plan.md</code></td><td>派子 Agent 前</td><td>主 Agent</td><td>派前对照 <code>subagents/dispatch_subagent.md</code>。不派也可 N/A</td></tr>
+      <tr><td>11</td><td><code>capability-spec.md</code> / <code>behavior-spec.md</code></td><td>复杂状态机、权限、跨端</td><td>主 Agent</td><td>在 verification-map 映射。普通 CRUD 写 N/A</td></tr>
+      <tr><td>12</td><td><code>ai-test-plan.md</code></td><td>方案确认后、实现前</td><td>Test Strategy 写正文；主 Agent 不得代写</td><td>用户确认后 <code>test_plan_status: CONFIRMED</code></td></tr>
+      <tr><td>13</td><td><code>backend-test-plan.md</code></td><td>Java 行为变更</td><td>主 Agent</td><td>实现前必须有此文件或明确 N/A</td></tr>
+      <tr><td>14</td><td><code>environment-readiness.md</code></td><td>L 建包即有空壳；真 E2E 前填写。M 非 E2E 可不建</td><td>主 Agent</td><td><code>environment_status: READY</code>。不查 CONFIRMED，不探活</td></tr>
+      <tr><td>15</td><td><code>dirty-worktree-ledger.md</code></td><td>业务仓已有未提交改动</td><td>主 Agent</td><td><code>business-dirty-worktree-gate.sh</code>。无脏仓则不建</td></tr>
+      <tr><td>16</td><td><code>agent-candidate-confirmation.md</code></td><td>派 Backend / Frontend / Mobile</td><td>主 Agent，用户确认后回写</td><td>不派则不建</td></tr>
+      <tr><td>17</td><td>业务仓分支 <code>harness/&lt;change-id&gt;</code></td><td>第一次改该仓业务文件前</td><td>主 Agent，用 git 拉，不是 md</td><td>停在主干则不得改业务文件。business-code-start 仅 M/L</td></tr>
+      <tr><td>18</td><td><code>ui-rule-checklist.md</code></td><td>PRD UI / 交互编码，写代码前</td><td>主 Agent</td><td><code>ui-rule-gate.sh</code>。规则缺口未确认不得实现</td></tr>
+      <tr><td>19</td><td><code>ui-confirmation.md</code></td><td>复杂 UI，页面可运行后</td><td>主 Agent；用户看过再写 CONFIRMED</td><td><code>ui-confirmation-gate.sh</code>。PC smoke 不能替代</td></tr>
+      <tr><td>20</td><td><code>data-model.md</code> / <code>data-model-sql.md</code></td><td>改 DB</td><td>主 Agent</td><td>真实库写要用户二次确认。高危 SQL 禁止</td></tr>
+      <tr><td>21</td><td><code>contract-delta.md</code></td><td>实现中契约有增量</td><td>主 Agent</td><td><code>contract-delta-gate.sh</code>。无增量不建</td></tr>
+      <tr><td>22</td><td><code>local-routing.yml</code></td><td>本地前后端联调</td><td>主 Agent，用 <code>scripts/generate-local-routing.sh</code></td><td><code>local-routing-gate.sh</code>。不要长期手写堆积 route</td></tr>
+      <tr><td>23</td><td><code>pc-e2e-smoke-plan.md</code> / <code>pc-e2e-smoke-report.md</code></td><td>PC 真浏览器冒烟</td><td>主 Agent</td><td>真 E2E 须先环境 READY。报告只留摘要</td></tr>
+      <tr><td>24</td><td><code>miniapp-local-env.md</code></td><td>改小程序本地环境</td><td>主 Agent</td><td><code>miniapp-local-env-gate.sh</code>。未改小程序不建</td></tr>
+      <tr><td>25</td><td><code>temporary-state-ledger.md</code></td><td>本地服务、测试数据、debug 开关</td><td>主 Agent</td><td><code>temporary-state-ledger-gate.sh</code></td></tr>
+      <tr><td>26</td><td><code>codegraph-evidence.md</code></td><td>可选。本仓 CodeGraph 未引入</td><td>主 Agent</td><td>未命中不是「没有影响」的证明。相关步骤写 N/A</td></tr>
+      <tr><td>27</td><td><code>verification-run-report.md</code></td><td>进入 Tester / Reviewer 前，且 map 有可执行行</td><td><code>scripts/verification-run.sh</code> 生成</td><td>无可执行行则 N/A</td></tr>
+      <tr><td>28</td><td><code>test-agent-verification.md</code></td><td>实现后验收，只能 Tester 填</td><td>Tester</td><td>仅 <code>GOAL_ACHIEVED</code> 放行。改代码后必须重跑</td></tr>
+      <tr><td>29</td><td><code>ai-test-report.md</code></td><td>L 有空壳；提测 / 预发前填写。M 非提测可不建</td><td>主 Agent 汇总，用户确认</td><td>前置：测试方案已确认 + Tester GOAL_ACHIEVED。进预发要「允许进入预发」</td></tr>
+      <tr><td>30</td><td><code>review.md</code></td><td>人审 / PR 前，只能 Reviewer 填</td><td>Reviewer</td><td><code>high_risk_count: 0</code>。代码又变则过期</td></tr>
+      <tr><td>31</td><td><code>pre-pr.md</code></td><td>合并前</td><td>主 Agent</td><td>卫生扫描是检查项，不是拍板停止点</td></tr>
+      <tr><td>32</td><td><code>decisions.md</code></td><td>L 建包即有；过程中有拍板时填。S/M 可后补</td><td>主 Agent</td><td>L 强制</td></tr>
+      <tr><td>33</td><td><code>retro.md</code></td><td>收口时，可后补</td><td>主 Agent</td><td>变更包不进 git</td></tr>
+      <tr><td>34</td><td><code>handoff.md</code></td><td>换线程、暂停、上下文压缩时</td><td>主 Agent</td><td>留给下一个主 Agent。不是 Explorer 和 Reviewer 之间的信箱</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="protect">
+  <h2>受保护行为</h2>
+  <ul>
+    <li>不允许把代码提交到 <code>master</code> 或 <code>main</code>。</li>
+    <li>未经 spec 明确许可，不要改：生产配置、密钥、<code>.env*</code>、部署清单、DB 迁移、Nacos 生产配置、发布脚本，以及 allowed paths 之外的无关模块。</li>
+    <li>真实 SIT / UAT / 生产库默认只读。真实写入、DDL、任务触发的数据变更或会修改数据的 API，需要目标环境、精确 SQL 或 API、预期行数、回滚或清理计划，以及明确的第二次用户确认。</li>
+    <li>高危 SQL 全局禁止：<code>DROP DATABASE</code>、<code>DROP TABLE</code>、<code>TRUNCATE</code>、宽范围 <code>DELETE</code>、宽范围 <code>UPDATE</code>，或没有精确范围的写入。</li>
+    <li>永不在版本化文件、harness 文档、证据或记忆里保存明文 DB 密码、token 或 cookie。</li>
+    <li>合并前，对变更的业务文件运行 <code>gates/diff-hygiene-gate.sh</code> 和 <code>gates/temp-hardcode-scan.sh</code>。</li>
+  </ul>
+</section>
+
+<section id="agents">
+  <h2>子 Agent</h2>
+  <p>主 Agent 负责派发。子 Agent 使用新会话，默认看不到主对话。spec、diff 等必读材料写进派发提示的 Read inputs，由子 Agent 自己读磁盘。控制面默认只允许主 Agent 写。</p>
+  <figure>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 210" width="980" role="img" aria-label="子 Agent 出现时机">
+      <defs>
+        <marker id="aa2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#5677aa"/></marker>
+        <style>
+          .xb { fill:#fff; stroke:#7ca7e8; stroke-width:1.6; }
+          .xh { font:700 13px "PingFang SC","Microsoft YaHei",sans-serif; fill:#14365f; }
+          .xs { font:12px "PingFang SC","Microsoft YaHei",sans-serif; fill:#334; }
+          .xa { stroke:#5677aa; stroke-width:1.5; fill:none; marker-end:url(#aa2); }
+        </style>
+      </defs>
+      <rect class="xb" x="12" y="60" width="150" height="80" rx="10"/>
+      <text class="xh" x="87" y="92" text-anchor="middle">Explorer</text>
+      <text class="xs" x="87" y="114" text-anchor="middle">方案或实现前</text>
+      <text class="xs" x="87" y="132" text-anchor="middle">只读，不改 spec</text>
+      <path class="xa" d="M162 100 H182"/>
+      <rect class="xb" x="182" y="60" width="160" height="80" rx="10"/>
+      <text class="xh" x="262" y="92" text-anchor="middle">Test Strategy</text>
+      <text class="xs" x="262" y="114" text-anchor="middle">方案确认后</text>
+      <text class="xs" x="262" y="132" text-anchor="middle">写测试方案</text>
+      <path class="xa" d="M342 100 H362"/>
+      <rect class="xb" x="362" y="40" width="200" height="120" rx="10"/>
+      <text class="xh" x="462" y="68" text-anchor="middle">Backend / Frontend</text>
+      <text class="xh" x="462" y="88" text-anchor="middle">/ Mobile</text>
+      <text class="xs" x="462" y="112" text-anchor="middle">候选，默认可不派</text>
+      <text class="xs" x="462" y="132" text-anchor="middle">契约 v0.1、允许路径</text>
+      <text class="xs" x="462" y="150" text-anchor="middle">隔离 worktree</text>
+      <path class="xa" d="M562 100 H582"/>
+      <rect class="xb" x="582" y="60" width="160" height="80" rx="10"/>
+      <text class="xh" x="662" y="92" text-anchor="middle">Tester</text>
+      <text class="xs" x="662" y="114" text-anchor="middle">实现之后</text>
+      <text class="xs" x="662" y="132" text-anchor="middle">不得改业务代码</text>
+      <path class="xa" d="M742 100 H762"/>
+      <rect class="xb" x="762" y="60" width="200" height="80" rx="10"/>
+      <text class="xh" x="862" y="92" text-anchor="middle">Reviewer</text>
+      <text class="xs" x="862" y="114" text-anchor="middle">人审 / PR 之前</text>
+      <text class="xs" x="862" y="132" text-anchor="middle">只读，只写 review.md</text>
+    </svg>
+    <figcaption>图 6　角色按阶段出现。Explorer 和 Reviewer 默认只读。实现角色是候选，不是默认必派。</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Explorer</strong>（<code>subagents/explorer_agent.md</code>）：只读查证，按三标签把材料交回主 Agent。</li>
+    <li><strong>Reviewer</strong>（<code>subagents/reviewer_agent.md</code>）：只写 <code>review.md</code>。<code>high_risk_count</code> 为 0 才建议进人审。</li>
+    <li><strong>Test Strategy</strong>（<code>subagents/test_strategy_agent.md</code>）：写 <code>ai-test-plan.md</code>，不写业务代码。</li>
+    <li><strong>Tester</strong>（<code>subagents/tester_agent.md</code>）：对照已确认测试方案验收，维护 <code>test-agent-verification.md</code>。</li>
+    <li><strong>Backend / Frontend / Mobile</strong>：候选。契约、允许路径、隔离 worktree 齐了才派。前端只读契约。</li>
+  </ul>
+  <p>每个子 Agent 提示词以 <code>Agent Label: &lt;change-id&gt; / &lt;role&gt; / &lt;scope&gt;</code> 开头，并声明写入范围、禁止路径、要求产出、是否只读。最终回复以 <code>&lt;role&gt;: DONE|PASS|BLOCKED|NEEDS_CONTEXT</code> 开头。主 Agent 在状态卡 Agent Roster 里记录同样的标签和状态。细则见 <code>subagents/dispatch_subagent.md</code>。</p>
+</section>
+
+<section id="done">
+  <h2>完成定义</h2>
+  <ul>
+    <li>spec、plan、契约与档位 M/L 的技术方案一致。</li>
+    <li>没有未解决的假设或问题进入代码。需要测试方案时，<code>ai-test-plan.md</code> 已确认。</li>
+    <li>做过 E2E 的，环境就绪写清楚。</li>
+    <li>Tester 已确认 <code>GOAL_ACHIEVED</code>，或记录 <code>BLOCKED</code> 并升级给用户。</li>
+    <li>Reviewer 产出已通过 <code>gates/reviewer-gate.sh</code>。</li>
+    <li>残余风险和回滚已记录。</li>
+  </ul>
+</section>
+
+<footer>
+  本页路径 <code>docs/readme.html</code>。流程图共 6 张：Hook、Guides/Sensors、用户拍板节奏、十五步工作流、lane 选择、子 Agent 时机。执行规则以仓库根目录 <a href="../AGENTS.md">AGENTS.md</a> 为准。
+</footer>
+</div>
+</body>
+</html>
