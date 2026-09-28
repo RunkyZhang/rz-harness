@@ -8,9 +8,9 @@
 
 - [ ] 业务目标与 `changes/<change-id>/spec.md` 一致。
 - [ ] `changes/<change-id>/status-card.md` 已更新当前阶段、下一步、待确认项和是否允许进入下一阶段。
-- [ ] `changes/<change-id>/technical-solution.md` 已人工确认，并通过 `gates/technical-solution-gate.sh changes/<change-id>`。
+- [ ] M/L：`changes/<change-id>/technical-solution.md` 已人工确认，并通过 `gates/technical-solution-gate.sh changes/<change-id>`。S：本项 `N/A`。
 - [ ] 多仓 / 全栈需求已在 `status-card.md` 记录 `Workstream Dispatch`（`workstream-dispatch-gate` RZ 未引入 → 本项 N/A）。
-- [ ] 业务仓首次改代码前已通过 `gates/business-code-start-gate.sh changes/<change-id> <changed-files...>`；没有在 `main/master` 直接修改业务代码。
+- [ ] 业务仓不在 `main/master`。S：已过 `confidence-gate` / `assumption-leak-gate` / `allowed-paths`。M/L：再通过 `gates/business-code-start-gate.sh changes/<change-id> <changed-files...>`。
 - [ ] 若业务仓存在接手前 dirty diff，已通过 `gates/business-dirty-worktree-gate.sh <repo> --ledger changes/<change-id>/dirty-worktree-ledger.md`，每个 dirty path 有 owner 和 decision。
 - [ ] 所有阻塞性 `[QUESTION]` 已解决。
 - [ ] 没有把 `[ASSUMP]` 内容实现进代码。

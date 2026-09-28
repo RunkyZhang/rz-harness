@@ -350,17 +350,16 @@
 
 
 ### 强制工作流
-
 > 适用：档位 M/L、跨仓、后端行为、DB、复杂 UI；带 **★** 的是全局规则，S/M/L 都适用。**lane 只能选路线，不能豁免「命中的停止点 / 条件关卡」**；档位裁剪只决定**产物厚度**（S 档可对部分产物写 `N/A`），不改变全局规则。
 > 用户说「开始 / 下一步 / 确认 / ok」只推进到下一个已满足的关卡，不能跳关。
 
 **① 开场（第一条回复）**
-- 列出本次会碰到的**关卡**（见「停止点」表，不要手写混合名单）。
-- 以 `changes/<change-id>/status-card.md` 作为用户可见状态卡。
+- 列出本次会碰到的**关卡**（见「停止点」表，不要手写混合名单）
+- 以 `changes/<change-id>/status-card.md` 作为用户可见状态卡。（见「变更包 → 状态卡」）。
 
 **② 开工前（写业务代码前）**
 - ★ 读当前变更；`source config/runtime_local.sh`；确认允许的仓库 / 路径。
-- ★ 区分 `[FACT]` / `[ASSUMP]` / `[QUESTION]`；未决的假设 / 问题不得进实现；优先用目标仓样板。
+- ★ 区分 `[FACT]` / `[ASSUMP]` / `[QUESTION]`（见「需求理解」）；未决的假设 / 问题不得进实现；优先用目标仓样板。
 - ★ 每个业务仓首次改代码：从 `origin/master`（或 `origin/main`）切 `harness/<change-id>`，记基线分支 + commit，**不在主干改**。
 - 开工门禁：
   - **S/M/L 都跑**：`gates/confidence-gate.sh <spec-file>`、`gates/assumption-leak-gate.sh <spec-file> <changed-file...>`、`gates/allowed-paths.sh <spec-file> <changed-file...>`。
@@ -370,15 +369,16 @@
 
 **③ 不可豁免**
 - 用户口头「ok / 确认」不能跳过**档位需要或条件命中的**关卡（方案、测试方案、环境、Tester、Reviewer 按档位与触发条件才要求；命中飞书 PRD 时含飞书同步）。
-- `status-card.md` 持续更新：阶段变化、阻塞出现 / 解除、Tester / Reviewer 返回、验证失效。
-- 代码再变 → 旧结论作废：Tester 验证重跑；Reviewer 产出后代码变 → 审查标过期，重跑 Tester 再重跑 Reviewer。
+- `status-card.md` 持续更新：阶段变化、阻塞出现 / 解除、Tester / Reviewer 返回、验证失效。（见「变更包 → 状态卡 → 触发时机」）
+- 代码再变 → 旧结论作废：Tester 验证重跑；Reviewer 产出后代码变 → 审查标过期，重跑 Tester 再重跑 Reviewer。（见「停止点」#7 / #9）
 - 主 Agent 可实施 / 修复，但**不得代裁** Tester / Reviewer。
 - 派子 Agent：提示词和 Agent Roster 记录可读角色标签。
 
 **④ 强制项**
 
-*M/L 默认必做：*
-- 全栈 `technical-solution.md` 需 `CONFIRMED`（必须覆盖模板列出的每一块 PRD 面；当前端 / APP / 导出 / 分析 / 跨仓行为在范围内时，仅后端方案无效），并跑 `gates/technical-solution-gate.sh <change-dir>`；独立的 Test Strategy 写 `ai-test-plan.md` 需用户确认，并跑 `gates/ai-test-plan-gate.sh <change-dir>`。
+*M/L 默认必做（见「停止点」#2 / #3）：*
+- 全栈 `technical-solution.md` 需 `CONFIRMED`（必须覆盖模板列出的每一块 PRD 面；当前端 / APP / 导出 / 分析 / 跨仓行为在范围内时，仅后端方案无效），并跑 `gates/technical-solution-gate.sh <change-dir>`
+- 独立的 Test Strategy 写 `ai-test-plan.md` 需用户确认，并跑 `gates/ai-test-plan-gate.sh <change-dir>`。
 - **skill 路由** → 按 `skills/skills-routing.md`；M/L scaffold 必有 `skill-usage.md`（未用写 `N/A`），并跑 `gates/skill-usage-gate.sh changes/<change-id>`。
 
 *命中才做：*
@@ -391,7 +391,7 @@
 - **复杂行为 / 能力边界** → 写 `capability-spec.md` / `behavior-spec.md`，并在 `verification-map.md` 映射。普通 CRUD 写 `N/A`。
 
 **⑤ 环境与就绪**
-- 真实 E2E 前：填 `environment-readiness.md` 并跑 `gates/environment-readiness-gate.sh <change-dir>`（环境 / 系统 / 拓扑 / 账号来源 / 数据 / 写库边界 / 回滚 / 设备 / 阻塞 / **无可复用凭据**）。
+- 真实 E2E 前：填 `environment-readiness.md` 并跑 `gates/environment-readiness-gate.sh <change-dir>`（环境 / 系统 / 拓扑 / 账号来源 / 数据 / 写库边界 / 回滚 / 设备 / 阻塞 / **无可复用凭据**）。（见「停止点」#4）
 - 本地后端「可验收」只在 `scripts/local-service-lifecycle.sh` 的 HEALTH=UP + check-web-stack 成功后声明（Maven / nohup / 端口单独成功都不算）。
 
 **⑥ 验收与审查**
@@ -402,7 +402,7 @@
 
 **⑦ 全局禁令**
 - ★ 单一控制面：只用 `changes/<change-id>/`；不建顶层 `openspec/`；旧产物只放 `changes/<id>/legacy-openspec/`。
-- ★ 永不记录明文密码 / token / cookie（详见「受保护行为」）。
+- ★ 永不记录明文密码 / token / cookie。（见「受保护行为」）
 - CodeGraph RZ 未引入（`codegraph-preflight` 等未拷）→ N/A。
 
 

@@ -32,11 +32,13 @@
 | `ai-test-plan-gate.sh` | `gates/ai-test-plan-gate.sh <change-dir>` | `test_plan_status: CONFIRMED`、测试矩阵 / 边界场景 / UI 检查 / token 风险说明存在、无未解决占位符 | Test Strategy 已填内容；用户已确认 |
 | `verification-map-gate.sh` | `gates/verification-map-gate.sh <change-dir>` | `verification_map_status: READY`；至少一行 `VM-*` 映射（约束 → 验证方式） | 方案确认后 |
 
-### 5. 开工前（停止点 5，四重门禁）
+### 5. 开工前（停止点 5：S 三重 / M/L 四重）
+
+S/M/L 都跑：`confidence-gate`（见上节停止点 1）、`assumption-leak-gate`、`allowed-paths`。**M/L 再加** `business-code-start-gate`（它校验技术方案，S 不要跑）。脏仓再加 `business-dirty-worktree-gate`。
 
 | Gate | 命令 | 检查什么 | 前置依赖 |
 |---|---|---|---|
-| `business-code-start-gate.sh` | `gates/business-code-start-gate.sh <change-dir> <changed-file>...` | 方案已 CONFIRMED 且 `allowed_next_stage` 达 code_start；verification-map READY；业务仓不在 `main/master`（在 `harness/<id>` 分支） | 内部级联 technical-solution-gate + verification-map-gate |
+| `business-code-start-gate.sh` | `gates/business-code-start-gate.sh <change-dir> <changed-file>...` | **仅 M/L。** 方案已 CONFIRMED 且 `allowed_next_stage` 达 code_start；verification-map READY；业务仓不在 `main/master`（在 `harness/<id>` 分支） | 内部级联 technical-solution-gate + verification-map-gate |
 | `allowed-paths.sh` | `gates/allowed-paths.sh <spec-file> <changed-file>...` | 待改文件都在 spec 的 `allowed_paths` 白名单内；含未展开 `$VAR` 路径时提示 source `config/runtime_local.sh` | spec 已写 allowed_paths |
 | `assumption-leak-gate.sh` | `gates/assumption-leak-gate.sh <spec-file> <changed-file>...` | 实现文件不含 `[ASSUMP]` 字面标签；spec 中 ASSUMP 的高信号标识符未泄漏进实现 | spec 三标签已清 |
 | `business-dirty-worktree-gate.sh` | `gates/business-dirty-worktree-gate.sh <repo> [--ledger <ledger.md>]` | 业务仓有脏 diff 时，每个脏文件必须记入台账（含 owner 和 decision），防止静默覆盖用户工作 | 脏仓时先建 `dirty-worktree-ledger.md` |
@@ -53,7 +55,7 @@
 
 | Gate | 命令 | 检查什么 | 前置依赖 |
 |---|---|---|---|
-| `environment-readiness-gate.sh` | `gates/environment-readiness-gate.sh <change-dir>` | `environment_status: READY`；环境 / 运行时 / 拓扑 / 账号来源 / 权限 / 数据 / 设备各节齐全；至少一行 READY 的系统运行时。只查材料不探活、不查 CONFIRMED | `environment-readiness.md` 已填 |
+| `environment-readiness-gate.sh` | `gates/environment-readiness-gate.sh <change-dir>` | `environment_status: READY`；环境 / 运行时 / 拓扑 / 账号来源 / 权限 / 数据 / 设备各节齐全；至少一行 READY 的系统运行时；无可复用凭据。只查材料不探活、不查 CONFIRMED | `environment-readiness.md` 已填 |
 
 ### 8. 验收阶段（停止点 7 / 8 / 9）
 
@@ -76,10 +78,10 @@
 | 停止点 | Gate |
 |---|---|
 | 1 Spec | `confidence-gate` |
-| 2 方案 | `technical-solution-gate`（含飞书同步级联） |
-| 3 测试方案 | `ai-test-plan-gate` + `verification-map-gate` |
+| 2 方案（仅 M/L） | `technical-solution-gate`（含飞书同步级联）；S 本停止点 N/A |
+| 3 测试方案（仅 M/L） | `ai-test-plan-gate` + `verification-map-gate`；S 本停止点 N/A |
 | 4 环境 | `environment-readiness-gate` |
-| 5 开工 | `business-code-start-gate` + `allowed-paths` + `assumption-leak-gate` + `business-dirty-worktree-gate`（脏仓） |
+| 5 开工 | S：`confidence-gate` + `assumption-leak-gate` + `allowed-paths`。M/L 再加 `business-code-start-gate`。脏仓再加 `business-dirty-worktree-gate` |
 | 6 UI | `ui-rule-gate`（确认记录无独立 gate，人工核对文件） |
 | 7 Tester | `test-agent-verification-gate` |
 | 8 报告 | `ai-test-report-gate` |

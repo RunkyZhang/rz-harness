@@ -17,12 +17,12 @@
 
 | Gate | Status | Evidence / Link | Notes |
 | --- | --- | --- | --- |
-| 技术方案确认 | `PENDING / CONFIRMED / CHANGE_REQUESTED / BLOCKED` | `changes/<change-id>/technical-solution.md` | 未 `CONFIRMED` 不得进入业务代码 |
+| 技术方案确认 | `PENDING / CONFIRMED / CHANGE_REQUESTED / BLOCKED / NOT_APPLICABLE` | `changes/<change-id>/technical-solution.md` | M/L：未 `CONFIRMED` 不得进入业务代码。S：本行 `NOT_APPLICABLE` |
 | 技术方案飞书同步 | `N/A / PENDING / SYNCED / BLOCKED / STALE` | `changes/<change-id>/technical-solution.md` / `<Feishu solution child doc URL>` | PRD 来源为飞书 / Lark 时，确认后必须同步到 PRD 子文档；本地方案后续修改后必须重新同步 |
-| Code start | `PENDING / PASS / BLOCKED` | `business-code-start-gate / confidence-gate / allowed-paths / assumption-leak` | 无阻塞假设和问题；业务仓不在 `main/master` |
+| Code start | `PENDING / PASS / BLOCKED` | S：`confidence-gate` / `assumption-leak` / `allowed-paths`。M/L 再加 `business-code-start-gate` | 无阻塞假设和问题；业务仓不在 `main/master` |
 | Workstream dispatch | `NOT_APPLICABLE / PENDING / PASS / DEGRADED / BLOCKED` | `changes/<change-id>/status-card.md` Workstream Dispatch 表 | 全栈/多仓需求必须先拆 backend / PC / 小程序等工作线。标本 `workstream-dispatch-gate.sh` RZ 未拷 |
 | Agent dispatch plan | `NOT_APPLICABLE / PENDING / PASS / DEGRADED / BLOCKED` | `changes/<change-id>/agent-dispatch-plan.md` / `subagents/dispatch_subagent.md` | 派发子 Agent 前填写计划；RZ 未拷 `agent-dispatch-plan-gate.sh`。candidate implementation 需要 `agent-candidate-confirmation.md` |
-| AI 测试方案确认 | `PENDING / CONFIRMED / CHANGE_REQUESTED / BLOCKED` | `changes/<change-id>/ai-test-plan.md` | 未 `CONFIRMED` 不得进入业务代码 |
+| AI 测试方案确认 | `PENDING / CONFIRMED / CHANGE_REQUESTED / BLOCKED / NOT_APPLICABLE` | `changes/<change-id>/ai-test-plan.md` | M/L：未 `CONFIRMED` 不得进入业务代码。S：本行 `NOT_APPLICABLE` |
 | Environment readiness | `PENDING / READY / BLOCKED / NOT_APPLICABLE` | `changes/<change-id>/environment-readiness.md` | 真实 E2E 前必须 READY |
 | UI rule checklist | `NOT_APPLICABLE / PENDING / READY / BLOCKED` | `changes/<change-id>/ui-rule-checklist.md` | PRD UI 编码前必须过规范缺口检查 |
 | Complex UI | `NOT_APPLICABLE / PENDING / CONFIRMED / BLOCKED` | `changes/<change-id>/ui-confirmation.md` | 复杂 UI 未确认不得声明通过 |
