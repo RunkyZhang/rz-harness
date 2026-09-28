@@ -4,16 +4,8 @@
 
 ## 控制面（control plane）
 控制面 = 本仓库 `rz-harness`，harness 的载体。目录 / 内容分两类：
-- **配置类**：要按本机环境和使用的 runtime（Cursor / Codex / OpenCode）做本地化填写
-  - 运行时参数：`config/runtime_local.sh` → 见「控制面 → 运行时参数」
-  - Git 仓库：`git-registry.md`、`baselines/` → 见「控制面 → Git仓库」，「控制面 → Baseline」
-  - Hook 接线：各 runtime 按 `hooks/hook_setup.md` 在本机启用；脚本本身进 git → 见「控制面 → runtime 的 Hook 机制」
-- **静态类**：装好即用，内置能力，功能不按环境改
-  - 语言政策 → 见「控制面 → 语言政策」
-  - 模版文件：`templates/` → 见「控制面 → 模版文件」
-  - gate 与工具脚本：门禁在 `gates/`（见 `gates/gate_directory.md`）、前后端 / 生命周期工具在 `scripts/` → gate 见【运行机制 → gate（门禁）】
-  - 子 Agent 人设：`subagents/` → 见【子 Agent】
-  - 知识与规则：`docs/`、`rules/`、`lanes/` → 见「知识与规则」
+- **配置类**：要按本机环境和使用的 runtime（Cursor / Codex / OpenCode）做本地化填写。包括运行时参数，Git 仓库， Hook 机制
+- **静态类**：装好即用，内置能力，功能不按环境改。包括语言政策，模版文件，工具&脚本，子 Agent，知识与规则
 
 ### 运行时参数
 - 本机配置：路径 `config/runtime_local.sh`，按当前开发环境填写。参数至少包括：业务仓绝对路径、账号/凭据**来源**、数据库连接信息、本地服务地址/代理/端口、本机工具命令等
@@ -38,21 +30,23 @@
 ### 模版文件
 > 全部模板文件保存在目录 `templates/`，用来生成 change 变更包所需文件。`templates/template_directory.md` 为字典目录（每个 template 作用是什么、用在哪段流程、拷到变更包后叫什么）。
 
-### gate 与工具脚本
-> 门禁脚本在 `gates/`（见 `gates/gate_directory.md`）；前后端 / 生命周期等工具脚本在 `scripts/`。详见「运行机制：Guides 与 Sensors」。
+### 工具&脚本
+> - 门禁脚本在 `gates/`。（见「gate（门禁）」）
+> - 脚本工本在 `scripts/`。快速定位见 `scripts/script_directory.md` TODO：未完成
+> - skill工具在 `skills/`。快速定位见 `skills/skill_directory.md` TODO：未完成
 
 ### 子 Agent
-> 角色人设在 `subagents/<role>_agent.md`（Explorer / Reviewer / Test Strategy / Tester / Backend / Frontend / Mobile）。详见「子 Agent」。
+> 角色人设。（见「子 Agent」）
 
 ### 知识与规则
 > 知识库在 `docs/`（如 `docs/pitfalls/`）；技术栈规则在 `rules/`（`rules/frontend-vue2.mdc`、`rules/frontends/legacy-sfa/`）；任务路线在 `lanes/`（`bugfix-fast` / `fullstack-crud`；`pc-e2e-smoke` 是 E2E Pack，不是开工主 lane）。技能路由正文在 `skills/skills-routing.md`（`docs/skills-routing.md` 只做指针）。`docs/standards/comment-logging.md` RZ 未建 → 注释/日志用 `scripts/code-comment-log-quality.sh`。
 
-### runtime 的 Hook 机制
+### Hook 机制
 > - 大多数 runtime（Cursor / Codex / OpenCode）都有自己的 hook 机制。用户可以自定义“当某事件发生时，让 runtime 执行某个脚本”。和 LLM 的 `tool_call` 不同，hook 是 runtime 的功能，不依赖 LLM 决策
 > - **触发方式**上，hook 是“推式”（runtime 在事件点一定会执行），比“拉式”（靠人 / agent 记得跑 gate）更可靠。重要 gate 挂到 hook 上自动执行，可降低漏执行风险。（注意：gate 是“检查内容”，hook 是“触发时机”，二者不是比谁靠谱的同类）
 > - 不同 runtime 的 hook 设置方式不同，选定 runtime 后要按 `hooks/hook_setup.md` 接线。`hooks/hook_adapter.sh` 只做路由（转发到 `hooks/harness-sensor-runner.sh`）；检查逻辑在 runner 里（危险命令 / code-start 瘦身 / 有 `RZ_CHANGE_SPEC` 时跑 `gates/allowed-paths.sh`）
 
-接线流程：
+流程：
 ```text
         runtime 事件点
            │ 触发
@@ -72,8 +66,8 @@
 ```
 目前 hook 会执行的检查在 `hooks/harness-sensor-runner.sh`。检查内容包括危险 shell（`rm -rf`、`git push --force` 等）和不符合规则的 git 命令。
 
-## 领域名词
 
+## 领域名词
 ### harness / runtime
 | 词 | 是什么 | 负责什么                                      |
 |---|---|-------------------------------------------|
@@ -122,7 +116,7 @@
 
 
 ## 运行机制：Guides 与 Sensors
-> harness 不替代 agent，而是**围住** agent：行动前喂资料（Guides），行动后压检查（Sensors）
+> harness 会**围住** agent：行动前喂资料（Guides），行动后压检查（Sensors）
 
 ### 一张图：两层控制怎么围住 agent 让其循环执行，判断
 ```text
@@ -152,7 +146,7 @@
 设计时先问：这条约束能不能用脚本判？能 → 写成 gate；不能（代码好不好、架构漂不漂）→ 交 Reviewer。另外 gate 本身是**拉式**的：要有人 / agent 去跑它，自动跑要靠 hook。
 
 ### gate（门禁）
-> gate 是 Sensors 里最“确定性”的一类：只做能**算清**的判断（文件是否存在、字段是否填了、路径是否在白名单），写成脚本、放 `gates/`。
+> gate 是 Sensors 里最“确定性”的一类：只做能**算清**的判断（文件是否存在、字段是否填了、路径是否在白名单），写成脚本、放 `gates/`
 
 检查变更包产出物或流程状态、输出 PASS/FAIL 的可执行脚本。主 Agent / hook 根据 exit code 判断流程继续或阻断。gate 只裁决不干活。
 
@@ -227,8 +221,8 @@
 不是契约之后才出现的单独阶段，也不是收口时才写的总结。
 
 #### 动作
-1. 跑 `changes/status-card.sh changes/<change-id>` 脚本，脚本只收集当前变更包（`changes/<change-id>`）状态信息给主 Agent；
-2. 主 Agent 根据脚本收集的状态信息，并聚合其他信息更新 `status-card.md`（不要覆盖 Agent Roster）；
+- 跑 `changes/status-card.sh changes/<change-id>` 脚本，脚本只收集当前变更包（`changes/<change-id>`）状态信息给主 Agent；
+- 主 Agent 根据脚本收集的状态信息，并聚合其他信息更新 `status-card.md`（不要覆盖 Agent Roster）。
 
 #### 其他规则
 - 只**主 Agent**写状态卡。子 Agent 不得改；
@@ -247,7 +241,6 @@
 
 #### 触发时机
 主 Agent 每跑一条关键命令就**追加**，不必等收口：
-
 - 编译、lint、gate、冒烟、重启、扫描执行后
 - 命中场景但未做的检查，写 `N/A` 和原因
 
@@ -305,14 +298,8 @@
 ## 工作流
 
 ### 整体工作流
-
-从需求进入 → 收口，阶段序列如下。每阶段的门禁细节见「停止点」与「强制工作流」，产物清单见「变更包 → 文件列表」。**lane 只能选路线，不能豁免命中的停止点 / 条件关卡。**
-
-编号是清单，**不是**不可调换的时间轴：环境就绪（停止点 4）可提前准备，强制时点在真 E2E 前；复杂 UI（停止点 6）在可运行页面之后、宣称 UI 通过之前。
-
-**档位裁剪：** S 档步骤 5–8、11–12（契约 / 技术方案 / AI 测试方案 / 环境 / Tester / AI 测试报告）默认可写 `N/A` 和原因，但仍须 spec、`allowed_paths`、evidence，且不得在 `main`/`master` 改业务代码。**S 档的开工门禁（第 9 步）不含技术方案关卡**——只跑 `confidence-gate` / `assumption-leak-gate` / `allowed-paths` + ★ 切分支；`business-code-start-gate` 属 M/L（它校验技术方案）。M/L 不得用 lane 跳过停止点。无匹配 lane 时仍走本主线，再按档位裁剪——不是另有一套可退回的流程。
-
-业务工作开始前 `source config/runtime_local.sh`；路径空不要猜。M/L 建包后给用户的第一条回复须包含本次会碰到的**关卡**（见「停止点」表 / 「强制工作流」①）。
+> - 每阶段的门禁细节见「停止点」与「强制工作流」，产物清单见「变更包 → 文件列表」；
+> - S 档步骤 5–8、11–12（契约 / 技术方案 / AI 测试方案 / 环境 / Tester / AI 测试报告）默认可写 `N/A` 和原因，但仍须 spec、`allowed_paths`、evidence。
 
 1. **定 `change-id`**：用业务含义命名，不要用 `demo` / `tbd` 这类默认名。
 2. **选 lane**：按任务类型选（见「lane工作流」），立刻写入 `spec.md` 和 `status-card.md`；无匹配则 `lane: none`，继续本主线。
@@ -330,8 +317,6 @@
 14. **人工 review / PR**。
 15. **retro 收口**。
 
-> `status-card.md` 贯穿全程：阶段切换 / 阻塞 / 用户问「下一步」时更新。
-
 ### lane工作流
 > **lane = 某类任务的默认步骤清单（任务路线）**，放在 `lanes/`。与档位正交：lane 选步骤菜单，tier 选产物厚度。lane **只能选路线，不能豁免「命中的停止点 / 条件关卡」**。
 
@@ -348,10 +333,11 @@
 
 无匹配：不编造新 lane，走「整体工作流」并按档位裁剪。
 
-
 ### 强制工作流
-> 适用：档位 M/L、跨仓、后端行为、DB、复杂 UI；带 **★** 的是全局规则，S/M/L 都适用。**lane 只能选路线，不能豁免「命中的停止点 / 条件关卡」**；档位裁剪只决定**产物厚度**（S 档可对部分产物写 `N/A`），不改变全局规则。
-> 用户说「开始 / 下一步 / 确认 / ok」只推进到下一个已满足的关卡，不能跳关。
+> - 适用：档位 M/L、跨仓、后端行为、DB、复杂 UI
+> - 带 **★** 的是全局规则，S/M/L 都适用。**lane 只能选路线，不能豁免「命中的停止点 / 条件关卡」**
+> - 档位裁剪只决定**产物厚度**（S 档可对部分产物写 `N/A`），不改变全局规则。
+> - 用户说「开始 / 下一步 / 确认 / ok」只推进到下一个已满足的关卡，不能跳关。
 
 **① 开场（第一条回复）**
 - 列出本次会碰到的**关卡**（见「停止点」表，不要手写混合名单）
@@ -407,12 +393,12 @@
 
 
 ## 受保护行为
-
-未经 spec 明确许可不要修改：生产配置、密钥、`.env*`、部署清单、DB 迁移、Nacos 生产配置、发布脚本，或 allowed paths 之外的无关模块。
-真实 SIT/UAT/生产 DB 访问默认只读。真实数据写入、DDL、任务触发的数据变更或会修改的 API 需要目标环境、精确 SQL/API、预期行数、回滚/清理计划，以及明确的第二次用户确认。
-高危 SQL 全局禁止：`DROP DATABASE`、`DROP TABLE`、`TRUNCATE`、宽范围 `DELETE`、宽范围 `UPDATE`，或没有精确范围的写入。
-永不在版本化文件、harness 文档、证据或记忆中持久化明文 DB 密码、token 或 cookie。此类机密只放在已忽略的 `config/runtime_local.sh` 或系统钥匙串。
-合并前，对变更的业务文件运行 `gates/diff-hygiene-gate.sh <repo> [--base <ref>] <files...>` 和 `gates/temp-hardcode-scan.sh <files...>`。
+- 不允许提交代码到 master 或者 main 分支
+- 未经 spec 明确许可不要修改：生产配置、密钥、`.env*`、部署清单、DB 迁移、Nacos 生产配置、发布脚本，或 allowed paths 之外的无关模块。
+- 真实 SIT/UAT/生产 DB 访问默认只读。真实数据写入、DDL、任务触发的数据变更或会修改的 API 需要目标环境、精确 SQL/API、预期行数、回滚/清理计划，以及明确的第二次用户确认。
+- 高危 SQL 全局禁止：`DROP DATABASE`、`DROP TABLE`、`TRUNCATE`、宽范围 `DELETE`、宽范围 `UPDATE`，或没有精确范围的写入。
+- 永不在版本化文件、harness 文档、证据或记忆中持久化明文 DB 密码、token 或 cookie。此类机密只放在已忽略的 `config/runtime_local.sh` 或系统钥匙串。
+- 合并前，对变更的业务文件运行 `gates/diff-hygiene-gate.sh <repo> [--base <ref>] <files...>` 和 `gates/temp-hardcode-scan.sh <files...>`。
 
 ## 子 Agent
 > 主 Agent 负责派发和管理子 Agent。创建靠 **runtime 内置工具**（例如：Cursor 为 `Task`）。子 Agent 使用新 session，默认看不到主对话；spec / diff 等必读材料写进派发 prompt 的 `Read inputs`，由子 Agent 读磁盘。
@@ -434,13 +420,7 @@
 
 每个子 Agent 提示词必须以 `Agent Label: <change-id> / <role> / <scope>` 开头，并且必须声明写入范围、禁止路径、要求产出，以及该 Agent 是否只读。子 Agent 最终回复应以 `<role>: <DONE|PASS|BLOCKED|NEEDS_CONTEXT>` 开头；主 Agent 在 `changes/<change-id>/status-card.md` 的 Agent Roster 中记录相同的标签和状态。详细约定见 `subagents/dispatch_subagent.md`。
 
-## 命令
-使用仓库特定的基线文件。初始候选：`mvn -DskipTests compile`、`scripts/frontend-lint-build.sh <repo> lint-files <files...>`、`scripts/frontend-dev-server.sh frontend-map-system 9527`、`npm run build:test`。
-先运行范围最窄的有用检查。
-
-
 ## 完成定义
-
 仅当 spec/plan/契约与档位 M/L 技术方案一致；没有未解决的假设/问题进入代码；需要时 `ai-test-plan.md` 已确认。
 对已执行的 E2E，环境就绪是清楚的；Tester 已确认 `GOAL_ACHIEVED`（或记录 `BLOCKED` 并升级给用户）；Reviewer 产出已通过 `gates/reviewer-gate.sh changes/<change-id>`。
 残余风险和回滚已记录。
