@@ -16,8 +16,8 @@
 适用于满足本 lane 适用条件的低风险 CRUD。M 档停止点 2 / 3 / 7 在默认流程内，不是 Optional Pack。
 
 1. 建包：`changes/change-scaffold.sh --tier M <change-id>`。给用户的第一条回复包含本次停止点。`source config/runtime_local.sh`，路径空不要猜。
-2. 创建 `changes/<change-id>/spec.md`，使用 `templates/spec-tier-m.md`；写入 `lane: lanes/fullstack-crud.md`、三标签和 `allowed_paths`。（停止点 1）
-3. 创建 / 更新 `changes/<change-id>/status-card.md`，文首表写入同一 `Lane`。
+2. 把 spec 文首 `lane: TODO` 改成 `lane: lanes/fullstack-crud.md`，并写三标签和 `allowed_paths`。（停止点 1）
+3. 状态卡 `Lane` 照抄 spec。spec 为准。
 4. 创建 `changes/<change-id>/contract.md`，使用 `templates/api-contract.md`，冻结 endpoint、request、response、错误码、分页和空态。
 5. 如涉及复杂状态机、权限矩阵或跨端一致性，创建 `capability-spec.md` 或 `behavior-spec.md`；普通 CRUD 记录 `N/A:` 原因。
 6. 填写 `technical-solution.md`，用户确认后写成 `CONFIRMED`，运行 `gates/technical-solution-gate.sh`。（停止点 2）

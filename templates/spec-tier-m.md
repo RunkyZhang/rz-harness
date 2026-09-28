@@ -3,6 +3,12 @@
 > Tier M 适用于小型功能：只涉及一个前端仓和一个后端仓，包含 1-2 个 API，不涉及复杂状态机，不修改生产配置。
 > 面向人工 review / 用户确认的正文默认使用中文；代码标识、命令、API 路径、字段名、错误码、YAML key、日志 key 和引用原文保持原样。
 
+```yaml
+lane: TODO
+```
+
+建包后改成唯一值：`lanes/bugfix-fast.md`、`lanes/fullstack-crud.md` 或 `none`。`none` 表示步骤走整体工作流。状态卡 `Lane` 照抄这里。
+
 ## 一句话目标
 
 [QUESTION] 用一句中文写清用户确认的业务目标。
@@ -46,7 +52,6 @@
 
 ```yaml
 control_plane: rz-harness
-lane: lanes/fullstack-crud.md
 frontend_repo: $RZ_REPO_MAP_SYSTEM
 backend_repo: $RZ_REPO_SFA_SALES_MANAGEMENT
 ```

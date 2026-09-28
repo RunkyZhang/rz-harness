@@ -2,6 +2,12 @@
 
 > Tier L 适用于跨多个仓、多个接口、权限/状态/数据模型影响较大的变更。面向人工 review / 用户确认的正文默认中文；代码标识、命令、API 路径、字段名、错误码、YAML key、日志 key 和引用原文保持原样。
 
+```yaml
+lane: TODO
+```
+
+建包后改成唯一值：`lanes/bugfix-fast.md`、`lanes/fullstack-crud.md` 或 `none`。`none` 表示步骤走整体工作流。状态卡 `Lane` 照抄这里。
+
 ## 一句话目标
 
 [QUESTION] 写清用户确认的业务目标。
@@ -85,7 +91,6 @@ non_blocking_questions:
 
 | Item | Value |
 | --- | --- |
-| Lane | `lanes/fullstack-crud.md` / `none`（写入后与 `status-card.md` 保持一致） |
 | Contract doc | `changes/<change-id>/contract.md` |
 | Technical solution doc | [QUESTION] `changes/<change-id>/technical-solution.md` 或飞书 Wiki 子文档 URL，必须按 `templates/technical-solution.md` 产出全栈技术方案 |
 | Verification map | `changes/<change-id>/verification-map.md`，必须按 `templates/verification-map.md` 把关键约束映射到验证方式 |

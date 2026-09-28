@@ -310,7 +310,7 @@
 4. **写 spec**：用户确认的写 `[FACT]`、推断写 `[ASSUMP]`、需拍板写 `[QUESTION]`，并写 `allowed_paths`。写完停下来问用户。答完后主 Agent 原地改成带来源的 `[FACT]`，再跑 `gates/confidence-gate.sh`。口头「ok」不算过。阻塞 `[QUESTION]` 未清不得进入第 9 步开工。未确认 `[ASSUMP]` 不挡开工，不得进入第 10 步业务代码。（停止点 1，见「需求理解」）
 5. **冻结契约**：`changes/<change-id>/contract.md`。（S / 无 API 可 `N/A`）
 6. **技术方案**（M/L）：`technical-solution.md` + 用户确认。（停止点 2）
-7. **AI 测试方案**（M/L）：独立 Test Strategy 写 `ai-test-plan.md` + 用户确认。（停止点 3）
+7. **AI 测试方案**（M/L）：独立 Test Strategy 写 `ai-test-plan.md`。主 Agent 不得代写。用户确认后，主 Agent 写成 `test_plan_status: CONFIRMED`。（停止点 3）
 8. **plan 与 verification-map**（M/L）：方案确认后、开工前填写 `plan.md`、`verification-map.md`。S 可 `N/A`。
 9. **开工门禁**：从业务仓远程主干 `origin/master`（或 `origin/main`）拉 `harness/<change-id>`；过开工门禁（S 三重 / M/L 四重，见「强制工作流」②）。（停止点 5）
 10. **实现 + 记证据**：只改 `allowed_paths` 内文件；命令记入 `changes/<change-id>/evidence.md`。PRD 有界面时，写代码前先写 `ui-rule-checklist.md`，规则缺口停下等用户。复杂 UI 在页面可运行后写 `ui-confirmation.md`，用户看过再确认。（停止点 6）

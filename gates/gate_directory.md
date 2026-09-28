@@ -16,7 +16,7 @@
 
 | Gate | 命令 | 检查什么 | 前置依赖 |
 |---|---|---|---|
-| `confidence-gate.sh` | `gates/confidence-gate.sh <spec-file>` | spec 含 `[FACT]` / `[ASSUMP]` / `[QUESTION]` 三标签节；阻塞 `[QUESTION]` 已清零。`STRICT_QUESTIONS=1` 时所有 QUESTION 都算阻塞 | `spec.md` 已按模板创建 |
+| `confidence-gate.sh` | `gates/confidence-gate.sh <spec-file>` | spec 含 `[FACT]` / `[ASSUMP]` / `[QUESTION]` 三标签节；阻塞 `[QUESTION]` 已清零。`lane` 为 `lanes/bugfix-fast.md`、`lanes/fullstack-crud.md` 或 `none` 之一，且与同目录 `status-card.md` 的 `Lane` 一致。`STRICT_QUESTIONS=1` 时所有 QUESTION 都算阻塞 | `spec.md` 已按模板创建，且 `lane: TODO` 已改成唯一值 |
 
 ### 3. 方案阶段（停止点 2）
 

@@ -19,8 +19,8 @@
 
 ## 标准流程
 
-1. 创建 `changes/<change-id>/spec.md`，使用 `templates/spec-tier-s.md` 或 `templates/spec-tier-m.md`；写入 `lane: lanes/bugfix-fast.md`。
-2. 同步把同一 `lane` 写入 `status-card.md`。
+1. 建包后把 spec 文首 `lane: TODO` 改成 `lane: lanes/bugfix-fast.md`。
+2. 状态卡 `Lane` 照抄 spec。spec 为准。
 3. 用 `skills/diagnose/SKILL.md` 建立反馈环。
 4. 记录复现命令和结果到 `changes/<change-id>/evidence.md`。
 5. 列出 3-5 个可证伪假设。
