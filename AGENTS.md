@@ -304,20 +304,21 @@
 > - S 档：契约 / 技术方案 / AI 测试方案 / plan 与 verification-map / Tester / AI 测试报告 默认可写 `N/A` 和原因，但仍须 spec、`allowed_paths`、evidence。
 > - 真 E2E 前环境必须 `READY`（停止点 4），材料可提前准备。浏览器冒烟在实现之后，见 E2E Pack。未做真 E2E 时写 `N/A`。
 > - 飞书同步、Java `backend-test-plan.md`、Swagger、DB 模型命中才做，见「强制工作流」④。合并前卫生扫描见「受保护行为」。这些都不单列成步。
+> - M/L 建包后给用户的第一条回复须包含本次会碰到的**关卡**（见「强制工作流」①）。
 
 1. **定 `change-id`**：用业务含义命名，不要用 `demo` / `tbd` 这类默认名。
 2. **选 lane**：按任务类型选定（见「lane工作流」）。有匹配时，步骤菜单用该 lane，本清单用来核对命中的停止点有没有被跳过。无匹配则 `lane: none`，步骤用本清单，再按档位裁剪。
 3. **建变更包**：`changes/change-scaffold.sh --tier S|M|L <change-id>`。建包后把 spec 文首 `lane: TODO` 改成唯一值，状态卡 `Lane` 照抄（见「lane工作流」）。状态卡的阶段、下一步、阻塞按「状态卡」写入。
-4. **写 spec**：用户确认的写 `[FACT]`、推断写 `[ASSUMP]`、需拍板写 `[QUESTION]`，并写 `allowed_paths`。写完停下来问用户。答完后主 Agent 原地改成带来源的 `[FACT]`，再跑 `gates/confidence-gate.sh`。口头「ok」不算过。阻塞 `[QUESTION]` 未清不得进入第 9 步开工。未确认 `[ASSUMP]` 不挡开工，不得进入第 10 步业务代码。（停止点 1，见「需求理解」）
+4. **写 spec**：用户确认的写 `[FACT]`、推断写 `[ASSUMP]`、需拍板写 `[QUESTION]`，并写 `allowed_paths`。写完停下来问用户。答完后主 Agent 原地改成带来源的 `[FACT]`，再跑 `gates/confidence-gate.sh`。口头「ok」不算过。阻塞 `[QUESTION]` 未清不得进入第 9 步开工。未确认 `[ASSUMP]` 不挡开工，不得进入第 10 步业务代码。（见「停止点」#1，见「需求理解」；本需求命中哪些强制项见「强制工作流」④）
 5. **冻结契约**：`changes/<change-id>/contract.md`。（S / 无 API 可 `N/A`）
-6. **技术方案**（M/L）：`technical-solution.md` + 用户确认。（停止点 2）
-7. **AI 测试方案**（M/L）：独立 Test Strategy 写 `ai-test-plan.md`。主 Agent 不得代写。用户确认后，主 Agent 写成 `test_plan_status: CONFIRMED`。（停止点 3）
+6. **技术方案**（M/L）：`technical-solution.md` + 用户确认；命中飞书 PRD 时同步到飞书子文档 + 跑 `gates/technical-solution-feishu-sync-gate.sh`。（见「强制工作流」④，「停止点」#2）
+7. **AI 测试方案**（M/L）：独立 Test Strategy 写 `ai-test-plan.md`（见「子 Agent」）。主 Agent 不得代写。用户确认后，主 Agent 写成 `test_plan_status: CONFIRMED`。（见「停止点」#3）
 8. **plan 与 verification-map**（M/L）：方案确认后、开工前填写 `plan.md`、`verification-map.md`。S 可 `N/A`。
-9. **开工门禁**：从业务仓远程主干 `origin/master`（或 `origin/main`）拉 `harness/<change-id>`；过开工门禁（S 三重 / M/L 四重，见「强制工作流」②）。（停止点 5）
-10. **实现 + 记证据**：只改 `allowed_paths` 内文件；命令记入 `changes/<change-id>/evidence.md`。PRD 有界面时，写代码前先写 `ui-rule-checklist.md`，规则缺口停下等用户。（停止点 6）
+9. **开工门禁**：从业务仓远程主干 `origin/master`（或 `origin/main`）拉 `harness/<change-id>`；过开工门禁。S 三重 / M/L 四重。（见「强制工作流」②），（见「停止点」#5）
+10. **实现 + 记证据**：只改 `allowed_paths` 内文件；命令记入 `changes/<change-id>/evidence.md`。PRD 有界面时，写代码前先写 `ui-rule-checklist.md`，规则缺口停下等用户。（见「停止点」#6）
     - **常规验证**（进入第 11 步前）：编译、定向测试、窄范围 lint（前端 `scripts/frontend-lint-build.sh` 的 `lint-files`，后端 `scripts/mvn-targeted-test.sh`）；`verification-map.md` 有可执行行时跑 `scripts/verification-run.sh`。跑不了写 `BLOCKED` 和原因。已选 lane 时以该 lane 为准。S 档第 11 步为 `N/A` 时，本节验证在第 13 步前完成。
     - **复杂 UI**：页面可运行后写 `ui-confirmation.md`，用户看过再确认。
-    - **Optional Pack（命中才跑）**：E2E → 按 `lanes/pc-e2e-smoke.md`；Impact / Parallel（CodeGraph/GitNexus、多 Agent worktree）→ RZ 未引入 → `N/A`。
+    - **Optional Pack（命中才跑）**：E2E → 按 `lanes/pc-e2e-smoke.md`（**先过停止点 4：环境 READY**）；Impact / Parallel（CodeGraph/GitNexus、多 Agent worktree）→ RZ 未引入 → `N/A`。
 11. **Tester 验收**（M/L）：独立 Tester 对照已确认测试方案，由 Tester 填写 `test-agent-verification.md`。主 Agent 只修代码、补 evidence，不得代填、不得自称 `GOAL_ACHIEVED`。未达到则回到第 10 步改代码再测。`BLOCKED` 升级给用户，不算过。（停止点 7）
 12. **AI 测试报告**（提测 / 预发）：`ai-test-report.md` + 用户确认。（停止点 8）
 13. **Reviewer 过门**：只读审查，`high_risk_count: 0`。（停止点 9；S 走 `bugfix-fast` 时仍建议 Reviewer）
