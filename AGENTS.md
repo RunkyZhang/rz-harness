@@ -182,7 +182,7 @@
 | 4 | 环境就绪 | 自动关卡（仅真 E2E） | 主 Agent 写 `environment-readiness.md`；账号只写来源                                                        | 自动点，无需用户参与 | `environment-readiness-gate.sh` | `environment_status: READY`；真 E2E 前必须 READY |
 | 5 | Code start | 自动关卡 | 主 Agent 从业务仓远程主干 `origin/master`（或 `origin/main`）拉 `harness/<id>`；`allowed_paths` 写在 spec；脏仓先写 `dirty-worktree-ledger.md` | 自动点，无需用户参与 | **S：** `confidence-gate.sh`、`assumption-leak-gate.sh`、`allowed-paths.sh`。**M/L 再加** `business-code-start-gate.sh`。脏仓再加 `business-dirty-worktree-gate.sh` | 开工门禁通过（S 三重 / M/L 四重，见「强制工作流」②）；未过不得改业务文件 |
 | 6 | 复杂 UI 确认 | 拍板（条件触发） | 主 Agent 写 `ui-confirmation.md`。用户拍板后，主 Agent 把判定表写成 `Status: CONFIRMED`，并在人工确认表加一行 Decision=`CONFIRMED` | 看可运行页面，在对话里确认。PC smoke 不能替代 | `ui-confirmation-gate.sh`；规则缺口走 `ui-rule-gate.sh` | 已 `CONFIRMED`；未确认不得声称 UI 通过 |
-| 7 | Tester 验收 | 独立角色 | Tester 写 `test-agent-verification.md`。主 Agent 只修代码、补证据，不得代裁、不得自称 `GOAL_ACHIEVED`                   | 自动点，无需用户参与 | `test-agent-verification-gate.sh` | 仅 `GOAL_ACHIEVED` 才放行。`BLOCKED` 是停不是过。此后改代码必须重跑 |
+| 7 | Tester 验收（仅 M/L） | 独立角色 | Tester 写 `test-agent-verification.md`。主 Agent 只修代码、补证据，不得代裁、不得自称 `GOAL_ACHIEVED`                   | 自动点，无需用户参与 | `test-agent-verification-gate.sh` | 仅 `GOAL_ACHIEVED` 才放行。`BLOCKED` 是停不是过。此后改代码必须重跑。**S 可 `N/A`** |
 | 8 | AI 测试报告 | 拍板 + gate（L 强制；M 提测/预发时要） | 主 Agent 写 `ai-test-report.md`。用户拍板后，主 Agent 改「人工确认」YAML：`confirmation_status: CONFIRMED`；进预发还要 `recommendation: 允许进入预发` | 审报告、残余风险、是否进预发，在对话里确认 | `ai-test-report-gate.sh` | 已人工 `CONFIRMED`；未确认不得进测试/预发 |
 | 9 | Reviewer 过门 | 独立角色（M/L 强制；S 建议） | Reviewer 写 `review.md`。主 Agent 不得代裁                                                                | 自动点，无需用户参与 | `reviewer-gate.sh` | `high_risk_count: 0`。代码又变则审查过期，按需重跑 Tester 再重跑 Reviewer |
 
@@ -395,10 +395,10 @@
 - 本地后端「可验收」只在 `scripts/local-service-lifecycle.sh` 的 HEALTH=UP + check-web-stack 成功后声明（Maven / nohup / 端口单独成功都不算）。
 
 **⑥ 验收与审查**
-- **业务代码审查前**：跑 `scripts/code-comment-log-quality.sh`（`docs/standards/comment-logging.md` RZ 未建）。
-- **Tester**：对照已确认的 `ai-test-plan.md` 独立验收，直到 `GOAL_ACHIEVED`；`BLOCKED` 是停不是过；主 Agent 不得自称。
-- **AI 测试报告**：提测 / 预发前 `ai-test-report.md` + `gates/ai-test-report-gate.sh <change-dir>`（需测试方案已确认 + Tester `GOAL_ACHIEVED`）；**进预发还要 `recommendation: 允许进入预发`**。
-- **Reviewer**：只读审查，跑 `gates/reviewer-gate.sh <change-dir>`，`high_risk_count: 0`；必查面见 `gates/reviewer-gate.sh` / `review.md` 模板。
+- **业务代码审查前**：跑 `scripts/code-comment-log-quality.sh`（`docs/standards/comment-logging.md` RZ 未建，见「知识与规则」）。
+- **Tester**：对照已确认的 `ai-test-plan.md` 独立验收，直到 `GOAL_ACHIEVED`；`BLOCKED` 是停不是过；主 Agent 不得自称。（见「停止点」#7）
+- **AI 测试报告**：提测 / 预发前 `ai-test-report.md` + `gates/ai-test-report-gate.sh <change-dir>`（需测试方案已确认 + Tester `GOAL_ACHIEVED`）；**进预发还要 `recommendation: 允许进入预发`**。（见「停止点」#8）
+- **Reviewer**：只读审查，跑 `gates/reviewer-gate.sh <change-dir>`，`high_risk_count: 0`；必查面见 `gates/reviewer-gate.sh` / `review.md` 模板。（见「停止点」#9）
 
 **⑦ 全局禁令**
 - ★ 单一控制面：只用 `changes/<change-id>/`；不建顶层 `openspec/`；旧产物只放 `changes/<id>/legacy-openspec/`。
