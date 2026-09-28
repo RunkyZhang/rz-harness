@@ -314,7 +314,7 @@
 7. **AI 测试方案**（M/L）：独立 Test Strategy 写 `ai-test-plan.md`。主 Agent 不得代写。用户确认后，主 Agent 写成 `test_plan_status: CONFIRMED`。（停止点 3）
 8. **plan 与 verification-map**（M/L）：方案确认后、开工前填写 `plan.md`、`verification-map.md`。S 可 `N/A`。
 9. **开工门禁**：从业务仓远程主干 `origin/master`（或 `origin/main`）拉 `harness/<change-id>`；过开工门禁（S 三重 / M/L 四重，见「强制工作流」②）。（停止点 5）
-10. **实现 + 记证据**：只改 `allowed_paths` 内文件；命令记入 `changes/<change-id>/evidence.md`。PRD 有界面时，写代码前先写 `ui-rule-checklist.md`，规则缺口停下等用户。复杂 UI 在页面可运行后写 `ui-confirmation.md`，用户看过再确认。（停止点 6）
+10. **实现 + 记证据**：只改 `allowed_paths` 内文件；命令记入 `changes/<change-id>/evidence.md`。PRD 有界面时，写代码前先写 `ui-rule-checklist.md`，规则缺口停下等用户。实现完成后、进入第 11 步前：编译、定向测试、窄范围 lint（前端 `scripts/frontend-lint-build.sh` 的 `lint-files`，后端 `scripts/mvn-targeted-test.sh`）；`verification-map.md` 有可执行行时跑 `scripts/verification-run.sh`。跑不了写 `BLOCKED` 和原因。已选 lane 时验证命令以该 lane 为准。复杂 UI 在页面可运行后写 `ui-confirmation.md`，用户看过再确认。（停止点 6）S 档第 11 步为 `N/A` 时，上述验证在第 13 步前完成。
 11. **Tester 验收**（M/L）：独立 Tester 对照已确认测试方案，由 Tester 填写 `test-agent-verification.md`。主 Agent 只修代码、补 evidence，不得代填、不得自称 `GOAL_ACHIEVED`。未达到则回到第 10 步改代码再测。`BLOCKED` 升级给用户，不算过。（停止点 7）
 12. **AI 测试报告**（提测 / 预发）：`ai-test-report.md` + 用户确认。（停止点 8）
 13. **Reviewer 过门**：只读审查，`high_risk_count: 0`。（停止点 9；S 走 `bugfix-fast` 时仍建议 Reviewer）
