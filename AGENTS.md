@@ -298,20 +298,23 @@
 ## 工作流
 
 ### 整体工作流
-> - 每阶段的门禁细节见「停止点」与「强制工作流」，产物清单见「变更包 → 文件列表」；
-> - S 档步骤 5–8、11–12（契约 / 技术方案 / AI 测试方案 / 环境 / Tester / AI 测试报告）默认可写 `N/A` 和原因，但仍须 spec、`allowed_paths`、evidence。
+> - 每阶段的门禁细节见「停止点」与「强制工作流」，产物清单见「变更包 → 文件列表」。
+> - 未命中条件的步骤写 `N/A` 和原因后跳过。
+> - S 档步骤 5–8、11–12（契约 / 技术方案 / AI 测试方案 / plan 与 verification-map / Tester / AI 测试报告）默认可写 `N/A` 和原因，但仍须 spec、`allowed_paths`、evidence。
+> - 真 E2E 前环境必须 `READY`（停止点 4），材料可提前准备。浏览器冒烟在实现之后，见 E2E Pack。未做真 E2E 时写 `N/A`。
+> - 飞书同步、Java `backend-test-plan.md`、Swagger、DB 模型命中才做，见「强制工作流」④。合并前卫生扫描见「受保护行为」。这些都不单列成步。
 
 1. **定 `change-id`**：用业务含义命名，不要用 `demo` / `tbd` 这类默认名。
-2. **选 lane**：按任务类型选（见「lane工作流」），立刻写入 `spec.md` 和 `status-card.md`；无匹配则 `lane: none`，继续本主线。
-3. **建变更包**：`changes/change-scaffold.sh --tier S|M|L <change-id>`。
-4. **写 spec**：用户确认的写 `[FACT]`、推断写 `[ASSUMP]`、需拍板写 `[QUESTION]`，并写 `allowed_paths`（见「需求理解」）。（停止点 1）
+2. **选 lane**：按任务类型选定（见「lane工作流」）。有匹配时，步骤菜单用该 lane，本清单用来核对命中的停止点有没有被跳过。无匹配则 `lane: none`，步骤用本清单，再按档位裁剪。
+3. **建变更包**：`changes/change-scaffold.sh --tier S|M|L <change-id>`。建包后把 lane 写入 `spec.md` 和 `status-card.md` 文首 `Lane`（见「lane工作流」）。状态卡的阶段、下一步、阻塞按「状态卡」写入。
+4. **写 spec**：用户确认的写 `[FACT]`、推断写 `[ASSUMP]`、需拍板写 `[QUESTION]`，并写 `allowed_paths`。写完停下来问用户。答完后主 Agent 原地改成带来源的 `[FACT]`，再跑 `gates/confidence-gate.sh`。口头「ok」不算过。阻塞 `[QUESTION]` 未清不得进入第 9 步开工。未确认 `[ASSUMP]` 不挡开工，不得进入第 10 步业务代码。（停止点 1，见「需求理解」）
 5. **冻结契约**：`changes/<change-id>/contract.md`。（S / 无 API 可 `N/A`）
 6. **技术方案**（M/L）：`technical-solution.md` + 用户确认。（停止点 2）
 7. **AI 测试方案**（M/L）：独立 Test Strategy 写 `ai-test-plan.md` + 用户确认。（停止点 3）
-8. **环境就绪**（真 E2E）：填 `environment-readiness.md`。（停止点 4；可提前）
+8. **plan 与 verification-map**（M/L）：方案确认后、开工前填写 `plan.md`、`verification-map.md`。S 可 `N/A`。
 9. **开工门禁**：从业务仓远程主干 `origin/master`（或 `origin/main`）拉 `harness/<change-id>`；过开工门禁（S 三重 / M/L 四重，见「强制工作流」②）。（停止点 5）
-10. **实现 + 记证据**：只改 `allowed_paths` 内文件；命令记入 `changes/<change-id>/evidence.md`。命中复杂 UI 时写 `ui-confirmation.md`，用户看可运行页面后确认。（停止点 6）
-11. **Tester 验收**（M/L）：独立 Tester 对照已确认测试方案，直到 `GOAL_ACHIEVED`。（停止点 7）
+10. **实现 + 记证据**：只改 `allowed_paths` 内文件；命令记入 `changes/<change-id>/evidence.md`。PRD 有界面时，写代码前先写 `ui-rule-checklist.md`，规则缺口停下等用户。复杂 UI 在页面可运行后写 `ui-confirmation.md`，用户看过再确认。（停止点 6）
+11. **Tester 验收**（M/L）：独立 Tester 对照已确认测试方案，由 Tester 填写 `test-agent-verification.md`。主 Agent 只修代码、补 evidence，不得代填、不得自称 `GOAL_ACHIEVED`。未达到则回到第 10 步改代码再测。`BLOCKED` 升级给用户，不算过。（停止点 7）
 12. **AI 测试报告**（提测 / 预发）：`ai-test-report.md` + 用户确认。（停止点 8）
 13. **Reviewer 过门**：只读审查，`high_risk_count: 0`。（停止点 9；S 走 `bugfix-fast` 时仍建议 Reviewer）
 14. **人工 review / PR**。
@@ -320,7 +323,7 @@
 ### lane工作流
 > **lane = 某类任务的默认步骤清单（任务路线）**，放在 `lanes/`。与档位正交：lane 选步骤菜单，tier 选产物厚度。lane **只能选路线，不能豁免「命中的停止点 / 条件关卡」**。
 
-选完立刻写入（换会话才找得到）：
+建包后立刻写入（换会话才找得到）：
 - `spec.md`：`lane: lanes/<name>.md`（无匹配写 `none`，并说明走整体工作流）
 - `status-card.md` 文首表：`Lane` 填同一路径
 
