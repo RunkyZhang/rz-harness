@@ -119,6 +119,12 @@ changes/change-scaffold.sh --tier S|M|L <change-id>
 | `verification-run-report.md` | `scripts/verification-run.sh` 生成；有可执行验证行时必须有 |
 | `handoff.md` | 换线程 / 暂停时按 handoff skill 章节自建；给下一个主 Agent，不是子 Agent 信箱 |
 
+## 控制面知识模板（不进变更包）
+
+| 模板 | 写成 | 何时 |
+|---|---|---|
+| `pitfalls_TEMPLATE.md` | `docs/pitfalls/RZ-PIT-*.md` | 收口时确有踩过的坑；没有则 pre-pr 写 N/A |
+
 ## 标本有、RZ 未拷（需要时再补）
 
 `frontend-style-profile.md`、`business-repo-agents-stub.md`、`codex-agent.toml`、`harness-state.yml`、`implementation-decision-matrix.md`、`local-dev-readiness.md`。

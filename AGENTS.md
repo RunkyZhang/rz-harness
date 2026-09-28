@@ -32,14 +32,15 @@
 
 ### 工具&脚本
 > - 门禁脚本在 `gates/`。（见「gate（门禁）」）
-> - 脚本工本在 `scripts/`。快速定位见 `scripts/script_directory.md` TODO：未完成
-> - skill工具在 `skills/`。快速定位见 `skills/skill_directory.md` TODO：未完成
+> - 脚本工本在 `scripts/`。快速定位见 `scripts/script_directory.md`
+> - skill工具在 `skills/`。快速定位和使用规则见 `skills/skill_directory.md`
 
 ### 子 Agent
 > 角色人设。（见「子 Agent」）
 
 ### 知识与规则
-> 知识库在 `docs/`（如 `docs/pitfalls/`）；技术栈规则在 `rules/`（`rules/frontend-vue2.mdc`、`rules/frontends/legacy-sfa/`）；任务路线在 `lanes/`（`bugfix-fast` / `fullstack-crud`；`pc-e2e-smoke` 是 E2E Pack，不是开工主 lane）。技能路由正文在 `skills/skills-routing.md`（`docs/skills-routing.md` 只做指针）。`docs/standards/comment-logging.md` RZ 未建 → 注释/日志用 `scripts/code-comment-log-quality.sh`。
+> 知识库在 `docs/`。用来给人看的文档
+> 规则库在 `rules/`。用来给 LLM 生成代码时做参考
 
 ### Hook 机制
 > - 大多数 runtime（Cursor / Codex / OpenCode）都有自己的 hook 机制。用户可以自定义“当某事件发生时，让 runtime 执行某个脚本”。和 LLM 的 `tool_call` 不同，hook 是 runtime 的功能，不依赖 LLM 决策
@@ -268,7 +269,7 @@
 | 6 | `technical-solution.md`                           | 拷 `templates/technical-solution.md`（M/L scaffold）                                                    | **空壳：** M/L 建包即有。**填写 / 确认：** 方案阶段 | 全栈技术方案 | 主 Agent | `technical-solution-gate.sh` | 用户对话确认后，主 Agent 写 `confirmation_status: CONFIRMED`（含 `confirmed_by` / `confirmed_at`，`allowed_next_stage` 非 `none`） |
 | 7 | `plan.md`                                         | 拷 `templates/plan-tier-m.md`（M/L scaffold）                                                           | **空壳：** M/L 建包即有。**填写：** 方案后、开工前 | 实现步骤、验证、回滚 | 主 Agent | 无单独过门；勿与状态卡两套打架 | v1 可把步骤写进状态卡 |
 | 8 | `verification-map.md`                             | 拷 `templates/verification-map.md`（M/L scaffold）                                                      | **空壳：** M/L 建包即有。**填写：** 同 plan | 每条约束怎么验（命令 / 人确认 / N/A） | 主 Agent | `verification-map-gate.sh` | 可与测试方案合并，标本是分开的 |
-| 9 | `skill-usage.md`                                  | 拷 `templates/skill-usage.md`（M/L scaffold）                                                           | **空壳：** M/L 建包即有。**填写：** 用到 skill 时；标本 M 强制 | 按 `skills/skills-routing.md` 记录用过哪些 skill 或 N/A | 主 Agent | `skill-usage-gate.sh` | 未用写 N/A |
+| 9 | `skill-usage.md`                                  | 拷 `templates/skill-usage.md`（M/L scaffold）                                                           | **空壳：** M/L 建包即有。**填写：** 用到 skill 时；标本 M 强制 | 按 `skills/skill_directory.md` 记录用过哪些 skill 或 N/A | 主 Agent | `skill-usage-gate.sh` | 未用写 N/A |
 | 10 | `agent-dispatch-plan.md`                          | 拷 `templates/agent-dispatch-plan.md`（M/L scaffold）。RZ 不调标本 `agent-dispatch-plan.sh` / registry | **空壳：** M/L 建包即有。**填写：** 派子 Agent 前 | 准备派哪些子 Agent | 主 Agent | 标本另有 `agent-dispatch-plan-gate.sh`，**RZ 未拷**；派前对照 `subagents/dispatch_subagent.md` | 不派实现 Agent 也可写 N/A |
 | 11 | `capability-spec.md` / `behavior-spec.md`         | **无模板**，按 AGENTS 自建                                                                                  | 条件：复杂状态机 / 权限 / 跨端 | 行为或能力边界 | 主 Agent | 在 `verification-map.md` 映射 | 普通 CRUD 写 N/A |
 | 12 | `ai-test-plan.md`                                 | 拷 `templates/ai-test-plan.md`（M/L scaffold 空壳）                                                       | **空壳：** M/L 建包即有。**填写 / 确认：** 方案确认后、实现前 | AI 测试方案 | **Test Strategy** 填内容；主 Agent 不得代写。用户确认后主 Agent 写 `test_plan_status: CONFIRMED` | `ai-test-plan-gate.sh` | 未确认不得实现 |
@@ -371,7 +372,7 @@
 *M/L 默认必做（见「停止点」#2 / #3）：*
 - 全栈 `technical-solution.md` 需 `CONFIRMED`（必须覆盖模板列出的每一块 PRD 面；当前端 / APP / 导出 / 分析 / 跨仓行为在范围内时，仅后端方案无效），并跑 `gates/technical-solution-gate.sh <change-dir>`
 - 独立的 Test Strategy 写 `ai-test-plan.md` 需用户确认，并跑 `gates/ai-test-plan-gate.sh <change-dir>`。
-- **skill 路由** → 按 `skills/skills-routing.md`；M/L scaffold 必有 `skill-usage.md`（未用写 `N/A`），并跑 `gates/skill-usage-gate.sh changes/<change-id>`。
+- **skill 路由** → 按 `skills/skill_directory.md`；M/L scaffold 必有 `skill-usage.md`（未用写 `N/A`），并跑 `gates/skill-usage-gate.sh changes/<change-id>`。
 
 *命中才做：*
 - **行为 / 契约变更** → 实现前需 spec + 契约文档；宣称跑过的检查必须落 `evidence.md`。
@@ -387,7 +388,7 @@
 - 本地后端「可验收」只在 `scripts/local-service-lifecycle.sh` 的 HEALTH=UP + check-web-stack 成功后声明（Maven / nohup / 端口单独成功都不算）。
 
 **⑥ 验收与审查**
-- **业务代码审查前**：跑 `scripts/code-comment-log-quality.sh`（`docs/standards/comment-logging.md` RZ 未建，见「知识与规则」）。
+- **业务代码审查前**：跑 `scripts/code-comment-log-quality.sh`。
 - **Tester**：对照已确认的 `ai-test-plan.md` 独立验收，直到 `GOAL_ACHIEVED`；`BLOCKED` 是停不是过；主 Agent 不得自称。（见「停止点」#7）
 - **AI 测试报告**：提测 / 预发前 `ai-test-report.md` + `gates/ai-test-report-gate.sh <change-dir>`（需测试方案已确认 + Tester `GOAL_ACHIEVED`）；**进预发还要 `recommendation: 允许进入预发`**。（见「停止点」#8）
 - **Reviewer**：只读审查，跑 `gates/reviewer-gate.sh <change-dir>`，`high_risk_count: 0`；必查面见 `gates/reviewer-gate.sh` / `review.md` 模板。（见「停止点」#9）

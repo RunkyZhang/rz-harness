@@ -1,3 +1,7 @@
+# 已知坑条目模板
+
+> 不进变更包。有坑要记时，按本文件复制为 `docs/pitfalls/RZ-PIT-*.md`。没有条目就在 pre-pr 写 N/A。
+
 ---
 id: RZ-PIT-NNN
 type: pitfall
@@ -31,7 +35,7 @@ tags:
 
 ## 规避做法
 
-[FACT] 怎么改才能避免。能链到 `rules/` 或 `docs/samples/` 的具体样板更好。
+[FACT] 怎么改才能避免。能链到 `rules/` 或该仓 baseline 里的样板更好。
 
 ## 排查步骤
 
@@ -41,5 +45,5 @@ tags:
 ## 关联
 
 - 相关 decision：<decision-log 链接>
-- 相关 guideline：<rules / standards 链接>
-- 相关样板：<docs/samples 链接>
+- 相关 guideline：<rules 链接>
+- 相关样板：<baseline 或 rules 链接>

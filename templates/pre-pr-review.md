@@ -37,7 +37,7 @@
 
 在 `changes/<change-id>/evidence.md` 记录精确命令和结果。
 
-- [ ] 已创建 `changes/<change-id>/skill-usage.md`，并按 `skills/skills-routing.md` 记录命中的 harness skill。
+- [ ] 已创建 `changes/<change-id>/skill-usage.md`，并按 `skills/skill_directory.md` 记录命中的 harness skill。
 - [ ] 已执行 `gates/skill-usage-gate.sh changes/<change-id>`；没有遗留 TODO，N/A 行均有原因。
 - [ ] 如使用外部 Codex skill / Brooks lens：RZ 未引入 `skills/third-party/` → 本项 `N/A`。不得用外部 lens 替代 harness-local skill。
 - [ ] 未启用 `brooks-sweep`、PR/CI auto-fix loop 或外部 app real action 自动化。
@@ -175,7 +175,7 @@
 
 > 闭环：本次 change 产生的知识必须沉淀回团队知识库，否则经验死在 change 文件夹里。（`docs/samples/`、`docs/decision-log/`、`rules/`、`docs/standards/` RZ 未建 → 相关项暂 N/A；`docs/pitfalls/` 已建。）
 
-- [ ] 本次有无 **pitfall**（踩过的坑 / 故障模式）？有则新增 `docs/pitfalls/RZ-PIT-*.md`（按 `docs/pitfalls/TEMPLATE.md`），无则勾选并说明 N/A。
+- [ ] 本次有无 **pitfall**（踩过的坑 / 故障模式）？有则按 `templates/pitfalls_TEMPLATE.md` 新增 `docs/pitfalls/RZ-PIT-*.md`，无则勾选并说明 N/A。
 - [ ] 本次有无可复用 **sample**（值得模仿的样板）？`docs/samples/` RZ 未建 → 本项 N/A（命中再建）。
 - [ ] 本次有无 **decision**（技术选型 / 架构决策）？`docs/decision-log/` RZ 未建 → 本项 N/A（命中再建）。
 - [ ] 本次有无 **guideline**（应当固化的推荐 / 禁止做法）？`rules/`、`docs/standards/` RZ 未建 → 本项 N/A（命中再建）。

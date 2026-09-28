@@ -145,7 +145,7 @@ if [[ "${#dangling[@]}" -gt 0 ]]; then
   printf 'FAIL: knowledge_refs point to unknown knowledge IDs:\n' >&2
   printf 'CODE: KNOWLEDGE_REF/DANGLING_REFERENCE\n' >&2
   printf 'FIX: Create the referenced entry under docs/pitfalls or docs/samples (with matching front-matter id:), or fix the typo in knowledge_refs.\n' >&2
-  printf 'SAMPLE: docs/pitfalls/TEMPLATE.md\n' >&2
+  printf 'SAMPLE: templates/pitfalls_TEMPLATE.md\n' >&2
   printf ' - %s\n' "${dangling[@]}" >&2
   exit 1
 fi
