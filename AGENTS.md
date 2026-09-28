@@ -111,7 +111,7 @@
 
 | Gate | 查哪                                   | 过不了意味着                                                |
 |---|--------------------------------------|-------------------------------------------------------|
-| `gates/confidence-gate.sh` | 只扫描  `spec.md` 判断是否还剩阻塞 `[QUESTION]` | 问题没答完，不能开工。**不会**因为 `spec.md` 里还留着未确认 `[ASSUMP]` 就不开工 |
+| `gates/confidence-gate.sh` | 扫描 `spec.md`：阻塞 `[QUESTION]` 是否还在；`lane` 是否为唯一合法值，且与 `status-card.md` 的 `Lane` 一致 | 问题没答完，或 lane 仍是 `TODO` / 与状态卡不一致，不能开工。**不会**因为 `spec.md` 里还留着未确认 `[ASSUMP]` 就不开工 |
 | `gates/assumption-leak-gate.sh` | 检查实现文件里有没有 `[ASSUMP]` 字面标签，以及 spec 中假设的标识符有没有漏进实现代码   | 假设漏进实现                                                |
 
 
@@ -170,7 +170,7 @@
 
 | # | 停止点 | 类型 | 谁写产物                                                                                               | 用户要干嘛 | 谁检查 | 怎样算过 |
 |---|---|---|----------------------------------------------------------------------------------------------------|---|---|---|
-| 1 | Spec 三标签 | 拍板 + gate | 主 Agent 写 `spec.md`；Explorer 只读供料。用户答完后，主 Agent 把该项改成带来源的 `[FACT]` | 答阻塞 `[QUESTION]`、确认 `[ASSUMP]` | `confidence-gate.sh` | 阻塞项已清；未清不得进实现 |
+| 1 | Spec 三标签 | 拍板 + gate | 主 Agent 写 `spec.md`；Explorer 只读供料。用户答完后，主 Agent 把该项改成带来源的 `[FACT]` | 答阻塞 `[QUESTION]`、确认 `[ASSUMP]` | `confidence-gate.sh` | 阻塞项已清，且 `lane` 为唯一合法值并与状态卡一致；未清不得进实现 |
 | 2 | 技术方案（仅 M/L） | 拍板 + gate | 主 Agent 写 `technical-solution.md`（全栈）。用户拍板后，主 Agent 改文首 YAML：`confirmation_status: CONFIRMED`、`confirmed_by` / `confirmed_at`、`allowed_next_stage` 非 `none` | 审方案，在对话里确认或要求改 | `technical-solution-gate.sh` | 文件已 `CONFIRMED`；未过不得写业务代码。**S 本停止点 N/A** |
 | 3 | AI 测试方案（仅 M/L） | 拍板 + gate | Test Strategy 写 `ai-test-plan.md`。用户拍板后，主 Agent 写成 `test_plan_status: CONFIRMED` | 审测试方案，在对话里确认或要求改 | `ai-test-plan-gate.sh` | 已 `CONFIRMED`；未过不得实现。**S 本停止点 N/A** |
 | 4 | 环境就绪 | 自动关卡（仅真 E2E） | 主 Agent 写 `environment-readiness.md`；账号只写来源                                                        | 自动点，无需用户参与 | `environment-readiness-gate.sh` | `environment_status: READY`；真 E2E 前必须 READY |
@@ -306,7 +306,7 @@
 
 1. **定 `change-id`**：用业务含义命名，不要用 `demo` / `tbd` 这类默认名。
 2. **选 lane**：按任务类型选定（见「lane工作流」）。有匹配时，步骤菜单用该 lane，本清单用来核对命中的停止点有没有被跳过。无匹配则 `lane: none`，步骤用本清单，再按档位裁剪。
-3. **建变更包**：`changes/change-scaffold.sh --tier S|M|L <change-id>`。建包后把 lane 写入 `spec.md` 和 `status-card.md` 文首 `Lane`（见「lane工作流」）。状态卡的阶段、下一步、阻塞按「状态卡」写入。
+3. **建变更包**：`changes/change-scaffold.sh --tier S|M|L <change-id>`。建包后把 spec 文首 `lane: TODO` 改成唯一值，状态卡 `Lane` 照抄（见「lane工作流」）。状态卡的阶段、下一步、阻塞按「状态卡」写入。
 4. **写 spec**：用户确认的写 `[FACT]`、推断写 `[ASSUMP]`、需拍板写 `[QUESTION]`，并写 `allowed_paths`。写完停下来问用户。答完后主 Agent 原地改成带来源的 `[FACT]`，再跑 `gates/confidence-gate.sh`。口头「ok」不算过。阻塞 `[QUESTION]` 未清不得进入第 9 步开工。未确认 `[ASSUMP]` 不挡开工，不得进入第 10 步业务代码。（停止点 1，见「需求理解」）
 5. **冻结契约**：`changes/<change-id>/contract.md`。（S / 无 API 可 `N/A`）
 6. **技术方案**（M/L）：`technical-solution.md` + 用户确认。（停止点 2）
@@ -323,18 +323,21 @@
 ### lane工作流
 > **lane = 某类任务的默认步骤清单（任务路线）**，放在 `lanes/`。与档位正交：lane 选步骤菜单，tier 选产物厚度。lane **只能选路线，不能豁免「命中的停止点 / 条件关卡」**。
 
-建包后立刻写入（换会话才找得到）：
-- `spec.md`：`lane: lanes/<name>.md`（无匹配写 `none`，并说明走整体工作流）
-- `status-card.md` 文首表：`Lane` 填同一路径
+建包后立刻把 spec 文首 `lane: TODO` 改成唯一值。状态卡 `Lane` 只照抄，spec 为准；不一致时先改状态卡再继续。
+- `lanes/bugfix-fast.md`
+- `lanes/fullstack-crud.md`
+- `none`（步骤用整体工作流；强制工作流照旧）
+
+新会话先读 spec 的 `lane`。是路径就打开该文件，从状态卡「下一步」继续，不从 lane 第 1 步重跑。是 `none` 就用整体工作流。`gates/confidence-gate.sh` 会核对这个值，并要求与状态卡一致；仍是 `TODO` 不能开工。
 
 **开工主 lane**（建包时选一条）：
 - 小修 / bugfix → `lanes/bugfix-fast.md`（常配档位 S）
 - 低风险全栈 CRUD → `lanes/fullstack-crud.md`（常配档位 M）
 
 **子 lane / Pack**（不是开工三选一；实现之后按触发条件套）：
-- PC 冒烟 → `lanes/pc-e2e-smoke.md`（CRUD 命中 E2E Pack 再读）
+- PC 冒烟 → `lanes/pc-e2e-smoke.md`（CRUD 命中 E2E Pack 再读）。不改 `lane`，进度写在状态卡「下一步」。
 
-无匹配：不编造新 lane，走「整体工作流」并按档位裁剪。
+无匹配：不编造新 lane，`lane: none`，走「整体工作流」并按档位裁剪。
 
 ### 强制工作流
 > - 适用：档位 M/L、跨仓、后端行为、DB、复杂 UI
