@@ -6,7 +6,7 @@
 
 ## 1. 全局硬约束（S/M/L 都要）★
 
-- **不在 `origin/master`（或 `origin/main`） 改业务代码，也不提交到 `origin/master`（或 `origin/main`）**；每仓首次改前从 `origin/master`（或 `origin/main`）切 `harness/<change-id>`，记基线 commit。
+- **不在 `main`/`master` 改业务代码，也不提交到 `main`/`master`**；每仓首次改前从 `origin/master`（或 `origin/main`）切 `harness/<change-id>`，记基线 commit。
 - 未经 spec 许可不改：生产配置、密钥、`.env*`、部署清单、DB 迁移、Nacos 生产配置、发布脚本、`allowed_paths` 外的模块。
 - 真实 SIT/UAT/生产库**默认只读**；真实写入/DDL/改数据的 API 需：目标环境 + 精确 SQL/API + 预期行数 + 回滚计划 + **用户第二次确认**。
 - 高危 SQL 全局禁止：`DROP DATABASE`、`DROP TABLE`、`TRUNCATE`、宽范围 `DELETE`/`UPDATE`、无精确范围的写入。
@@ -31,6 +31,13 @@
 | 子 Agent 人设 + 派发协议 | `subagents/` + `subagents/dispatch_subagent.md` |
 | hook 接线 | `hooks/hook_setup.md` |
 | 给人看的详解（机制 / 图 / 目录职责） | `docs/readme.html` |
+
+## 领域名词
+
+| 词 | 是什么 |
+|---|---|
+| **runtime** | 真正跑起来的 agent 程序（Cursor / Codex / OpenCode）。提供 agent 循环、读文件、跑 shell——**能跑** |
+| **harness** | 套在 runtime 外面的工程系统（规则 + 工件 + 检查 + 流程）。让 agent **在边界里跑**：改哪些文件、何时必须停、拿什么证明完成 |
 
 ## 3. 需求理解三标签（写在 `spec.md`）
 
@@ -68,7 +75,7 @@
 | 8 | AI 测试报告 | 拍板 + gate（L 强制；M 提测 / 预发时才要） | 主 Agent | 人工 `CONFIRMED`；进预发 + `recommendation: 允许进入预发` |
 | 9 | Reviewer（M/L 强制；S 建议） | 独立角色 | Reviewer | `high_risk_count: 0`；代码又变则审查过期 |
 
-（各停止点的完整字段、`BLOCKED` 处理、编号与阶段错位说明见 readme。）
+> 停止点编号与流程步骤顺序**不一一对应**：环境材料（停 4）可提前，**真 E2E 前必须 READY**；契约冻结不在 9 个编号内，**未冻不得实现**。
 
 ## 6. gate 约定
 
@@ -81,7 +88,7 @@
 
 ### 7.1 整体工作流（15 步索引）
 
-定 id（不用 `demo` / `tbd`）→ 选 lane → 建包 → **spec**(停1) → 契约 → **技术方案**(停2) → **测试方案**(停3) → plan+verification-map → **开工门禁**(停5) → 实现+证据(停6) → **Tester**(停7) → **报告**(停8) → **Reviewer**(停9) → 人审/PR/SIT → retro
+定 id（不用 `demo` / `tbd`）→ 选 lane → 建包 → **spec**(停1) → 契约 → **技术方案**(停2) → **测试方案**(停3) → plan+verification-map → **开工门禁**(停5) → 实现+证据(停6，条件触发) → **Tester**(停7) → **报告**(停8) → **Reviewer**(停9) → 人审/PR/SIT → retro
 
 - 有匹配 lane 时，步骤菜单用该 lane；本索引只核对停止点有没有被跳过。
 - **S 档可 `N/A`**：契约 / 技术方案 / 测试方案 / plan+verification-map / Tester / 报告（仍须 spec、`allowed_paths`、evidence）。
@@ -89,7 +96,7 @@
 - 契约只写 `changes/<change-id>/contract.md`，不用 `docs/contracts/<id>-api.md`。未冻不得实现。
 - 实现后、进入 Tester 前：编译、定向测试、窄范围 lint（前端 `scripts/frontend-lint-build.sh <repo> lint-files <files...>`，后端 `scripts/mvn-targeted-test.sh`）。`verification-map.md` 有可执行行时跑 `scripts/verification-run.sh`。跑不了写 `BLOCKED` 和原因。已选 lane 时验证命令以该 lane 为准。S 档 Tester 为 `N/A` 时，验证在 Reviewer 前完成。
 - **Optional Pack（命中才跑）**：E2E → `lanes/pc-e2e-smoke.md`（先过停 4 环境 READY）；Impact / Parallel（CodeGraph / GitNexus）→ RZ 未引入 → `N/A`。
-- 建包：`changes/change-scaffold.sh --tier S|M|L <change-id>`。每步详细动作见 `docs/readme.html`。
+- 建包：`changes/change-scaffold.sh --tier S|M|L <change-id>`。每步的**产物怎么写、门禁怎么跑、路线步骤**分别见 `templates/template_directory.md`、`gates/gate_directory.md`、所选 lane。
 
 ### 7.2 lane 工作流
 
@@ -114,7 +121,7 @@
 - `changes/<change-id>/` 是这次需求的本机工作目录；**整包不进 git**；`changes/` 根下 `change-scaffold.sh`、`status-card.sh`、`change-whitelist-spec.md` 是控制面，要进 git。
 - 建包：`changes/change-scaffold.sh --tier S|M|L <change-id>` —— 建目录 + `artifacts/`、按档拷模板、生成空 `evidence.md`；M/L 另拷 `agent-dispatch-plan.md` 空壳（不调 `agent-dispatch-plan.sh`）。不派实现 Agent 时，该文件写 `N/A`。
 - **状态卡** `status-card.md`：给人看的单一入口；**只主 Agent 写**（子 Agent 不得改）；跑 `changes/status-card.sh` 后更新（不覆盖 Roster）。建包后立刻写「阶段（通常 `需求理解`）/ 下一步 / 是否允许进入下一阶段 / 当前阻塞 / 需人工确认」，Roster 从主 Agent 那行起填。**刷新时机**：阶段切换、阻塞出现或解除、人工确认前后、Tester / Reviewer 返回、代码又变致旧结论失效、进预发前、派发 / 完成 / 阻塞子 Agent、用户问进度。阶段枚举 `需求理解 / 方案确认 / 允许开工 / 实现中 / AI测试待确认 / 预发待发布 / 已收口`；脚本推断上限「允许开工」，「实现中」「已收口」由主 Agent 手写。禁止写入 token / cookie / DB password。
-- **证据** `evidence.md`：scaffold 当场生成空表，首行是建包记录 `Scaffold … PASS`；每跑一条关键命令追加 `Check | Command / Source | Result | Summary`，`Result` 取 `PASS / FAIL / BLOCKED / N/A`；只记摘要，长输出放 `artifacts/`。**禁止**写入 token / cookie / DB password / 客户资料 / 未脱敏 SQL 结果 / 原始私密 prompt。`review.md` 必须引用 `evidence.md`，否则 `gates/reviewer-gate.sh` FAIL。
+- **证据** `evidence.md`：**只主 Agent 写**（子 Agent 不得改；Tester 的复测结论写在 `test-agent-verification.md`）；scaffold 当场生成空表，首行是建包记录 `Scaffold … PASS`；每跑一条关键命令追加 `Check | Command / Source | Result | Summary`，`Result` 取 `PASS / FAIL / BLOCKED / N/A`；只记摘要，长输出放 `artifacts/`。**禁止**写入 token / cookie / DB password / 客户资料 / 未脱敏 SQL 结果 / 原始私密 prompt。`review.md` 必须引用 `evidence.md`，否则 `gates/reviewer-gate.sh` FAIL。
 - **白名单**：`changes/change-whitelist-spec.md` 定义允许出现的文件，`gates/change-artifacts-gate.sh` 检查根目录有没有名单外文件；大文件（截图 / 录屏 / trace / 长日志）放包内 `artifacts/`，不放包根或仓库根 `artifacts/`。
 - **M/L 12 个根文件**：spec / status-card / evidence / plan / contract / technical-solution / verification-map / ai-test-plan / test-agent-verification / agent-dispatch-plan / skill-usage / review；**L 再加** environment-readiness / ai-test-report / decisions。产物全集约 34 项，见 `templates/template_directory.md`；scaffold 只按档预建 S 3 / M 12 / L 15 个，其余（backend-test-plan / ui-* / data-model / local-routing / smoke / dirty-worktree-ledger / pre-pr / handoff 等）条件命中时手建。
 
