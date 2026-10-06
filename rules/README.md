@@ -5,6 +5,8 @@
 | 技术栈 | 入口 |
 |---|---|
 | Java 后端 | `backends/backend_rules.md`（再按需读同目录 `*-reference.md`：layers / tools / middleware / scaffold / checklist） |
+| Java 规范审查 | `backends/alibaba-java-review-checklist.md` |
+| 注释与日志（跨端） | `comment-logging.md` |
 | Vue2 前端 | `frontend-vue2.mdc` |
 | iOS | `mobile-ios-objc.mdc` |
 | Android | `mobile-android-java.mdc` |

@@ -18,7 +18,7 @@ description: Use when an RZ harness change needs read-only review of spec, plan,
 5. `changes/<change-id>/ai-test-plan.md`
 6. `changes/<change-id>/test-agent-verification.md`
 7. `changes/<change-id>/ai-test-report.md`
-8. 如有 Java 后端 diff，按阿里 Java 规范复核（`docs/standards/java/` RZ 未建 → 按经验 + `scripts/java-mechanical-quality.sh`）
+8. 如有 Java 后端 diff，按 `rules/backends/alibaba-java-review-checklist.md` 复核（机检用 `scripts/java-mechanical-quality.sh`）
 9. 实际 diff
 10. `changes/<change-id>/evidence.md`
 

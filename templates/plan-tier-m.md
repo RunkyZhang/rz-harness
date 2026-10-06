@@ -75,7 +75,7 @@ style_profile: config/baselines/<frontend-repo>-style-profile.md
 - [ ] 已填写 Implementation Decision Matrix；所有准备进入代码/SQL/接口/权限/状态/错误码/默认值/adapter/回滚的决定均为可追溯事实。
 - [ ] `allowed_paths` 已覆盖本次所有计划修改文件，且后端路径已收窄到目标模块；如触碰 protected paths，spec 已写入 `approved_protected_paths` 和用户确认来源。
 - [ ] Contract 已写清 request、response、error、empty state、pagination。
-- [ ] 如涉及 Java 后端，Backend Agent 复核 Java checklist（`docs/standards/java/` RZ 未建 → 本项 N/A）。
+- [ ] 如涉及 Java 后端，Backend Agent 复核 Java checklist（`rules/backends/alibaba-java-review-checklist.md`）。
 - [ ] 如涉及 Java 后端，已计划对本次 Java/XML 改动运行 `java-mechanical-quality.sh`。
 - [ ] 如涉及 Java 后端行为变更，已复制 `templates/backend-test-plan.md` 到 `changes/<change-id>/backend-test-plan.md`，并列出 validation、permission、state transition、idempotency、async/job、adapter failure、rollback/error 的适用测试矩阵；缺失项必须标记 `BLOCKED` 或写明不适用原因。
 - [ ] 如启用并行开发，已明确 Backend Agent / Frontend Agent 写入边界和契约变更通知方式。

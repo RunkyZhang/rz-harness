@@ -57,7 +57,7 @@ alwaysApply: false
 
 ## 注释与日志
 
-- 按本次 diff 自查注释和日志（`docs/standards/comment-logging.md` RZ 未建 → 用 `scripts/code-comment-log-quality.sh`）。
+- 按本次 diff 自查注释和日志（标准见 `rules/comment-logging.md`；跑 `scripts/code-comment-log-quality.sh`）。
 - `src/api/*.js` 中新增或变更的导出 API 方法必须有 JSDoc 或等价注释，说明接口用途、关键参数、返回结构、错误 / 空态或分页行为。
 - 复杂页面方法必须有注释说明业务意图：提交、保存、审核、状态切换、批量操作、导入导出、组合查询、详情回填、枚举映射、按钮权限和兼容旧字段。
 - 注释解释“为什么这样处理”和业务边界，不重复代码语句；简单点击处理、纯赋值和样板生命周期不强制。

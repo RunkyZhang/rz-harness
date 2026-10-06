@@ -173,12 +173,12 @@
 
 ## ARCHIVE：知识沉淀（合并前提炼）
 
-> 闭环：本次 change 产生的知识必须沉淀回团队知识库，否则经验死在 change 文件夹里。（`docs/samples/`、`docs/decision-log/`、`rules/`、`docs/standards/` RZ 未建 → 相关项暂 N/A；`docs/pitfalls/` 已建。）
+> 闭环：本次 change 产生的知识必须沉淀回团队知识库，否则经验死在 change 文件夹里。（知识沉淀：`docs/pitfalls/` 已建；`docs/samples/`、`docs/decision-log/` RZ 未建 → 对应项暂 N/A。代码规范：`rules/` 已建，注释日志见 `rules/comment-logging.md`，Java 复核见 `rules/backends/alibaba-java-review-checklist.md`。）
 
 - [ ] 本次有无 **pitfall**（踩过的坑 / 故障模式）？有则按 `templates/pitfalls_TEMPLATE.md` 复制为 `docs/pitfalls/RZ-PIT-*.md`，无则勾选并说明 N/A。
 - [ ] 本次有无可复用 **sample**（值得模仿的样板）？`docs/samples/` RZ 未建 → 本项 N/A（命中再建）。
 - [ ] 本次有无 **decision**（技术选型 / 架构决策）？`docs/decision-log/` RZ 未建 → 本项 N/A（命中再建）。
-- [ ] 本次有无 **guideline**（应当固化的推荐 / 禁止做法）？`rules/`、`docs/standards/` RZ 未建 → 本项 N/A（命中再建）。
+- [ ] 本次有无 **guideline**（应当固化的推荐 / 禁止做法）？有则补进 `rules/`（如 `rules/comment-logging.md`、`rules/backends/alibaba-java-review-checklist.md`）。
 - [ ] 已更新本次**引用过**的既有知识条目的 `last_referenced` 与 `referenced_by`（必要时提升 `maturity`）。
 - [ ] 新增 / 修改的知识条目已带 front matter 元数据（`maturity` / `sources` / `last_referenced`）。
 
