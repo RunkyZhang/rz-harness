@@ -72,6 +72,7 @@ interfaces → application → domain → infrastructure → api → common-base
 
 ## 3. 公共工具类使用规范
 
+> 能力边界见 `../rules.md`（`sfa-common-sdk`）。**包里已有的直接调用，不要在业务仓再写一份。**
 > **详细用法查阅** → `./tools-reference.md`
 
 ### 强制约束清单

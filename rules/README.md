@@ -5,6 +5,7 @@
 | 技术栈 | 入口 |
 |---|---|
 | Java 后端 | `backends/backend_rules.md`（再按需读同目录 `*-reference.md`：layers / tools / middleware / scaffold / checklist） |
+| 后端公共工具包 sfa-common-sdk | `rules.md`。后端服务已依赖。包里已有的能力直接用，不要在业务仓再写一份 |
 | Java 规范审查 | `backends/alibaba-java-review-checklist.md` |
 | 注释与日志（跨端） | `comment-logging.md` |
 | Vue2 前端 | `frontend-vue2.mdc` |
