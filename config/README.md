@@ -22,6 +22,11 @@
 选定 runtime 后，按 `hooks/hook_setup.md` 把 hook 接到 Cursor / Codex / OpenCode。
 接线文件本身（`.cursor/hooks.json`、`.codex/hooks.json`、OpenCode plugin 等）通常不入版本管理。
 
+## 你可能还要定制
+
+- **代码规范 `rules/`**：按技术栈组织的生成代码参考；Java 后端入口是 `rules/backends/backend_rules.md`，索引见 `rules/README.md`。产品化 / 换团队时，若你们的代码规范与这里不同，**替换或扩展 `rules/` 下对应文件**。它不属于本机参数，但属于"随组织而变"的内容。
+- **Hook 接线**：见上文「还要接线」（按 `hooks/hook_setup.md`，选定 runtime 后本机接线）。
+
 ## 目录内容
 
 | 文件 | 说明 | 归属 |

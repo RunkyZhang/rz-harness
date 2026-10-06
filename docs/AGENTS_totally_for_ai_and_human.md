@@ -39,8 +39,8 @@
 > 角色人设。（见「子 Agent」）
 
 ### 知识与规则
-> 知识库在 `docs/`。用来给人看的文档。全量说明（含流程图）见 `docs/readme.html`。执行以仓库根目录 `AGENTS.md` 为准。
-> 规则库在 `rules/`。用来给 LLM 生成代码时做参考
+> 知识库在 `docs/`：用来给人看的文档。全量说明（含流程图）见 `docs/readme.html`。执行以仓库根目录 `AGENTS.md` 为准。
+> 规则库在 `rules/`：用来给 LLM 生成代码时做参考。内容随组织 / 技术栈而变，换团队时替换或扩展。索引 `rules/README.md`。
 
 ### 知识沉淀（已知坑）
 > 团队踩过的坑 / 故障模式记在 `docs/pitfalls/`，每条一个 `RZ-PIT-*.md`（模板 `templates/pitfalls_TEMPLATE.md`）。收口时确有踩过的坑就按模板记一条，没有就在 `pre-pr.md` 写 N/A。引用时在 spec / 变更包写 `knowledge_refs:` 块列 `RZ-PIT-NNN`，由 `gates/knowledge-reference-gate.sh` 校验（悬空引用 FAIL）。`docs/samples/`、`docs/decision-log/` RZ 未建。

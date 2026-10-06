@@ -28,7 +28,7 @@
 | 门禁 + 字典 | `gates/` + `gates/gate_directory.md` |
 | 工具脚本 + 字典 | `scripts/` + `scripts/script_directory.md` |
 | skill + 使用规则 | `skills/` + `skills/skill_directory.md` |
-| 技术栈规则（生成代码参考） | `rules/` |
+| 技术栈规则（生成代码参考） | `rules/` + `rules/README.md`（各技术栈入口） |
 | 任务路线 | `lanes/` |
 | 子 Agent 人设 + 派发协议 | `subagents/` + `subagents/dispatch_subagent.md` |
 | hook 接线 | `hooks/hook_setup.md` |
