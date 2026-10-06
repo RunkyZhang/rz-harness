@@ -1,13 +1,14 @@
-# 归档：扶正前的长版 AGENTS（rz-ai-harness）
+# AGENTS（最全版 / 基础版，rz-ai-harness）
 
-> 本文件是根目录 `AGENTS.md` 精简之前的全文，只供对照，**不是现行规则**。执行以仓库根目录 `AGENTS.md` 为准；给人看的详解见 `docs/readme.html`。
+> 本文件是 RZ AI Harness 的**最全 / 基础版**：规则**先在这里定稿**，保持最全、最新、最精准；再**精简同步**到仓库根目录 `AGENTS.md`（给 agent 的精简入口）。**改规则先改本文件，再同步 `AGENTS.md`。**
+> 执行时以 `AGENTS.md`（精简权威）为准；给人看的详解见 `docs/readme.html`。
 
 本仓库是 RZ AI Harness **控制面**：规矩、模版、gate、子 Agent 人设、变更包工作目录。业务代码在各自 git 仓里，用磁盘路径引用，不要把业务仓 clone 或拷进本目录。
 
 ## 控制面（control plane）
 控制面 = 本仓库 `rz-harness`，harness 的载体。目录 / 内容分两类：
-- **配置类**：要按本机环境和使用的 runtime（Cursor / Codex / OpenCode）做本地化填写。包括运行时参数，Git 仓库， Hook 机制
-- **静态类**：装好即用，内置能力，功能不按环境改。包括语言政策，模版文件，工具&脚本，子 Agent，知识与规则
+- **使用者专属（配置类）**：按你的机器、runtime 和业务仓填写或替换，集中在 `config/`——`runtime_local.sh`（本机参数）、`config/git-registry.md`（仓清单）、`config/baselines/`（仓说明书）；以及各 runtime 自己的接线文件（`.cursor/hooks.json`、`.codex/hooks.json`、OpenCode plugin）。配置步骤见 `config/README.md`。
+- **产品本体（静态类）**：装好即用、所有使用者相同——`AGENTS.md`、语言政策、`templates/`、`gates/`、`scripts/`、`skills/`、`subagents/`、`lanes/`、`hooks/`、`rules/`、`docs/`。
 
 ### 运行时参数
 - 本机配置：路径 `config/runtime_local.sh`，按当前开发环境填写。参数至少包括：业务仓绝对路径、账号/凭据**来源**、数据库连接信息、本地服务地址/代理/端口、本机工具命令等
@@ -38,8 +39,14 @@
 > 角色人设。（见「子 Agent」）
 
 ### 知识与规则
-> 知识库在 `docs/`。用来给人看的文档。全量说明（含流程图）见 `docs/readme.html`。执行以仓库根目录 `AGENTS.md` 为准，不以本归档为准
+> 知识库在 `docs/`。用来给人看的文档。全量说明（含流程图）见 `docs/readme.html`。执行以仓库根目录 `AGENTS.md` 为准。
 > 规则库在 `rules/`。用来给 LLM 生成代码时做参考
+
+### 知识沉淀（已知坑）
+> 团队踩过的坑 / 故障模式记在 `docs/pitfalls/`，每条一个 `RZ-PIT-*.md`（模板 `templates/pitfalls_TEMPLATE.md`）。收口时确有踩过的坑就按模板记一条，没有就在 `pre-pr.md` 写 N/A。引用时在 spec / 变更包写 `knowledge_refs:` 块列 `RZ-PIT-NNN`，由 `gates/knowledge-reference-gate.sh` 校验（悬空引用 FAIL）。`docs/samples/`、`docs/decision-log/` RZ 未建。
+
+### 尚未引入的脚本
+> RZ 尚未从标本引入的脚本清单见 `gates/gate_directory.md` 的「尚未引入」节（唯一权威）。涉及这些脚本的检查项默认 `N/A`，不要去找；命中场景再按该节说明从标本 `docs/learning/learning_objectives/scripts/` 拷贝并本地化。
 
 ### Hook 机制
 > - 大多数 runtime（Cursor / Codex / OpenCode）都有自己的 hook 机制。用户可以自定义“当某事件发生时，让 runtime 执行某个脚本”。和 LLM 的 `tool_call` 不同，hook 是 runtime 的功能，不依赖 LLM 决策
@@ -226,7 +233,7 @@
 
 #### 其他规则
 - 只**主 Agent**写状态卡。子 Agent 不得改；
-- 当前阶段取值：`需求理解 / 方案确认 / 允许开工 / 实现中 / AI测试待确认 / 预发待发布 / 已收口`；
+- 当前阶段取值见 `templates/status-card.md`（唯一权威）；
 - 脚本自动推断上限是 `允许开工`；`实现中` 和 `已收口` 读不到业务仓和收口状态，由主 Agent 在实现开始、收口时手动置位；
 - scaffold 只给空壳。主 Agent 建包后立刻写入当前阶段（通常 `需求理解`）、下一步、是否允许进入下一阶段、当前阻塞、需要人工确认。Agent Roster 从主 Agent 那一行开始填。禁止写入 token、cookie、DB password。
 

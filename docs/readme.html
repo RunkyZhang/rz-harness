@@ -154,12 +154,7 @@
   <h3>语言</h3>
   <p>给人工 review 和用户确认的文档用简体中文。代码标识、命令、API 路径、字段名、错误码、YAML key、日志 key 保持原文。</p>
   <h3>Git 仓库</h3>
-  <p>名单以 <a href="../config/git-registry.md"><code>config/git-registry.md</code></a> 为准。登记表写仓名和变量名（如 <code>$RZ_REPO_SFA_IOS</code>）；每人本机路径写在 <code>config/runtime_local.sh</code>。当前范围：</p>
-  <ul>
-    <li>后端：<code>sfa-sales-management</code>、<code>sfa-backend</code>、<code>sfa-root</code>、<code>sfa-base</code>、<code>arch-open</code>、<code>arch-event</code>、<code>sfa-common-sdk</code></li>
-    <li>Web：<code>mapSystem</code></li>
-    <li>App：<code>sign-up</code>、<code>sfa-ios</code>、<code>sfa-android</code></li>
-  </ul>
+  <p>名单以 <a href="../config/git-registry.md"><code>config/git-registry.md</code></a> <strong>为准</strong>（唯一权威，本页不重复维护）。登记表写仓名和变量名（如 <code>$RZ_REPO_SFA_IOS</code>）；每人本机路径写在 <code>config/runtime_local.sh</code>。</p>
   <h3>按需打开的字典</h3>
   <ul>
     <li>仓说明书：<code>config/baselines/</code>。只读本次改到的仓。写 <code>allowed_paths</code>、选样板、第一次改业务代码之前要读。Reviewer 审查该仓 diff 时对照分层、样板和受保护路径。目标仓的运行约定（Node 版本、登录、路由等）见该仓 <code>config/baselines/&lt;repo&gt;.md</code>，按其执行。</li>
@@ -600,7 +595,42 @@
   <p>白名单由 <code>changes/change-whitelist-spec.md</code> 定义，<code>gates/change-artifacts-gate.sh</code> 检查有没有名单外的文件。大文件不要摊在包根，也不要放到仓库根的 <code>artifacts/</code>。</p>
   <h3>状态卡</h3>
   <p>给人看的单一入口：走到哪、下一步、卡在哪、要不要拍板、子 Agent 在干什么。方案是否 CONFIRMED、环境是否 READY、Tester 是否 GOAL_ACHIEVED，原文在各自 md 里。用户口头确认后，主 Agent 先改对应产物，再改状态卡，再跑 gate。不要只改状态卡就宣称过门。只有主 Agent 能写。子 Agent 不得改。</p>
-  <p>当前阶段取值：<code>需求理解 / 方案确认 / 允许开工 / 实现中 / AI测试待确认 / 预发待发布 / 已收口</code>。收集脚本 <code>changes/status-card.sh</code> 只读、不裁决，自动推断上限是「允许开工」；「实现中」和「已收口」由主 Agent 在实现开始和收口时手动置位。不要覆盖 Agent Roster。禁止写入 token、cookie、DB password。</p>
+  <p>当前阶段共 7 个（<strong>枚举权威在 <code>templates/status-card.md</code></strong>，这里冗余一份方便阅读）：<code>需求理解</code> → <code>方案确认</code> → <code>允许开工</code> → <code>实现中</code> → <code>AI测试待确认</code> → <code>预发待发布</code> → <code>已收口</code>。</p>
+  <figure>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 170" width="920" role="img" aria-label="状态卡阶段流转">
+      <defs>
+        <marker id="ah6" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#5677aa"/></marker>
+        <style>
+          .b { fill:#fff; stroke:#7ca7e8; stroke-width:1.6; }
+          .s { font:12px "PingFang SC","Microsoft YaHei",sans-serif; fill:#334; }
+          .a { stroke:#5677aa; stroke-width:1.6; fill:none; marker-end:url(#ah6); }
+        </style>
+      </defs>
+      <rect class="b" x="16" y="46" width="112" height="48" rx="9"/>
+      <text class="s" x="72" y="75" text-anchor="middle">需求理解</text>
+      <path class="a" d="M128 70 H146"/>
+      <rect class="b" x="146" y="46" width="112" height="48" rx="9"/>
+      <text class="s" x="202" y="75" text-anchor="middle">方案确认</text>
+      <path class="a" d="M258 70 H276"/>
+      <rect class="b" x="276" y="46" width="112" height="48" rx="9"/>
+      <text class="s" x="332" y="75" text-anchor="middle">允许开工</text>
+      <path class="a" d="M388 70 H406"/>
+      <rect class="b" x="406" y="46" width="112" height="48" rx="9"/>
+      <text class="s" x="462" y="75" text-anchor="middle">实现中</text>
+      <path class="a" d="M518 70 H536"/>
+      <rect class="b" x="536" y="46" width="112" height="48" rx="9"/>
+      <text class="s" x="592" y="75" text-anchor="middle">AI测试待确认</text>
+      <path class="a" d="M648 70 H666"/>
+      <rect class="b" x="666" y="46" width="112" height="48" rx="9"/>
+      <text class="s" x="722" y="75" text-anchor="middle">预发待发布</text>
+      <path class="a" d="M778 70 H796"/>
+      <rect class="b" x="796" y="46" width="108" height="48" rx="9"/>
+      <text class="s" x="850" y="75" text-anchor="middle">已收口</text>
+      <text class="s" x="16" y="130">脚本自动推断上限 = 允许开工；「实现中」「已收口」由主 Agent 手写。</text>
+    </svg>
+    <figcaption>图 6　状态卡阶段：从左到右推进。「允许开工」是收集脚本自动推断的上限，再往后由主 Agent 手写。</figcaption>
+  </figure>
+  <p>收集脚本 <code>changes/status-card.sh</code> 只读、不裁决，自动推断上限是「允许开工」；「实现中」和「已收口」由主 Agent 在实现开始和收口时手动置位。不要覆盖 Agent Roster。禁止写入 token、cookie、DB password。</p>
   <p>这些时候要刷新：有人问「现在到哪了」；阶段切换；阻塞出现或解除；人工确认前后；Tester / Reviewer 返回；审查之后又改了代码；进入预发前；派发、完成或阻塞子 Agent。</p>
   <h3>证据</h3>
   <p><code>evidence.md</code> 是可复查的命令痕迹，不是口头「测过了」。表头：<code>Check | Command / Source | Result | Summary</code>。Result 取 <code>PASS / FAIL / BLOCKED / N/A</code>。每跑一条关键命令就追加，不要覆盖整表，不要等收口再补。长输出只留摘要和 <code>artifacts/</code> 路径。</p>
@@ -704,7 +734,7 @@
       <text class="xs" x="862" y="114" text-anchor="middle">人审 / PR 之前</text>
       <text class="xs" x="862" y="132" text-anchor="middle">只读，只写 review.md</text>
     </svg>
-    <figcaption>图 6　角色按阶段出现。Explorer 和 Reviewer 默认只读。实现角色是候选，不是默认必派。</figcaption>
+    <figcaption>图 7　角色按阶段出现。Explorer 和 Reviewer 默认只读。实现角色是候选，不是默认必派。</figcaption>
   </figure>
   <ul>
     <li><strong>Explorer</strong>（<code>subagents/explorer_agent.md</code>）：只读查证，按三标签把材料交回主 Agent。</li>
@@ -729,7 +759,7 @@
 </section>
 
 <footer>
-  本页路径 <code>docs/readme.html</code>。流程图共 6 张：Hook、Guides/Sensors、用户拍板节奏、十五步工作流、lane 选择、子 Agent 时机。给 Agent 的精简入口是仓库根目录 <a href="../AGENTS.md">AGENTS.md</a>；本页是给人看的完整版。
+  本页路径 <code>docs/readme.html</code>。流程图共 7 张：Hook、Guides/Sensors、用户拍板节奏、十五步工作流、lane 选择、状态卡阶段、子 Agent 时机。给 Agent 的精简入口是仓库根目录 <a href="../AGENTS.md">AGENTS.md</a>；本页是给人看的完整版。
 </footer>
 </div>
 </body>

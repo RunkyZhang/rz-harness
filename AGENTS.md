@@ -1,5 +1,7 @@
 # AGENTS.md (rz-ai-harness)
 
+> 本文件是给 agent 的**精简入口**；**最全 / 基础版**在 `docs/AGENTS_totally_for_ai_and_human.md`（规则先在那里定稿，再精简同步到本文件）。
+
 本仓库是 RZ AI Harness **控制面**：规矩、模版、gate、子 Agent 人设、变更包工作目录。业务代码在各自 git 仓，用磁盘路径引用，**不要拷进本目录**。
 
 ---
@@ -120,7 +122,7 @@
 
 - `changes/<change-id>/` 是这次需求的本机工作目录；**整包不进 git**；`changes/` 根下 `change-scaffold.sh`、`status-card.sh`、`change-whitelist-spec.md` 是控制面，要进 git。
 - 建包：`changes/change-scaffold.sh --tier S|M|L <change-id>` —— 建目录 + `artifacts/`、按档拷模板、生成空 `evidence.md`；M/L 另拷 `agent-dispatch-plan.md` 空壳（不调 `agent-dispatch-plan.sh`）。不派实现 Agent 时，该文件写 `N/A`。
-- **状态卡** `status-card.md`：给人看的单一入口；**只主 Agent 写**（子 Agent 不得改）；跑 `changes/status-card.sh` 后更新（不覆盖 Roster）。建包后立刻写「阶段（通常 `需求理解`）/ 下一步 / 是否允许进入下一阶段 / 当前阻塞 / 需人工确认」，Roster 从主 Agent 那行起填。**刷新时机**：阶段切换、阻塞出现或解除、人工确认前后、Tester / Reviewer 返回、代码又变致旧结论失效、进预发前、派发 / 完成 / 阻塞子 Agent、用户问进度。阶段枚举 `需求理解 / 方案确认 / 允许开工 / 实现中 / AI测试待确认 / 预发待发布 / 已收口`；脚本推断上限「允许开工」，「实现中」「已收口」由主 Agent 手写。禁止写入 token / cookie / DB password。
+- **状态卡** `status-card.md`：给人看的单一入口；**只主 Agent 写**（子 Agent 不得改）；跑 `changes/status-card.sh` 后更新（不覆盖 Roster）。建包后立刻写「阶段（通常 `需求理解`）/ 下一步 / 是否允许进入下一阶段 / 当前阻塞 / 需人工确认」，Roster 从主 Agent 那行起填。**刷新时机**：阶段切换、阻塞出现或解除、人工确认前后、Tester / Reviewer 返回、代码又变致旧结论失效、进预发前、派发 / 完成 / 阻塞子 Agent、用户问进度。阶段枚举见 `templates/status-card.md`（唯一权威）；脚本推断上限「允许开工」，「实现中」「已收口」由主 Agent 手写。禁止写入 token / cookie / DB password。
 - **证据** `evidence.md`：**只主 Agent 写**（子 Agent 不得改；Tester 的复测结论写在 `test-agent-verification.md`）；scaffold 当场生成空表，首行是建包记录 `Scaffold … PASS`；每跑一条关键命令追加 `Check | Command / Source | Result | Summary`，`Result` 取 `PASS / FAIL / BLOCKED / N/A`；只记摘要，长输出放 `artifacts/`。**禁止**写入 token / cookie / DB password / 客户资料 / 未脱敏 SQL 结果 / 原始私密 prompt。`review.md` 必须引用 `evidence.md`，否则 `gates/reviewer-gate.sh` FAIL。
 - **白名单**：`changes/change-whitelist-spec.md` 定义允许出现的文件，`gates/change-artifacts-gate.sh` 检查根目录有没有名单外文件；大文件（截图 / 录屏 / trace / 长日志）放包内 `artifacts/`，不放包根或仓库根 `artifacts/`。
 - **M/L 12 个根文件**：spec / status-card / evidence / plan / contract / technical-solution / verification-map / ai-test-plan / test-agent-verification / agent-dispatch-plan / skill-usage / review；**L 再加** environment-readiness / ai-test-report / decisions。产物全集约 34 项，见 `templates/template_directory.md`；scaffold 只按档预建 S 3 / M 12 / L 15 个，其余（backend-test-plan / ui-* / data-model / local-routing / smoke / dirty-worktree-ledger / pre-pr / handoff 等）条件命中时手建。
