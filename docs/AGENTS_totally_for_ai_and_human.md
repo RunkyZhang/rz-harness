@@ -1,4 +1,7 @@
-# AGENTS.md (rz-ai-harness)
+# 归档：扶正前的长版 AGENTS（rz-ai-harness）
+
+> 本文件是根目录 `AGENTS.md` 精简之前的全文，只供对照，**不是现行规则**。执行以仓库根目录 `AGENTS.md` 为准；给人看的详解见 `docs/readme.html`。
+
 本仓库是 RZ AI Harness **控制面**：规矩、模版、gate、子 Agent 人设、变更包工作目录。业务代码在各自 git 仓里，用磁盘路径引用，不要把业务仓 clone 或拷进本目录。
 
 ## 控制面（control plane）
@@ -38,7 +41,7 @@
 > 角色人设。（见「子 Agent」）
 
 ### 知识与规则
-> 知识库在 `docs/`。用来给人看的文档。全量说明（含流程图）见 `docs/readme.html`。执行仍以本文件为准
+> 知识库在 `docs/`。用来给人看的文档。全量说明（含流程图）见 `docs/readme.html`。执行以仓库根目录 `AGENTS.md` 为准，不以本归档为准
 > 规则库在 `rules/`。用来给 LLM 生成代码时做参考
 
 ### Hook 机制

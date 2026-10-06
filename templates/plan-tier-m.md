@@ -2,7 +2,7 @@
 
 > 面向人工 review 的计划默认中文；代码标识、命令、API 路径、字段名、错误码、YAML key、日志 key 和引用原文保持原样。
 >
-> **RZ 尚未引入的脚本**（`workstream-dispatch-gate`、`codegraph-preflight`/`codegraph-evidence-gate`、`gitnexus-*`、`agent-task-brief`/`agent-review-package`/`agent-output-contract-gate`、`parallel-worktree-gate`）：本文相关步骤**默认按 `N/A` 处理**，不要去找这些脚本；命中场景再从标本 `learning_objectives/scripts/` copy 并本地化（见 `AGENTS.md`「尚未引入的脚本」）。
+> **RZ 尚未引入的脚本**（`workstream-dispatch-gate`、`codegraph-preflight`/`codegraph-evidence-gate`、`gitnexus-*`、`agent-task-brief`/`agent-review-package`/`agent-output-contract-gate`、`parallel-worktree-gate`）：本文相关步骤**默认按 `N/A` 处理**，不要去找这些脚本；命中场景再从标本 `learning_objectives/scripts/` copy 并本地化。
 
 ## 输入
 

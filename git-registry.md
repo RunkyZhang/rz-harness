@@ -1,6 +1,6 @@
 # RZ Harness Git 仓库登记
 
-> 清单以 `AGENTS.md`「Git仓库」为准。本机绝对路径以已忽略的 `config/runtime_local.sh` 中 `RZ_REPO_*` 为准，不要把业务仓拷进控制面。
+> 本文件是仓库清单的**权威来源**（source of truth）；`AGENTS.md` 第 2 节的「仓清单」指向本文件。本机绝对路径以已忽略的 `config/runtime_local.sh` 中 `RZ_REPO_*` 为准，不要把业务仓拷进控制面。
 > 后续 baseline、allowed paths、gate 和变更包应引用这里的 `repo_id`。
 > 技术栈、模块、脚本名来自标本对同名 git 仓的扫描，新仓（无标本条目）标为待 baseline，不得把猜测写成事实。
 
@@ -24,7 +24,7 @@
 | `sfa-ios` | `$RZ_REPO_SFA_IOS` | App | `sfa-ios` | iOS / Objective-C |
 | `sfa-android` | `$RZ_REPO_SFA_ANDROID` | App | `sfa-android` | Android / Java |
 
-不在本清单、标本曾登记的仓（`backend-ceo-member`、`merchant-wechatapp`、`SfaIntl`）默认不在 RZ Harness 工作范围内，除非用户改 `AGENTS.md` 并补本文件。
+不在本清单、标本曾登记的仓（`backend-ceo-member`、`merchant-wechatapp`、`SfaIntl`）默认不在 RZ Harness 工作范围内，除非用户确认后补进本文件。
 
 ---
 
