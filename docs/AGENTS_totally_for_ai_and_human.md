@@ -11,23 +11,20 @@
 
 ### 运行时参数
 - 本机配置：路径 `config/runtime_local.sh`，按当前开发环境填写。参数至少包括：业务仓绝对路径、账号/凭据**来源**、数据库连接信息、本地服务地址/代理/端口、本机工具命令等
-- 明文密码、token、cookie 等只放在 `config/runtime_local.sh` 或系统钥匙串。以上禁止写入 spec、evidence、状态卡或任何会进 git 仓库的文件
+- 明文密码、token、cookie 等只放系统钥匙串；`config/runtime_local.sh` 只写凭据**来源**。以上禁止写入 spec、evidence、状态卡或任何会进 git 仓库的文件
 
 ### 语言政策
 - 给人工 review / 用户确认的文档默认使用简体中文
 - 代码标识、命令、API 路径、字段名、错误码、YAML key、日志 key 和引用这些原文保持原样不要翻译为英文
 
 ### Git仓库
-先读 `git-registry.md`。当前仓库：
-- 后端代码：`sfa-sales-management`、`sfa-backend`、`sfa-root`、`sfa-base`、`arch-open`、`arch-event`、`sfa-common-sdk`
-- Web端代码：`mapSystem`
-- App端代码：`sign-up`、`sfa-ios`、`sfa-android`
+仓清单的**权威来源**是 `config/git-registry.md`（`repo_id` / `path_env` / 分组 / baseline 指向）；本机绝对路径见 `config/runtime_local.sh`。当前仓库清单以该文件为准，本文件不重复维护。
 
 ### Baseline
-> 仓说明书在 `baselines/` 目录下。**不要一次读完全部。** 只读本次变更涉及的仓。
+> 仓说明书在 `config/baselines/` 目录下。**不要一次读完全部。** 只读本次变更涉及的仓。
 
 - 主 Agent 在写该仓 `allowed_paths`、选样板、第一次改业务代码之前读取对应文件。Explorer 下钻业务仓前先读。Backend / Frontend / Mobile 实现前必读。Reviewer 审查该仓 diff 时对照其中的分层、样板和受保护路径。
-- `mapSystem` 额外遵守 `baselines/frontend-map-system.md` 的 Node 版本、登录和临时路由约定。
+- 目标仓若有额外运行约定（Node 版本、登录、路由等），见该仓 `config/baselines/<repo>.md`，按其执行。
 
 ### 模版文件
 > 全部模板文件保存在目录 `templates/`，用来生成 change 变更包所需文件。`templates/template_directory.md` 为字典目录（每个 template 作用是什么、用在哪段流程、拷到变更包后叫什么）。
@@ -123,7 +120,7 @@
 
 ### 一张图：两层控制怎么围住 agent 让其循环执行，判断
 ```text
-        Guides（AGENTS / templates / baselines / subagents 人设 / lane）
+        Guides（AGENTS / templates / config/baselines / subagents 人设 / lane）
                     ↓ 行动前喂进去
               agent 干活（act）
                     ↓ 产出 / 动作
@@ -136,7 +133,7 @@
 - 需要人拍板的节点见「停止点」——本质是 loop 暂停、把控制权交回给人的时刻。
 
 ### Guides：行动前的引导（不自动拦）
-> 喂给 agent 读的说明，靠“读”起作用，**本身不 PASS/FAIL、不拦截**：`AGENTS.md`、`templates/`、`baselines/`、`subagents/` 人设、`lanes/`。
+> 喂给 agent 读的说明，靠“读”起作用，**本身不 PASS/FAIL、不拦截**：`AGENTS.md`、`templates/`、`config/baselines/`、`subagents/` 人设、`lanes/`。
 
 ### Sensors：行动后的检查（会拦）
 > agent 动作后压回来的检查，判定失败就是反向压力，逼它重做：
@@ -256,7 +253,7 @@
 
 #### 其他规则
 - 只**主 Agent**写；Tester 的复测结论写在 `test-agent-verification.md`，主 Agent 不得代裁 `GOAL_ACHIEVED`；
-- **禁止写入** token、cookie、DB password、客户资料、未脱敏 SQL 结果、原始私密 prompt。明文机密只放 `config/runtime_local.sh` 或系统钥匙串。长日志、截图、录屏、trace 放 `changes/<change-id>/artifacts/` 或外部存储，evidence 只记路径和结论；
+- **禁止写入** token、cookie、DB password、客户资料、未脱敏 SQL 结果、原始私密 prompt。明文机密只放系统钥匙串；`config/runtime_local.sh` 只写凭据**来源**。长日志、截图、录屏、trace 放 `changes/<change-id>/artifacts/` 或外部存储，evidence 只记路径和结论；
 - `gates/reviewer-gate.sh` 要求 `review.md` 引用 `evidence.md`，否则 Reviewer 关卡 FAIL——evidence 不是“有空才看”；
 - 与证据家族其他文件区分：`test-agent-verification.md`（Tester 裁决）、`verification-run-report.md`（verification-map 执行报告，脚本生成）、`codegraph-evidence.md`（结构影响线索）、`pc-e2e-smoke-report.md`（冒烟摘要）；
 
@@ -381,7 +378,7 @@
 - **行为 / 契约变更** → 实现前需 spec + 契约文档；宣称跑过的检查必须落 `evidence.md`。
 - **Java 后端行为变更** → `backend-test-plan.md` 或明确 `N/A`；仅编译不够。
 - **Swagger 对外 VO** → **仅当后端仓有活动 `rules/backends/*/manifest.yml` profile 时**：只扫该 profile 配置的响应根、新增对外 `*VO.java` 用 `@ApiModel` + 每字段 `@ApiModelProperty`；配置不追溯既往，不含导出模型与基础设施 DTO；pre-commit 跑 `gates/swagger-model-documentation-gate.sh <change-dir> <changed-file...>`。
-- **前端 / UI** → 先判复杂度；PRD UI 需 `ui-rule-checklist.md` + `gates/ui-rule-gate.sh changes/<change-id>`，规则缺口停下等用户；复杂 UI 需 `ui-confirmation.md` + 可运行页面；`mapSystem` 先读 `baselines/frontend-map-system.md`，用 `scripts/frontend-dev-server.sh frontend-map-system 9527`（Node 14.21.3 / 产品组登录 / 临时路由，`HomeIndex` 重定向即失败）。
+- **前端 / UI** → 先判复杂度；PRD UI 需 `ui-rule-checklist.md` + `gates/ui-rule-gate.sh changes/<change-id>`，规则缺口停下等用户；复杂 UI 需 `ui-confirmation.md` + 可运行页面；目标仓的启动方式 / Node 版本 / 登录 / 路由约定见 `config/baselines/<repo>.md`，按其执行。
 - **DB 变更** → 带 ER 图的数据模型、可执行 SQL、规范化检查、自包含注释、字段来源。
 - **飞书 PRD** → 用 `scripts/technical-solution-feishu-sync.sh` 同步方案到飞书子文档、改后重同步；**同步关卡 `gates/technical-solution-feishu-sync-gate.sh <change-dir>`**（改后不重同步则技术方案关卡不过）；流程图 / ER / 状态图用**白板**不用 Mermaid。
 - **复杂行为 / 能力边界** → 写 `capability-spec.md` / `behavior-spec.md`，并在 `verification-map.md` 映射。普通 CRUD 写 `N/A`。
@@ -407,7 +404,7 @@
 - 未经 spec 明确许可不要修改：生产配置、密钥、`.env*`、部署清单、DB 迁移、Nacos 生产配置、发布脚本，或 allowed paths 之外的无关模块。
 - 真实 SIT/UAT/生产 DB 访问默认只读。真实数据写入、DDL、任务触发的数据变更或会修改的 API 需要目标环境、精确 SQL/API、预期行数、回滚/清理计划，以及明确的第二次用户确认。
 - 高危 SQL 全局禁止：`DROP DATABASE`、`DROP TABLE`、`TRUNCATE`、宽范围 `DELETE`、宽范围 `UPDATE`，或没有精确范围的写入。
-- 永不在版本化文件、harness 文档、证据或记忆中持久化明文 DB 密码、token 或 cookie。此类机密只放在已忽略的 `config/runtime_local.sh` 或系统钥匙串。
+- 永不在版本化文件、harness 文档、证据或记忆中持久化明文 DB 密码、token 或 cookie。此类机密只放系统钥匙串；`config/runtime_local.sh` 只写凭据**来源**。
 - 合并前，对变更的业务文件运行 `gates/diff-hygiene-gate.sh <repo> [--base <ref>] <files...>` 和 `gates/temp-hardcode-scan.sh <files...>`。
 
 ## 子 Agent

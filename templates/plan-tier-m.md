@@ -14,14 +14,14 @@
 | Technical solution | `changes/<change-id>/technical-solution.md` |
 | Verification map | `changes/<change-id>/verification-map.md` |
 | Skill usage | `changes/<change-id>/skill-usage.md` |
-| Frontend baseline | `baselines/frontend-map-system.md` |
-| Backend baseline | `baselines/backend-sales-management.md` |
+| Frontend baseline | `config/baselines/frontend-map-system.md` |
+| Backend baseline | `config/baselines/backend-sales-management.md` |
 
 ## Frontend Style References
 
 ```yaml
 style_sample_references_status: PENDING
-style_profile: baselines/<frontend-repo>-style-profile.md
+style_profile: config/baselines/<frontend-repo>-style-profile.md
 ```
 
 > 涉及前端 UI / 页面代码时必填；纯后端或非 UI change 可写 `N/A: reason`。样板引用不是装饰项，后续 Reviewer 的 `style_conformance` 必须对照这里检查。
@@ -40,7 +40,7 @@ style_profile: baselines/<frontend-repo>-style-profile.md
 | `<不可修改生产配置 / secrets / DB migration / 部署脚本等>` | `AGENTS.md` / `spec.md` / `contract.md` | `allowed-paths.sh` / `business-code-start-gate.sh` / Reviewer |
 | `<本次允许修改的 repo / module / path>` | `spec.md allowed_paths` | `gates/business-code-start-gate.sh changes/<change-id> <files...>` |
 | `<字段、状态、权限、错误码、默认值等已确认事实>` | `spec.md` / PRD / 用户确认 | `verification-map.md` / targeted test / PC smoke |
-| `<版本、运行环境、Node/Maven/profile 限制>` | `baselines/*` / `environment-readiness.md` | `canonical-command-gate.sh` / repo-specific command |
+| `<版本、运行环境、Node/Maven/profile 限制>` | `config/baselines/*` / `environment-readiness.md` | `canonical-command-gate.sh` / repo-specific command |
 
 ## Task Handoff Contract
 

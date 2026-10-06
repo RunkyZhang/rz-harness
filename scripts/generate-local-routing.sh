@@ -6,9 +6,6 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 if [[ -f "$root/config/runtime_local.sh" ]]; then
   # shellcheck source=/dev/null
   source "$root/config/runtime_local.sh"
-elif [[ -f "$root/config/runtime_local.example.sh" ]]; then
-  # shellcheck source=/dev/null
-  source "$root/config/runtime_local.example.sh"
 fi
 
 usage() {

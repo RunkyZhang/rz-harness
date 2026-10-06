@@ -13,7 +13,7 @@
 ## Rules
 
 - `web/` 是当前默认可用的旧 SFA Web 规则包，适用于 Vue2 + Element UI 管理后台。
-- 所有导入的 `.mdc` 文件都保持 `alwaysApply: false`。是否加载由 `manifest.yml`、`git-registry.md` 和具体 lane 决定。
+- 所有导入的 `.mdc` 文件都保持 `alwaysApply: false`。是否加载由 `manifest.yml`、`config/git-registry.md` 和具体 lane 决定。
 
 ## Usage
 

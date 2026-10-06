@@ -10,7 +10,7 @@
 - 未经 spec 许可不改：生产配置、密钥、`.env*`、部署清单、DB 迁移、Nacos 生产配置、发布脚本、`allowed_paths` 外的模块。
 - 真实 SIT/UAT/生产库**默认只读**；真实写入/DDL/改数据的 API 需：目标环境 + 精确 SQL/API + 预期行数 + 回滚计划 + **用户第二次确认**。
 - 高危 SQL 全局禁止：`DROP DATABASE`、`DROP TABLE`、`TRUNCATE`、宽范围 `DELETE`/`UPDATE`、无精确范围的写入。
-- **永不**在版本化文件、harness 文档、证据里写明文密码 / token / cookie（只放 `config/runtime_local.sh` 或钥匙串）。
+- **永不**在会进 git 的文件、harness 文档、证据里写明文密码 / token / cookie（明文只放系统钥匙串；`config/runtime_local.sh` 只写凭据**来源**）。
 - 给人看的文档用简体中文；代码标识、命令、API 路径、字段名、错误码、YAML key、日志 key 保持原文。
 - 合并前对变更的业务文件跑 `gates/diff-hygiene-gate.sh` 和 `gates/temp-hardcode-scan.sh`。
 - 单一控制面：只用 `changes/<change-id>/`；不建顶层 `openspec/`；旧产物放 `changes/<id>/legacy-openspec/`。
@@ -20,8 +20,8 @@
 | 要什么 | 去哪 |
 |---|---|
 | 本机配置（仓路径 / DB 连接信息 / 端口 / 凭据**来源** / 工具命令） | `config/runtime_local.sh`（开工前 `source`） |
-| 仓清单 | `git-registry.md` |
-| 仓说明书：仿写锚点 / 分层 / 保护路径 | `baselines/<repo>.md`。**只读本次涉及的**；写 `allowed_paths` / 选样板 / 首次改代码前、Explorer 下钻前、Backend/Frontend/Mobile 实现前、Reviewer 审查时都要读 |
+| 仓清单 | `config/git-registry.md` |
+| 仓说明书：仿写锚点 / 分层 / 保护路径 | `config/baselines/<repo>.md`。**只读本次涉及的**；写 `allowed_paths` / 选样板 / 首次改代码前、Explorer 下钻前、Backend/Frontend/Mobile 实现前、Reviewer 审查时都要读 |
 | 模板 + 字典 | `templates/` + `templates/template_directory.md` |
 | 门禁 + 字典 | `gates/` + `gates/gate_directory.md` |
 | 工具脚本 + 字典 | `scripts/` + `scripts/script_directory.md` |
@@ -112,7 +112,7 @@
 2. **开工前**：★ `source config/runtime_local.sh`、确认允许路径、优先用目标仓样板；★ 三标签未决不进实现；★ 切 `harness/<change-id>` 分支；跑开工门禁（见停止点 5）。
 3. **不可豁免**：口头「ok」不能跳过档位需要或条件命中的关卡（含飞书同步）；状态卡持续更新；代码再变则旧结论作废，重跑 Tester 再重跑 Reviewer；主 Agent 不得代裁 Tester / Reviewer。
 4. **M/L 默认必做**：全栈 `technical-solution.md` 需 `CONFIRMED`（必须覆盖模板列出的每一块 PRD 面；**前端 / APP / 导出 / 分析 / 跨仓在范围内时，只写后端无效**）；Test Strategy 写 `ai-test-plan.md`，**主 Agent 不得代写正文**，用户确认后只写 `test_plan_status: CONFIRMED`；按 `skills/skill_directory.md` 记 `skill-usage.md`（未用写 N/A）并跑 `gates/skill-usage-gate.sh`。
-5. **命中才做**：行为 / 契约变更（spec + 契约 + evidence）｜Java 行为变更（`backend-test-plan.md` 或 N/A，仅编译不够）｜Swagger 对外 VO（**仅当有活动 `rules/backends/*/manifest.yml` profile**：只扫该 profile 的响应根；新增对外 `*VO.java` 用 `@ApiModel` + 每字段 `@ApiModelProperty`；不追溯既往；不含导出模型与基础设施 DTO；pre-commit 跑 `gates/swagger-model-documentation-gate.sh`）｜前端 / UI（PRD UI 需 `ui-rule-checklist.md` + `gates/ui-rule-gate.sh`，规则缺口停下等用户；复杂 UI 需可运行页面 + `ui-confirmation.md`；`mapSystem` 先读 `baselines/frontend-map-system.md`，用 `scripts/frontend-dev-server.sh frontend-map-system 9527`，Node 14.21.3 / 产品组登录 / 临时路由，`HomeIndex` 重定向即失败）｜DB（带 ER 数据模型 + 可执行 SQL + 规范化检查 + 自包含注释 + 字段来源）｜飞书 PRD（`scripts/technical-solution-feishu-sync.sh` 同步 + 改后重同步 + `gates/technical-solution-feishu-sync-gate.sh`；流程图 / ER / 状态图用白板不用 Mermaid）｜复杂行为（`capability-spec.md` / `behavior-spec.md` + verification-map 映射）。
+5. **命中才做**：行为 / 契约变更（spec + 契约 + evidence）｜Java 行为变更（`backend-test-plan.md` 或 N/A，仅编译不够）｜Swagger 对外 VO（**仅当有活动 `rules/backends/*/manifest.yml` profile**：只扫该 profile 的响应根；新增对外 `*VO.java` 用 `@ApiModel` + 每字段 `@ApiModelProperty`；不追溯既往；不含导出模型与基础设施 DTO；pre-commit 跑 `gates/swagger-model-documentation-gate.sh`）｜前端 / UI（PRD UI 需 `ui-rule-checklist.md` + `gates/ui-rule-gate.sh`，规则缺口停下等用户；复杂 UI 需可运行页面 + `ui-confirmation.md`；目标仓的启动方式 / Node 版本 / 登录 / 路由约定见 `config/baselines/<repo>.md`，按其执行）｜DB（带 ER 数据模型 + 可执行 SQL + 规范化检查 + 自包含注释 + 字段来源）｜飞书 PRD（`scripts/technical-solution-feishu-sync.sh` 同步 + 改后重同步 + `gates/technical-solution-feishu-sync-gate.sh`；流程图 / ER / 状态图用白板不用 Mermaid）｜复杂行为（`capability-spec.md` / `behavior-spec.md` + verification-map 映射）。
 6. **环境与就绪**：真实 E2E 前填 `environment-readiness.md` + gate；本地后端「可验收」只在 `scripts/local-service-lifecycle.sh` 的 HEALTH=UP + check-web-stack 后声明（Maven / nohup / 端口单独成功不算）。
 7. **验收与审查**：业务代码审查前跑 `scripts/code-comment-log-quality.sh`；Tester / AI 测试报告 / Reviewer 见停止点 7 / 8 / 9。
 

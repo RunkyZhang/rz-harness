@@ -48,7 +48,7 @@ shift || true
   "ARCH_DRIFT/REPO_NOT_FOUND" \
   "repo root does not exist: $repo" \
   "Pass a valid local business repo path from config/runtime_local.sh." \
-  "config/runtime_local.example.sh"
+  "config/runtime_local.sh"
 
 repo="$(cd "$repo" && pwd)"
 tmp_files="$(mktemp)"

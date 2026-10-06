@@ -15,7 +15,7 @@ description: Use after mobile contract, allowed paths, and code-start gates. Imp
 
 - `gates/business-code-start-gate.sh` 通过
 - 契约、allowed paths、隔离 worktree、安全分支
-- 目标仓 mobile baseline（控制面 `baselines/` 若有对应文件则必读）
+- 目标仓 mobile baseline（控制面 `config/baselines/` 若有对应文件则必读）
 
 ## 输入
 

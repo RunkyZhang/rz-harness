@@ -34,7 +34,7 @@ if [[ "$#" -lt 1 ]]; then
     "MOBILE_MECHANICAL/MISSING_REPO" \
     "missing repo root" \
     "Pass the mobile repo root followed by changed mobile files." \
-    "baselines/mobile-sfa-ios.md"
+    "config/baselines/mobile-sfa-ios.md"
 fi
 
 repo="$1"
@@ -44,7 +44,7 @@ shift || true
   "MOBILE_MECHANICAL/REPO_NOT_FOUND" \
   "repo root does not exist: $repo" \
   "Pass a valid local mobile repo path from config/runtime_local.sh." \
-  "config/runtime_local.example.sh"
+  "config/runtime_local.sh"
 
 repo="$(cd "$repo" && pwd)"
 tmp_files="$(mktemp)"

@@ -1,6 +1,6 @@
 # Baseline：frontend-sfaintl
 
-> 当前不在 `git-registry.md` 工作范围内；仅保留标本 baseline 供对照。路径变量已改为 `RZ_*`，若启用该仓须先补登记表和 `config/runtime_local.sh`。
+> 当前不在 `config/git-registry.md` 工作范围内；仅保留标本 baseline 供对照。路径变量已改为 `RZ_*`，若启用该仓须先补登记表和 `config/runtime_local.sh`。
 
 
 日期：2026-05-26

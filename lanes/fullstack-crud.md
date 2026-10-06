@@ -26,7 +26,7 @@
 9. 填写 `skill-usage.md`；按 `skills/skill_directory.md` 读取命中 skill，运行 `gates/skill-usage-gate.sh changes/<change-id>`。
 10. 运行 `gates/confidence-gate.sh`、`gates/assumption-leak-gate.sh`、`gates/verification-map-gate.sh changes/<change-id>` 和 `gates/allowed-paths.sh`。
 11. 业务仓首次改代码前从远程主干拉 `harness/<change-id>`，运行 `gates/business-code-start-gate.sh`；禁止在 `main`/`master` 改业务代码。脏仓先写 `dirty-worktree-ledger.md` 并过 `business-dirty-worktree-gate.sh`。（停止点 5）
-12. 按 `git-registry.md` 和目标仓 `baselines/` 读规则；`mapSystem` 读 `rules/frontends/legacy-sfa/manifest.yml` 中的 `legacy-sfa-web`。
+12. 按 `config/git-registry.md` 和目标仓 `config/baselines/` 读规则；`mapSystem` 读 `rules/frontends/legacy-sfa/manifest.yml` 中的 `legacy-sfa-web`。
 13. 后端实现前确认是否需要 `backend-test-plan.md`；Maven 命令前先跑 `gates/canonical-command-gate.sh -- <mvn command>`。
 14. 实现：只改 `allowed_paths`；前端优先复用样板；窄范围 `scripts/frontend-lint-build.sh <repo> lint-files <files...>`。命令追加 `evidence.md`。
 15. 契约对齐：逐字段核对前端入参 / 展示和后端 request / response。

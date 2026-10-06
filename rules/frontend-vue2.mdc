@@ -33,7 +33,7 @@ alwaysApply: false
 - 修改路径必须落在 spec 的 `allowed_paths` 内。
 - 不得绕过 `src/api` 直接在页面中硬编码后端 URL。
 - 按 `git-registry.md` 的 `rule_profile` 加载对应规则；如果 registry、baseline 和本地仓事实冲突，先更新 harness 事实再实现。
-- 修改 `mapSystem` 前必须读取 `baselines/frontend-map-system.md`，默认使用 Node `14.21.3` 和 `scripts/frontend-dev-server.sh frontend-map-system 9527` 启动；不得直接用高版本 Node 失败后才排查。
+- 修改 `mapSystem` 前必须读取 `config/baselines/frontend-map-system.md`，默认使用 Node `14.21.3` 和 `scripts/frontend-dev-server.sh frontend-map-system 9527` 启动；不得直接用高版本 Node 失败后才排查。
 - 新增 `mapSystem` 页面必须先检查并接入临时路由菜单；本地 smoke 中目标 route 跳到 `HomeIndex` 时按路由失败处理。
 - `mapSystem` 登录 smoke 必须走真实账号输入、blur 触发 `/sfa/backend/employee/organizationFor123`、选择/等待第一个产品组、再点击登录；登录凭据只能来自 ignored local config、Keychain 或已有浏览器会话。
 

@@ -45,7 +45,7 @@ if [[ ! -d "$repo" ]]; then
     "CODE_COMMENT_LOG/REPO_NOT_FOUND" \
     "repo root does not exist: $repo" \
     "Pass a valid local repo path from config/runtime_local.sh." \
-    "config/runtime_local.example.sh"
+    "config/runtime_local.sh"
 fi
 
 repo="$(cd "$repo" && pwd)"

@@ -1,6 +1,6 @@
 # RZ Harness Git 仓库登记
 
-> 本文件是仓库清单的**权威来源**（source of truth）；`AGENTS.md` 第 2 节的「仓清单」指向本文件。本机绝对路径以已忽略的 `config/runtime_local.sh` 中 `RZ_REPO_*` 为准，不要把业务仓拷进控制面。
+> 本文件是仓库清单的**权威来源**（source of truth）；`AGENTS.md` 第 2 节的「仓清单」指向本文件。本机绝对路径以 `config/runtime_local.sh` 中 `RZ_REPO_*` 为准，不要把业务仓拷进控制面。
 > 后续 baseline、allowed paths、gate 和变更包应引用这里的 `repo_id`。
 > 技术栈、模块、脚本名来自标本对同名 git 仓的扫描，新仓（无标本条目）标为待 baseline，不得把猜测写成事实。
 
@@ -15,9 +15,9 @@
 | `sfa-sales-management` | `$RZ_REPO_SFA_SALES_MANAGEMENT` | 后端 | `sfa-sales-management` | Java 后端 |
 | `sfa-backend` | `$RZ_REPO_SFA_BACKEND` | 后端 | `sfa-backend` | Java 后端 |
 | `sfa-root` | `$RZ_REPO_SFA_ROOT` | 后端 | `sfa-root` | Java 后端 |
-| `sfa-base` | `$RZ_REPO_SFA_BASE` | 后端 | `sfa-base` | Java 后端；`baselines/backend-sfa-base.md` |
-| `arch-open` | `$RZ_REPO_ARCH_OPEN` | 后端 | `arch-open` | Java 后端；`baselines/backend-arch-open.md` |
-| `arch-event` | `$RZ_REPO_ARCH_EVENT` | 后端 | `arch-event` | Java 后端；`baselines/backend-arch-event.md` |
+| `sfa-base` | `$RZ_REPO_SFA_BASE` | 后端 | `sfa-base` | Java 后端；`config/baselines/backend-sfa-base.md` |
+| `arch-open` | `$RZ_REPO_ARCH_OPEN` | 后端 | `arch-open` | Java 后端；`config/baselines/backend-arch-open.md` |
+| `arch-event` | `$RZ_REPO_ARCH_EVENT` | 后端 | `arch-event` | Java 后端；`config/baselines/backend-arch-event.md` |
 | `sfa-common-sdk` | `$RZ_REPO_SFA_COMMON_SDK` | 后端 | `sfa-common-sdk` | 待 baseline |
 | `mapSystem` | `$RZ_REPO_MAP_SYSTEM` | Web | `mapSystem` | Vue2 前端 |
 | `sign-up` | `$RZ_REPO_SIGN_UP` | App | `sign-up` | Vue2 H5（标本归前端；本仓按 AGENTS 列入 App） |
@@ -111,9 +111,9 @@ type: backend
 status: 待 baseline
 ```
 
-改该仓之前必须先读仓内 README/pom，补 `baselines/` 后再写 allowed_paths。无 baseline 时技术栈、模块、命令都不是 `[FACT]`。
+改该仓之前必须先读仓内 README/pom，补 `config/baselines/` 后再写 allowed_paths。无 baseline 时技术栈、模块、命令都不是 `[FACT]`。
 
-`sfa-base`、`arch-open`、`arch-event` 见 `baselines/backend-sfa-base.md`、`baselines/backend-arch-open.md`、`baselines/backend-arch-event.md`。
+`sfa-base`、`arch-open`、`arch-event` 见 `config/baselines/backend-sfa-base.md`、`config/baselines/backend-arch-open.md`、`config/baselines/backend-arch-event.md`。
 
 ---
 
@@ -200,4 +200,4 @@ language: Java
 - 每个目标仓第一次改业务代码：从 `main`/`master` 拉 `harness/<change-id>`，不在主干上改。
 - 跨仓需求在 spec 里列出本次涉及的 `repo_id` 与 allowed_paths；未列入本表的仓默认禁止改。
 
-后续补充（每个仓）：`baselines/` 下对应文件、受保护路径、最窄验证命令、业务仓是否需要轻量 `AGENTS.md` 指回本控制面。已从标本拷入的 baseline 文件名仍用标本 `Repo ID`（如 `baselines/frontend-map-system.md` 对应登记表 `mapSystem`）。
+后续补充（每个仓）：`config/baselines/` 下对应文件、受保护路径、最窄验证命令、业务仓是否需要轻量 `AGENTS.md` 指回本控制面。已从标本拷入的 baseline 文件名仍用标本 `Repo ID`（如 `config/baselines/frontend-map-system.md` 对应登记表 `mapSystem`）。

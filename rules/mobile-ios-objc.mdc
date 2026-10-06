@@ -20,7 +20,7 @@ alwaysApply: false
 
 ## 变更前必须确认
 
-- 先读 `changes/<change-id>/spec.md`、`changes/<change-id>/contract.md`（有则读）和 `baselines/mobile-sfa-ios.md`。`plan.md` 有则读。
+- 先读 `changes/<change-id>/spec.md`、`changes/<change-id>/contract.md`（有则读）和 `config/baselines/mobile-sfa-ios.md`。`plan.md` 有则读。
 - iOS 字段、状态、上限、错误态必须以后端 contract 和 PRD 为准，不在端上自行推导业务规则。
 - `[ASSUMP]` 和阻塞性 `[QUESTION]` 不得进入实现。
 - 修改路径必须落在 spec 的 `allowed_paths` 内。

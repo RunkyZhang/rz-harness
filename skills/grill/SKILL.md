@@ -21,7 +21,7 @@ description: Use when an RZ harness requirement, CRUD, API contract, business te
 
 1. **读入口**
    - `AGENTS.md`（含「领域名词」）
-   - `git-registry.md`
+   - `config/git-registry.md`
    - 当前 `changes/<change-id>/spec.md`
 2. **先查证**
    - 能通过代码、baseline、contract、PRD 查到的，不问用户。

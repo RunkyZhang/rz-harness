@@ -27,7 +27,7 @@
 - [ ] 测试账号、登录态或免登录条件已明确；如需要密码，来源只能是 `config/runtime_local.sh`、Keychain 或已有浏览器登录态，不能写入本计划。
 - [ ] 测试数据已明确；如果没有数据，本次只覆盖页面渲染、空态或错误态。
 - [ ] 如需要本地后端验证，已声明 active backend 项目，生成的 `local-routing.yml` 已通过 `gates/local-routing-gate.sh`，且只包含本次实际启动的后端项目。
-- [ ] 如目标是 `mapSystem`，已读取 `baselines/frontend-map-system.md`，并优先使用 `scripts/frontend-dev-server.sh frontend-map-system 9527` 或记录等价的已验证 Node `14.21.3` 启动命令。
+- [ ] 如目标是 `mapSystem`，已读取 `config/baselines/frontend-map-system.md`，并优先使用 `scripts/frontend-dev-server.sh frontend-map-system 9527` 或记录等价的已验证 Node `14.21.3` 启动命令。
 - [ ] 如目标是 `mapSystem` 新页面，已挂入临时路由菜单；直接访问目标 route 或点击临时路由入口不会跳到 `HomeIndex`。
 
 ## 环境与登录态

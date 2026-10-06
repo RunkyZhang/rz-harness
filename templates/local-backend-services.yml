@@ -13,7 +13,7 @@ services:
     backend_prefix: /
     local_target: $RZ_LOCAL_BACKEND_SALES_MANAGEMENT_URL
     frontend_repos: mapSystem
-    source_contract: git-registry.md
+    source_contract: config/git-registry.md
     reason: sfa-sales-management owns the sfa salesmanagement service prefix
   - backend_repo: sfa-backend
     frontend_prefix: /sfa/backend
@@ -21,6 +21,6 @@ services:
     backend_prefix: /
     local_target: $RZ_LOCAL_BACKEND_SFA_BACKEND_URL
     frontend_repos: mapSystem
-    source_contract: git-registry.md
+    source_contract: config/git-registry.md
     reason: sfa-backend owns the sfa backend service prefix
-# 注：标本的 backend-ceo-member 不在 RZ 工作范围（见 git-registry.md），已移除；需要时自行补。
+# 注：标本的 backend-ceo-member 不在 RZ 工作范围（见 config/git-registry.md），已移除；需要时自行补。

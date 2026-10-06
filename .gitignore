@@ -40,8 +40,10 @@
 .opencode/plugins/
 # claude ignore
 **/.claude/
-# 本机运行配置（含路径、账号来源、数据库与通信信息，勿提交）
-config/runtime_local.sh
+# 本机运行配置（含路径、账号来源、数据库与通信信息）。
+# 当前 demo 阶段：config/ 全部纳入版本管理，暂不忽略。
+# 正式使用时，建议把含密钥 / 本机路径的文件移出版本管理。
+# config/runtime_local.sh
 
 # 变更包整包是本机工作目录，不提交。
 # 只忽略 changes/<change-id>/ 子目录；changes/ 根下的
