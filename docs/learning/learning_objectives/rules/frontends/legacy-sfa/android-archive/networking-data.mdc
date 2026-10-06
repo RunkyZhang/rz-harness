@@ -1,0 +1,117 @@
+---
+description: 网络请求和数据处理规范
+---
+
+# 网络与数据处理规范
+
+## 网络层架构
+
+### API 调用模式
+使用项目现有的网络封装：
+
+```kotlin
+// 使用 NetUtil.response 进行网络调用
+suspend fun fetchData(): Result<DataBean> {
+    return try {
+        val response = apiService.getData()
+        NetUtil.response(response) {
+            // 成功回调，this 是 ObjectBaseBeanWithNull<DataBean>
+            Result.success(this.data)
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+}
+```
+
+### 错误处理标准
+- **网络错误**: 使用 `NetError` 统一处理
+- **业务错误**: 检查 `BaseBean.code` 和 `message`
+- **用户提示**: 统一使用 `showToast()` 扩展函数
+
+### 协程最佳实践
+```kotlin
+class DataManager {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    fun loadData(onSuccess: (DataBean) -> Unit, onError: (String) -> Unit) {
+        scope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    apiService.getData()
+                }
+                NetUtil.response(result,
+                    error = {
+                        withContext(Dispatchers.Main) {
+                            onError(this.message ?: "请求失败")
+                        }
+                    }
+                ) {
+                    withContext(Dispatchers.Main) {
+                        onSuccess(this.data)
+                    }
+                }
+            } catch (e: CancellationException) {
+                // 不处理取消异常
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    onError("网络请求异常")
+                }
+            }
+        }
+    }
+}
+```
+
+## 数据模型规范
+
+### Bean 类设计
+```kotlin
+// 网络响应基类
+data class ApiResponse<T>(
+    val data: T?,
+    override val code: Int? = null,
+    override val message: String? = null
+) : BaseBean()
+
+// 业务数据类
+data class UserBean(
+    val id: String = "",
+    val name: String = "",
+    val phone: String = "",
+    val createTime: String = ""
+)
+```
+
+### 数据转换
+- **网络 -> UI**: 使用扩展函数或 Mapper
+- **缓存策略**: 结合 Room 和 MMKV
+- **序列化**: 使用 Gson 注解
+
+## 数据持久化
+
+### 本地存储选择
+- **用户配置**: MMKV ([LocalUserInfoManager.java](mdc:app/src/main/java/com/want/hotkidceo/sfa/framework/util/LocalUserInfoManager.java))
+- **缓存数据**: Room Database
+- **临时数据**: ACacheData
+
+### 示例用法
+```kotlin
+// MMKV 存储
+LocalUserInfoManager.setUserToken("token_value")
+val token = LocalUserInfoManager.getUserToken()
+
+// Room 数据库
+@Entity(tableName = "users")
+data class UserEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val updateTime: Long = System.currentTimeMillis()
+)
+```
+
+## 性能优化
+- **请求合并**: 避免重复网络请求
+- **缓存策略**: 实现合理的缓存机制
+- **超时处理**: 设置合适的超时时间
+- **重试机制**: 网络失败时的智能重试

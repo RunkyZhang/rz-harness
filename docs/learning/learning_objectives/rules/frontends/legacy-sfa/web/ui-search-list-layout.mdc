@@ -1,0 +1,473 @@
+---
+alwaysApply: false
+---
+# Vue列表页面布局规范
+
+基于 [ruleList.vue](mdc:src/views/passLevel/ruleList.vue) 的标准布局模式，用于创建统一的列表页面结构。
+
+## 页面整体结构
+
+```vue
+<template>
+  <!-- 说明文案 -->
+  <div class="all-use-tips">
+    <span class="all-use-tips-title">注：</span>
+    <span class="all-use-tips-content">
+      <!-- 此文案只是举例,具体文案根据需求变更 -->
+      <div style="line-height: 22px;">
+        1、数据刷新频率：每天上午9点、下午4点各刷新一次，滚动刷新2个月<br>
+        2、数据刷新起始日：2024-01 -01<br>
+        3、订单范围：已完成、待发货、待收货、已收货
+      </div>
+    </span>
+  </div>
+  <div class="new-wrapper" v-loading="loading">
+    <!-- 1. 搜索区域 -->
+    <div class="new-header-wrapper" style="margin-bottom: 16px;">
+      <div class="new-header-max-width">
+        <div class="new-search-wrapper">
+          <!-- 搜索表单项 -->
+          <div class="new-search-box">
+            <div class="new-search-label">搜索字段名</div>
+            <el-input
+              v-model="searchForm.field"
+              :size="$globalSearchConfig.size"
+              placeholder="请输入搜索内容" />
+          </div>
+          <!-- 搜索按钮 -->
+          <div class="new-search-but">
+            <el-button type="primary" :size="$globalSearchConfig.size" @click="searchClick">查询</el-button>
+            <el-button :size="$globalSearchConfig.size" @click="handleReset">重置</el-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 操作按钮区域 -->
+    <div class="btn-line" v-if="operate">
+      <el-button type="primary" :size="$globalButtonConfig.size" @click="addClick">新增</el-button>
+      <el-button :size="$globalButtonConfig.size" @click="exportClick">导出</el-button>
+    </div>
+
+    <!-- 3. 表格区域 -->
+    <div class="new-wrapper-table">
+      <el-table
+        ref="multipleTable"
+        v-loading="loading"
+        class="first"
+        border
+        fit
+        :data="tableData"
+        :header-cell-style="{background:'#2978FF',color:'#fff'}"
+        :header-cell-class-name="'festival-theme'"
+        :cell-class-name="'table-cellcalss'"
+        @selection-change="handleSelectionChange"
+        @sort-change="sortChange">
+        <!-- 空状态插槽 -->
+        <template slot="empty">
+          <div class="all-empty-data">
+            <img src="@/assets/data/policy-empty.png" class="empty-icon" alt="暂无数据" />
+            <div class="all-empty-text">暂无数据</div>
+          </div>
+        </template>
+        <el-table-column type="selection" align="left" width="55" fixed="left" />
+        <el-table-column label="字段名" prop="fieldName" align="left" min-width="120" sortable="custom">
+          <template slot-scope="scope">
+            {{ scope.row.fieldName || '-' }}
+          </template>
+        </el-table-column>
+        <!-- 更多列定义 -->
+
+        <el-table-column label="操作" align="left" min-width="130" fixed="right">
+          <template slot-scope="scope">
+            <span class="hand all-table-blue-but" @click="editClick(scope.row)">编辑</span>
+            <span class="hand all-table-red-but" @click="deleteClick(scope.row)">删除</span>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 4. 分页区域 -->
+      <el-pagination
+        class="right-page"
+        background
+        :current-page="page"
+        :page-sizes="[10, 20, 40, 60, 80, 100]"
+        :page-size="rows"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange" />
+    </div>
+  </div>
+</template>
+```
+
+## 搜索区域规范
+
+### 搜索表单项结构
+```vue
+<div class="new-search-box">
+  <div class="new-search-label">字段标签</div>
+  <!-- 输入框 -->
+  <el-input
+    v-model="searchForm.field"
+    :size="$globalSearchConfig.size"
+    placeholder="请输入内容" />
+</div>
+
+<!-- 稽核日期 -->
+<div class="new-search-box">
+  <div class="new-search-label">稽核日期</div>
+  <el-radio-group v-model="auditTimeTab" @input="inputTime" size="small">
+    <el-radio-button :label="1">昨日</el-radio-button>
+    <el-radio-button :label="2">今日</el-radio-button>
+    <el-radio-button :label="3">
+      自定义
+      <el-date-picker
+        @focus="auditFocusTimer"
+        @blur="auditTimeTab = auditCustomizeTime.length ? '3' : ''"
+        @change="auditChangeTimer"
+        v-model="auditCustomizeTime"
+        value-format="yyyy-MM-dd"
+        type="daterange"
+        range-separator="~"
+      />
+    </el-radio-button>
+  </el-radio-group>
+  <span style="display: inline-block;margin-left: 10px;">
+    <span>{{ auditStartTime }}</span>
+    <span v-if="auditTimeTab == '3' && auditEndTime" >~</span>
+    <span v-if="auditTimeTab == '3'" >{{ auditEndTime }}</span>
+  </span>
+</div>
+
+<div class="new-search-box">
+  <div class="new-search-label">下拉选择</div>
+  <!-- 下拉框 -->
+  <el-select
+    v-model="searchForm.selectField"
+    :size="$globalSearchConfig.size"
+    clearable>
+    <el-option
+      v-for="item in options"
+      :key="item.value"
+      :label="item.label"
+      :value="item.value" />
+  </el-select>
+</div>
+
+<!-- 组织选择器 -->
+<div class="new-search-box">
+  <div class="new-search-label">组织</div>
+  <el-cascader
+    v-model="orgValue"
+    :options="orgOptions"
+    :props="cascaderConfig"
+    :size="$globalSearchConfig.size"
+    @change="handleChange"
+  />
+</div>
+
+<div class="new-search-box">
+  <div class="new-search-label">日期范围</div>
+  <!-- 日期选择器 -->
+  <el-date-picker
+    v-model="dateRange"
+    :size="$globalSearchConfig.size"
+    value-format="yyyy-MM-dd"
+    :clearable="false"
+    type="daterange"
+    range-separator="~"
+    start-placeholder="开始时间"
+    end-placeholder="结束时间" />
+</div>
+```
+
+### 搜索按钮区域
+```vue
+<div class="new-search-but">
+  <el-button type="primary" :size="$globalSearchConfig.size" @click="searchClick">查询</el-button>
+  <el-button :size="$globalSearchConfig.size" @click="handleReset">重置</el-button>
+</div>
+```
+
+## 按钮区域规范
+
+### 主要操作按钮（左侧）
+```vue
+<div class="btn-line" v-if="operate">
+  <!-- 主要操作按钮，使用 type="primary" -->
+  <el-button type="primary" :size="$globalButtonConfig.size" @click="addClick">新增</el-button>
+
+  <!-- 次要操作按钮，不使用 type 属性 -->
+  <el-button :size="$globalButtonConfig.size" @click="exportClick">导出</el-button>
+  <el-button :size="$globalButtonConfig.size" @click="importClick">导入</el-button>
+
+  <!-- 批量操作按钮，可使用条件禁用 -->
+  <el-button
+    :size="$globalButtonConfig.size"
+    :disabled="multipleSelection.length == 0"
+    @click="batchDeleteClick">批量删除</el-button>
+</div>
+```
+
+### 按钮布局原则
+- **每个页面最多一个主按钮**（type="primary"），用于最重要的操作
+- 次要操作使用默认样式按钮
+- 危险操作可使用 type="danger"
+- 按钮间距通过 CSS 控制（margin-right: 8px）
+
+### 列表导出（下载中心异步导出）
+
+部分列表的「导出」并非直接返回文件流，而是提交异步任务，用户到**下载中心**取 Excel。与「`responseType: 'blob'` + `FileSaver` 浏览器直下」是两套模式，**不要混用**：下载中心模式**禁止**在导出接口上配置 `blob`。
+
+#### 实现约定
+
+1. **传参**：与当前列表查询一致（筛选条件；是否带 `page`/`rows` 以后端/产品约定为准，常见为导出全量或当前筛选结果）。
+2. **接口封装**（`@/api`）：`POST`，**仅** `url`、`method: 'post'`、`data`，与普通 JSON 接口相同，**不要**写 `responseType: 'blob'`。
+
+```javascript
+// 示例：与列表查询参数结构对齐
+export function exportXxx(data) {
+  return request({
+    url: `/path/to/xxx/export`,
+    method: 'post',
+    data
+  })
+}
+```
+
+3. **页面 data**：增加 `exportLoading: false`（或与现有命名一致，如 `compensateExportLoading`）。
+4. **按钮**：`:loading="exportLoading"`；导出方法开头若已在 loading 则 `return`，避免重复提交。
+5. **成功 / 失败文案**（与稽核扣罚列表保持一致即可）：
+   - `res.code === 0`：`this.$message.success('请到【下载中心】下载excel文件')`
+   - 否则：`this.$message.error('请联系管理员处理')`；若需透出后端原因，可用 `this.$message.error(res.msg || '请联系管理员处理')`（以接口字段为准）。
+6. **回调模板**：
+
+```javascript
+exportClick() {
+  if (this.exportLoading) return
+  this.exportLoading = true
+  exportXxx(this.buildListParams()).then(res => {
+    this.exportLoading = false
+    if (res.code === 0) {
+      this.$message.success('请到【下载中心】下载excel文件')
+    } else {
+      this.$message.error('请联系管理员处理')
+    }
+  }).catch(() => {
+    this.exportLoading = false
+    this.$message.error('网络错误，请稍后再试')
+  })
+}
+```
+
+#### 与全局 `request` 的关系
+
+[`request.js`](mdc:src/utils/request.js) 中：响应 **HTTP 202** 或错误 **HTTP 599** 时，会统一 `Message` 提示「请到【下载中心】下载excel文件」并 `reject`。若某导出接口走该机制，`.then` 里按 `res.code` 的分支可能进不去，页面会落入 `.catch`。实现前与后端确认返回形态（JSON `code` + 200，还是 202/599），避免重复弹 Toast 或与「网络错误」文案冲突。
+
+#### 参考实现
+
+- 扣罚记录：[PenaltyRecordPanel.vue](mdc:src/views/penaltyManagement/components/PenaltyRecordPanel.vue) 的 `recordExportClick` + [penalty.js](mdc:src/api/penalty.js) 的 `exportPenaltyRecord`
+- 申诉补发：[PenaltyAppealReissuePanel.vue](mdc:src/views/penaltyManagement/components/PenaltyAppealReissuePanel.vue) 的 `compensateExportClick` + [penalty.js](mdc:src/api/penalty.js) 的 `exportCompensateRecord`
+
+## 表格区域规范
+
+### 表格基础配置
+```vue
+<el-table
+  ref="multipleTable"
+  v-loading="loading"
+  class="first"
+  border
+  fit
+  :data="tableData"
+  :header-cell-style="{background:'#2978FF',color:'#fff'}"
+  :header-cell-class-name="'festival-theme'"
+  :cell-class-name="'table-cellcalss'"
+  @selection-change="handleSelectionChange"
+  @sort-change="sortChange">
+```
+
+### 列定义规范
+```vue
+<!-- 选择列（固定左侧） -->
+<el-table-column type="selection" align="left" width="55" fixed="left" />
+
+<!-- 普通数据列 -->
+<el-table-column label="字段名" prop="fieldName" align="left" min-width="120" sortable="custom">
+  <template slot-scope="scope">
+    {{ scope.row.fieldName || '-' }}
+  </template>
+</el-table-column>
+
+<!-- 状态列（带颜色显示） -->
+<el-table-column label="状态" min-width="90" align="left">
+  <template slot-scope="scope">
+    <span :style="{color: colorText[scope.row.status]}">
+      {{ scope.row.statusDesc || '-' }}
+    </span>
+  </template>
+</el-table-column>
+
+<!-- 操作列（固定右侧） -->
+<el-table-column label="操作" align="left" min-width="130" fixed="right">
+  <template slot-scope="scope">
+    <span class="hand all-table-blue-but" @click="editClick(scope.row)">编辑</span>
+    <span class="hand all-table-red-but" @click="deleteClick(scope.row)">删除</span>
+  </template>
+</el-table-column>
+```
+
+## 分页区域规范
+
+### 标准分页配置
+```vue
+<el-pagination
+  class="right-page"
+  background
+  :current-page="page"
+  :page-sizes="[10, 20, 40, 60, 80, 100]"
+  :page-size="rows"
+  layout="total, sizes, prev, pager, next, jumper"
+  :total="total"
+  @size-change="handleSizeChange"
+  @current-change="handleCurrentChange" />
+```
+
+## 数据和方法规范
+
+### 数据结构
+```javascript
+data() {
+  return {
+    loading: false,
+    operate: false, // 操作权限
+    searchForm: {
+      // 搜索表单字段
+    },
+    tableData: [],
+    page: 1,
+    rows: 10,
+    total: 0,
+    multipleSelection: [], // 选中的行
+    sortName: null,
+    sortType: '',
+    dateRange: [], // 日期范围
+    exportLoading: false // 下载中心异步导出时使用，见「列表导出」
+  }
+}
+```
+
+### 必需方法
+```javascript
+methods: {
+  // 获取数据
+  fetchData() {
+    // 数据获取逻辑
+  },
+
+  // 搜索
+  searchClick() {
+    this.page = 1
+    this.fetchData()
+  },
+
+  // 重置
+  handleReset() {
+    // 重置搜索条件和分页
+    this.searchForm = {}
+    this.page = 1
+    this.rows = 10
+    this.dateRange = []
+    this.sortName = null
+    this.sortType = ''
+    this.multipleSelection = []
+    this.$refs.multipleTable.clearSort()
+    this.fetchData()
+  },
+
+  // 分页大小改变
+  handleSizeChange(val) {
+    this.rows = val
+    this.page = 1
+    this.fetchData()
+  },
+
+  // 当前页改变
+  handleCurrentChange(val) {
+    this.page = val
+    this.fetchData()
+  },
+
+  // 选择行改变
+  handleSelectionChange(val) {
+    this.multipleSelection = val
+  },
+
+  // 排序改变
+  sortChange(column) {
+    if (!column.order) {
+      this.sortName = null
+      this.sortType = null
+      this.fetchData()
+      return
+    }
+    this.sortName = column.prop
+    this.sortType = column.order === 'ascending' ? 'asc' : 'desc'
+    this.fetchData()
+  }
+}
+```
+
+## 样式规范
+
+```scss
+.new-wrapper {
+  margin: 16px;
+}
+
+.new-wrapper-table {
+  margin-top: 16px;
+}
+
+.right-page {
+  margin-top: 16px;
+  text-align: right;
+}
+
+.btn-line {
+  margin-bottom: 16px;
+}
+
+.hand {
+  margin-right: 6px;
+  color: #409EFF;
+  cursor: pointer;
+}
+
+.pointer {
+  color: #409eff;
+  cursor: pointer;
+}
+
+.first {
+  /deep/ .el-icon-arrow-down {
+    color: #fff;
+  }
+}
+```
+
+## 使用原则
+
+1. **布局顺序固定**：搜索区域 → 按钮区域 → 表格区域 → 分页区域
+2. **间距统一**：使用 16px 作为标准间距
+3. **按钮规范**：遵循按钮大小和颜色规范
+4. **响应式加载**：使用 v-loading 指令
+5. **数据校验**：所有字段显示时使用 `|| '-'` 处理空值
+6. **权限控制**：按钮区域使用 v-if="operate" 控制显示
+7. **排序支持**：重要字段添加 sortable="custom" 支持排序
+8. **固定列**：选择列固定左侧，操作列固定右侧
+9. **列表导出**：下载中心异步导出按「列表导出（下载中心异步导出）」一节：`api` 不设 `blob`，页面用 `exportLoading` + 统一成功/失败文案；直链文件流导出仍用各业务既有 `blob` 方案，勿套用下载中心文案
+
+遵循这些规范可以确保代码的一致性和可维护性，并提供统一的用户体验。

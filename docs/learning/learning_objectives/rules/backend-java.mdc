@@ -1,0 +1,168 @@
+---
+description: SFA Java 后端规则，适用于 Spring Boot / Maven 后端仓
+globs:
+  - "**/*.java"
+  - "**/pom.xml"
+  - "**/*.xml"
+alwaysApply: false
+---
+
+# Java 后端规则
+
+## 适用范围
+
+适用于：
+
+- `$SFA_REPO_BACKEND_SALES_MANAGEMENT` / `sfa-sales-management`
+- `$SFA_REPO_BACKEND_SFA_BACKEND` / `sfa-backend`
+- `$SFA_REPO_BACKEND_SFA_ROOT` / `sfa-root`
+- `$SFA_REPO_BACKEND_CEO_MEMBER` / `backend-ceo-member`
+
+给人工 review 的说明默认中文；类名、方法名、包名、SQL、API path、字段名、错误码保持原样。
+
+## 分层边界
+
+- Controller 只做参数接收、权限/基础校验、调用 application/service、返回 response。
+- Controller 不得直接调用 Mapper / DAO。
+- Job / Consumer / Handler 不写核心业务逻辑，只作为入口调用 application/service。
+- DTO / Request / Response 不泄漏 persistence entity。
+- 新接口使用明确 request / response DTO，不直接暴露 Map 或实体类。
+
+## 注释与日志
+
+- 必须读取 `docs/standards/comment-logging.md`，并按本次 diff 自查注释和日志。
+- 新增 public Controller / API / Facade 方法、承载业务规则的 public/protected Service / Application / Job / Consumer / Handler 方法，必须有 Javadoc 或等价文档注释；简单 getter / setter、`@Override` 和纯样板 wiring 可豁免。
+- 方法内部的关键状态流转、权限 / 数据范围、幂等、事务 / 锁、after-commit、外部 RPC 失败、回滚 / 补偿、兼容历史数据和性能取舍必须写注释说明原因。
+- 注释解释业务原因和边界，不重复代码语句；如果只能写“设置字段”“调用接口”，应优先改名或拆小方法。
+- 业务日志必须能定位关键状态和失败原因；禁止敏感信息，禁止重复打印同一异常，禁止用日志掩盖吞异常。
+
+## 变更前必须确认
+
+- 先读 `changes/<change-id>/spec.md` 和 `plan.md`。
+- 先读 `docs/standards/java/README.md` 和 `docs/standards/java/alibaba-java-review-checklist.md`。
+- `[ASSUMP]` 和阻塞性 `[QUESTION]` 不得进入实现。
+- 修改路径必须落在 spec 的 `allowed_paths` 内。
+- 修改前检查 Implementation Decision Matrix；凡是 `Can enter code?` 不是 Yes 的决定，不得写进 Java/XML/SQL/配置。
+- 涉及 API 字段、状态、错误码时，先更新 `docs/contracts/<change-id>-api.md`。
+- 涉及 DB schema / prod config / Nacos / deployment 时，必须先得到用户明确确认。
+- 涉及 DB schema 或新增持久化表时，先更新 data model 文档，必须包含可复制执行 SQL、ER 图、字段来源/用途和范式检查。
+- 连接真实 SIT/UAT/生产数据库时默认只读；任何 `INSERT`、`UPDATE`、`DELETE`、DDL、job 触发或会改变真实数据的接口调用，必须先列出目标环境、完整 SQL/API、预计影响行数、回滚/清理方案，并获得用户对该操作的二次确认。
+- 高危 SQL 全局禁止执行：`DROP DATABASE`、`DROP TABLE`、`TRUNCATE`、无精确范围的 `DELETE`、无精确范围的 `UPDATE`、没有明确 `WHERE`/主键/唯一业务键范围的真实数据写入。用户要求执行时也必须拒绝，并改为给出人工 DBA / Navicat 审核建议。
+- 不得把数据库密码、token、cookie 写入 git 文件、harness 证据、长期记忆或聊天回显；需要连接时从 ignored local config、Keychain 或用户当场授权获取。
+- 新需求只使用 harness 的 `changes/<change-id>/` 控制面；不得新增顶层 `openspec/`，不得在业务仓新增 repo-local OpenSpec。业务仓已有 `openspec/` 仅作为 legacy context 读取；若后端实现发现任务或契约缺口，输出 plan / contract / verification-map delta 交由 Orchestrator 更新控制面。
+
+## 阿里 Java 规范门禁
+
+- 《阿里巴巴 Java 开发规范（嵩山版）》原文在 `docs/standards/java/alibaba-java-songshan-fulltext.txt`。
+- Backend Agent 必须按 `docs/standards/java/alibaba-java-review-checklist.md` 自查。
+- 使用渐进式披露：先读本规则和 checklist；只有规则不确定、命中风险或需要引用依据时才查原文。
+- 不得把未确认理解写入实现。
+- 本次改动 Java / Mapper XML 必须运行：
+
+```bash
+scripts/java-mechanical-quality.sh <repo-root> <changed-java-or-xml-files...>
+scripts/code-comment-log-quality.sh <repo-root> <changed-java-or-vue-or-js-files...>
+scripts/architecture-drift-gate.sh <repo-root> <changed-java-or-xml-files...>
+```
+
+- 机械门禁失败不得进入 Reviewer；warning 必须写入 `evidence.md` 并交 Reviewer 判断。
+- 架构漂移门禁命中时，优先修回既有分层；确需例外时，必须在技术方案和 Reviewer 结论中说明原因。
+- 多 Agent 场景下，Backend Agent 独立运行一次，Orchestrator 集成后再运行一次。
+
+## Maven 验证
+
+优先跑最窄命令：
+
+```bash
+mvn -pl <module> -am -DskipTests compile
+mvn -pl <module> -Dtest=<TestClass> test
+```
+
+根编译只作为兜底：
+
+```bash
+mvn -DskipTests compile
+```
+
+当前 baseline 已知：
+
+- `sfa-sales-management` 根编译可通过，约 58 秒。
+- `sfa-backend` 根编译可通过，约 1 分 52 秒。
+- `backend-ceo-member` 已纳入 registry；根编译耗时和既有 warning 仍需按需求实测后记录 baseline。
+- 既有 Maven / Lombok warning 不能直接当作新失败，需与本次 diff 关联判断。
+
+## Targeted Test 门禁
+
+- Java 后端行为变更必须有 targeted test 矩阵；Tier M/L change 使用 `changes/<change-id>/backend-test-plan.md`。
+- `backend-test-plan.md` 必须在实现前创建或明确 `NOT_APPLICABLE`；不得先写后端行为代码，再事后用 compile 结果补充成“已验证”。
+- 测试矩阵按适用性覆盖：
+  - 参数校验：必填、数量、时间窗口、非法状态。
+  - 权限 / 数据范围：owner、角色、组织范围、无权限路径。
+  - 状态流转：旧状态到新状态、禁止流转、重复保存。
+  - 幂等：重复请求、重复 job、已完成任务再次处理。
+  - 异步 / job：after-commit、定时任务、MQ 消费入口。
+  - adapter / RPC 失败：外部服务异常、返回失败、空返回。
+  - 回滚 / 错误落库：事务回滚、失败状态、失败原因、待办保留。
+  - 自定义 mapper / SQL：查询范围、update count、锁查询。
+- compile 只能证明类型正确，不能替代行为测试。仅 DTO、枚举、无分支 wiring 等低风险变更可记录 `NOT_APPLICABLE` 原因后不写 targeted test。
+- planned targeted test 缺失或失败时，Gate C 必须标记 `BLOCKED`；不得用“后端 compile 通过”包装成后端验证完成。
+- 如果历史环境导致 test 无法运行，必须记录阻塞命令、失败点、已尝试动作和人工风险接受状态。
+- 合并前必须对本次后端业务代码改动运行 `scripts/temp-hardcode-scan.sh <changed-files...>`，命中 `CODX` / `smoke` / `mock` / `localhost` / `token` / `password` / `TODO` / `FIXME` 时先移除、改为配置化或在 `evidence.md` 说明为何不是临时代码。
+
+## 后端样板优先
+
+`sfa-sales-management` 首个 CRUD 试点优先参考：
+
+- `CustomerVisitRuleController`
+- `AuditTaskController`
+- `AuditBizManageController`
+- `CompleteRuleController`
+- `sfa-sales-management-interfaces/src/test/java`
+
+`sfa-backend` 可参考：
+
+- `BusinessBdControlController`
+- `TradingCustomerController`
+- `DisplayQuotaRuleController`
+- `NotifyController`
+- `wantwant-sfa-backend-webapi/src/test/java`
+
+`backend-ceo-member` 可参考：
+
+- `CustomerVisitRuleController`
+- `MemberManagementController`
+- `RechargeManagementController`
+- `backend-ceo-member-test/src/test/java`
+
+## 禁止默认修改
+
+- `**/application-prod.yml`
+- `**/bootstrap-prod.yml`
+- `**/.env*`
+- `**/db/migration/**`
+- `**/src/main/resources/**` 中的环境配置
+- release / deployment 脚本
+
+如确需修改，必须在 spec 中列为 `[FACT]` 并由用户确认。
+
+## DB 设计规则
+
+- 默认遵守三大范式：字段只描述当前实体，非主键字段依赖主键、完整主键且不传递依赖其他非主键字段。
+- 不在业务任务表中反向保存待办表已经能通过 `business_type + business_id` 表达的关联，除非有明确查询、审计或兼容理由。
+- 审核人、审核时间、申请单号等已存在于来源申请表的字段，默认通过外键查询，不重复落任务表。
+- 计划执行时间和实际执行时间可以同时存在，但命名必须区分：计划时间用 `auto_execute_time`，实际执行完成时间用 `executed_time` 或同等清晰名称。
+- SQL `COMMENT` 必须写完整语义和枚举值，例如：`任务状态：1-待自动执行 2-已更换人选 3-已完成 4-自动处理失败`。
+- 不允许字段注释只写“见枚举”“见状态枚举”“见上方说明”。
+- 每个新增字段必须能说明来源：PRD、用户确认、现有表/代码、审计要求、不可重算快照、性能理由或兼容理由。
+
+## Pre-PR 自查
+
+- 运行 `scripts/confidence-gate.sh`。
+- 运行 `scripts/assumption-leak-gate.sh`。
+- 运行 `scripts/allowed-paths.sh`。
+- 运行 `scripts/java-mechanical-quality.sh` 检查本次后端 Java / XML 改动。
+- 运行 `scripts/code-comment-log-quality.sh` 检查本次 Java / Vue / JS 改动的注释与日志。
+- 运行 `scripts/architecture-drift-gate.sh` 检查本次业务代码是否绕过分层边界。
+- 记录 Maven 命令和结果到 `evidence.md`。
+- 记录 Java 规范门禁、注释 / 日志门禁和 warning 处理结论到 `evidence.md`。
+- Reviewer Agent 审查后，再由用户人工 review。

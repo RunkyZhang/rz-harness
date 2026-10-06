@@ -1,0 +1,488 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# 信息展示UI通用模式规范
+
+## 概述
+
+本规范基于项目中抽屉组件和详情页面的实际实现，定义了信息展示类UI组件的标准布局、样式和交互模式。适用于抽屉、详情页、信息卡片等场景。
+
+## 通用布局规范
+
+### 1. 双栏布局结构
+
+信息展示页面统一采用左右双栏布局，比例根据内容需要调整：
+
+```vue
+<div class="info-container">
+  <div class="container-left">
+    <!-- 主要信息展示区域 -->
+  </div>
+  <div class="container-right">
+    <!-- 辅助信息和操作区域 -->
+  </div>
+</div>
+```
+
+#### 抽屉组件布局（45:55）
+```scss
+.body-content {
+  display: flex;
+
+  .left-section {
+    width: 45%;
+  }
+
+  .right-section {
+    width: 55%;
+  }
+}
+```
+
+#### 详情页面布局（50:50）
+```scss
+.detail-container {
+  display: flex;
+  gap: 16px;
+
+  .container-left {
+    flex: 1;
+  }
+
+  .container-right {
+    flex: 1;
+  }
+}
+```
+
+## 信息项展示规范
+
+### 1. 标准信息项结构
+
+所有信息展示统一使用标签-值模式：
+
+```vue
+<div class="info-item">
+  <div class="item-label">{{ label }}</div>
+  <div class="item-value">{{ value }}</div>
+</div>
+```
+
+### 2. 样式规范
+
+#### 抽屉组件信息项样式
+```scss
+.info-item {
+  display: flex;
+  font-size: 14px;
+  line-height: 22px;
+  align-items: left;
+  margin-bottom: 12px;
+
+  .left-label {
+    width: 102px;
+    color: #6B7280;
+    margin-right: 12px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .right-value {
+    color: #374151;
+    margin-right: 8px;
+    word-break: break-all;
+  }
+}
+```
+
+#### 详情页面信息项样式
+```scss
+.content-item {
+  display: flex;
+  width: 100%;
+  line-height: 20px;
+  margin: 20px 0;
+
+  .item-label {
+    width: 86px;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6B7280;
+  }
+
+  .item-value {
+    color: #374151;
+    margin-left: 12px;
+    width: calc(100% - 108px);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
+```
+
+## 区块标题规范
+
+### 1. 统一区块标题样式
+
+```vue
+<div class="section-title">
+  {{ title }}
+  <span class="link-text" @click="handleAction">{{ linkText }}</span>
+</div>
+```
+
+```scss
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #4B5563;
+  margin: 20px 0 16px;
+  padding-left: 10px;
+  line-height: 22px;
+  border-left: 2px solid #416FFC;
+}
+
+.link-text {
+  font-size: 14px;
+  color: #0071F3;
+  margin-left: 12px;
+  font-weight: 400;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+```
+
+### 2. 页面级标题样式
+
+```scss
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #374151;
+  line-height: 54px;
+  height: 54px;
+  border-bottom: 2px solid #F8FAFE;
+}
+```
+
+## 状态标签规范
+
+### 1. 通用状态标签
+
+```vue
+<span class="status-badge" :class="statusClass">
+  {{ statusText }}
+</span>
+```
+
+```scss
+.status-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+// 状态颜色定义
+.status-normal, .normal {
+  color: #10B981;
+  background: #E8F8F3;
+}
+
+.status-error, .serious {
+  color: #EF4444;
+  background: #FEEDED;
+}
+
+.status-warning, .warning {
+  color: #F59E0B;
+  background: #FEF6D5;
+}
+```
+
+### 2. 相似度/得分显示
+
+```vue
+<span class="similarity" :class="score > 80 ? 'high' : 'low'">
+  {{ score }}%
+</span>
+```
+
+```scss
+.similarity {
+  font-size: 14px;
+  font-weight: bold;
+  margin-left: 16px;
+}
+
+.high {
+  color: #10B981;
+}
+
+.low {
+  color: #EF4444;
+}
+```
+
+## 图片展示规范
+
+### 1. 图片网格布局
+
+```vue
+<div class="photo-container">
+  <div class="photo-item" v-for="(photo, index) in photos" :key="index">
+    <div class="photo-placeholder">
+      <viewer v-if="photo.src">
+        <img class="photo-img" :src="photo.src" alt="">
+      </viewer>
+      <div v-else class="no-image">暂无图片</div>
+      <div class="download-btn" @click="downloadImage(photo.src)">
+        <img class="btn-download" src="@/assets/audit/download.png" alt="">
+        下载图片
+      </div>
+    </div>
+    <div class="photo-label">{{ photo.label }}</div>
+  </div>
+</div>
+```
+
+### 2. 图片样式规范
+
+```scss
+.photo-container {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.photo-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.photo-placeholder {
+  width: 90px;
+  height: 90px;
+  background-color: #F3F4F6;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.photo-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.no-image {
+  font-size: 14px;
+  color: #4B5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.download-btn {
+  font-size: 12px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  color: #FFFFFF;
+  height: 24px;
+  line-height: 24px;
+  font-weight: 400;
+  border-radius: 0px 0px 6px 6px;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-label {
+  font-size: 14px;
+  color: #4B5563;
+  line-height: 22px;
+  margin-top: 4px;
+}
+```
+
+## 表单操作规范
+
+### 1. 表单样式统一
+
+```scss
+::v-deep .el-form-item__label {
+  color: #6B7280;
+  font-weight: 400;
+}
+
+::v-deep .el-select {
+  width: 90%;
+}
+
+::v-deep .el-textarea {
+  width: 90%;
+}
+
+// 单选按钮样式
+/deep/ .el-radio__input.is-checked .el-radio__inner {
+  border-color: #416FFC;
+  background: #416FFC;
+}
+
+/deep/ .el-radio__input.is-checked+.el-radio__label {
+  color: #416FFC;
+}
+```
+
+### 2. 操作按钮区域
+
+```vue
+<div class="operation-buttons">
+  <el-button type="primary" size="medium" @click="handleConfirm">提交</el-button>
+  <el-button size="medium" @click="handleCancel">取消</el-button>
+</div>
+```
+
+## 通用颜色系统
+
+### 1. 文本颜色
+```scss
+$text-primary: #374151;    // 主要文本
+$text-secondary: #6B7280;  // 次要文本
+$text-success: #10B981;    // 成功状态
+$text-error: #EF4444;      // 错误状态
+$text-warning: #F59E0B;    // 警告状态
+$text-link: #0071F3;       // 链接文本
+```
+
+### 2. 背景颜色
+```scss
+$bg-primary: #FFFFFF;      // 主要背景
+$bg-secondary: #F3F4F6;    // 次要背景
+$bg-success: #E8F8F3;      // 成功背景
+$bg-error: #FEEDED;        // 错误背景
+$bg-warning: #FEF6D5;      // 警告背景
+$bg-info: #F0F4FD;         // 信息背景
+```
+
+### 3. 边框颜色
+```scss
+$border-light: #F8FAFE;    // 浅色边框
+$border-gray: #E5E7EB;     // 灰色边框
+$border-primary: #416FFC;   // 主色边框
+```
+
+## 间距系统规范
+
+### 1. 标准间距
+- 组件间距：16px
+- 内容间距：12px、20px
+- 小间距：8px
+- 大间距：24px
+
+### 2. 边距应用
+```scss
+// 页面级容器
+.page-container {
+  padding: 16px;
+}
+
+// 卡片内容
+.card-content {
+  padding: 16px;
+}
+
+// 信息项间距
+.info-item {
+  margin-bottom: 12px;
+}
+
+// 区块间距
+.section {
+  margin-bottom: 20px;
+}
+```
+
+## 交互规范
+
+### 1. 工具提示
+对于需要额外说明的元素，统一使用Element UI的tooltip：
+
+```vue
+<el-tooltip placement="top" effect="dark" :content="tooltipContent">
+  <img class="question-icon" src="@/assets/audit/question.png" alt="">
+</el-tooltip>
+```
+
+### 2. 加载状态
+```vue
+<div v-loading="loading"
+     element-loading-text="数据正在加载中,请稍等!"
+     element-loading-spinner="el-icon-loading"
+     element-loading-background="rgba(0, 0, 0, 0.1)">
+</div>
+```
+
+## 响应式设计
+
+### 1. 容器自适应
+```scss
+.responsive-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+```
+
+### 2. 图片自适应
+```scss
+.responsive-image {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+```
+
+## 最佳实践
+
+### 1. 组件复用原则
+- 相同功能的信息展示使用统一的组件结构
+- 状态显示统一使用标准的状态标签
+- 图片展示统一使用图片网格布局
+
+### 2. 样式命名规范
+- 使用语义化的class命名
+- 遵循BEM命名规范
+- 保持样式的一致性和可维护性
+
+### 3. 数据处理规范
+- 对空值统一显示 `-`
+- 状态值使用枚举定义
+- 图片加载失败提供默认占位
+
+### 4. 交互体验
+- 提供明确的加载状态反馈
+- 重要操作提供确认机制
+- 错误状态提供友好的提示信息
+
+通过遵循此规范，可以确保项目中所有信息展示类组件的视觉一致性和交互体验的统一性。

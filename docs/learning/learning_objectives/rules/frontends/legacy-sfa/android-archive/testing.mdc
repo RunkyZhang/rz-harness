@@ -1,0 +1,175 @@
+---
+globs: *Test.kt,*Test.java
+description: 测试代码编写规范和最佳实践
+---
+
+# 测试规范
+
+## 测试策略
+
+### 单元测试
+针对业务逻辑和工具类：
+
+```kotlin
+class UserManagerTest {
+
+    @Test
+    fun `getUserInfo should return user when valid id provided`() {
+        // Given
+        val userId = "123"
+        val expectedUser = UserBean(id = userId, name = "测试用户")
+
+        // When
+        val result = userManager.getUserInfo(userId)
+
+        // Then
+        assertEquals(expectedUser, result)
+    }
+
+    @Test
+    fun `getUserInfo should return null when invalid id provided`() {
+        // Given
+        val invalidUserId = ""
+
+        // When
+        val result = userManager.getUserInfo(invalidUserId)
+
+        // Then
+        assertNull(result)
+    }
+}
+```
+
+### 协程测试
+```kotlin
+@ExperimentalCoroutinesApi
+class NetworkManagerTest {
+
+    @get:Rule
+    val mainCoroutineRule = MainCoroutineRule()
+
+    @Test
+    fun `fetchData should handle network error gracefully`() = runTest {
+        // Given
+        val mockApiService = mockk<ApiService>()
+        coEvery { mockApiService.getData() } throws IOException("Network error")
+
+        // When
+        val result = networkManager.fetchData()
+
+        // Then
+        assertTrue(result.isFailure)
+    }
+}
+```
+
+### UI 测试（Instrumentation）
+```kotlin
+@RunWith(AndroidJUnit4::class)
+class LoginActivityTest {
+
+    @get:Rule
+    val activityRule = ActivityScenarioRule(LoginActivity::class.java)
+
+    @Test
+    fun loginButtonShouldBeEnabledWhenFormIsValid() {
+        // Given
+        onView(withId(R.id.et_username)).perform(typeText("testuser"))
+        onView(withId(R.id.et_password)).perform(typeText("password123"))
+
+        // When & Then
+        onView(withId(R.id.btn_login)).check(matches(isEnabled()))
+    }
+}
+```
+
+## Mock 策略
+
+### Repository 层 Mock
+```kotlin
+class MockUserRepository : UserRepository {
+    override suspend fun getUser(id: String): Result<UserBean> {
+        return when (id) {
+            "valid_id" -> Result.success(UserBean(id = id, name = "Mock User"))
+            else -> Result.failure(Exception("User not found"))
+        }
+    }
+}
+```
+
+### ViewModel 测试
+```kotlin
+class UserViewModelTest {
+
+    private lateinit var viewModel: UserViewModel
+    private lateinit var mockRepository: UserRepository
+
+    @Before
+    fun setup() {
+        mockRepository = mockk()
+        viewModel = UserViewModel(mockRepository)
+    }
+
+    @Test
+    fun `loadUser should update userInfo when repository returns success`() = runTest {
+        // Given
+        val expectedUser = UserBean(id = "123", name = "Test User")
+        coEvery { mockRepository.getUser(any()) } returns Result.success(expectedUser)
+
+        // When
+        viewModel.loadUser("123")
+
+        // Then
+        assertEquals(expectedUser, viewModel.userInfo.value)
+    }
+}
+```
+
+## 测试数据准备
+
+### 测试 Fixtures
+```kotlin
+object TestFixtures {
+    fun createTestUser(
+        id: String = "test_id",
+        name: String = "测试用户",
+        phone: String = "13800138000"
+    ) = UserBean(
+        id = id,
+        name = name,
+        phone = phone,
+        createTime = "2024-01-01 00:00:00"
+    )
+
+    fun createTestOrderList(count: Int = 3) = (1..count).map { index ->
+        OrderBean(
+            id = "order_$index",
+            title = "测试订单 $index",
+            amount = index * 100.0
+        )
+    }
+}
+```
+
+### 测试配置
+```kotlin
+// 测试专用配置
+class TestAppConfig : AppConfig {
+    override val baseUrl = "https://test.api.example.com/"
+    override val isDebugMode = true
+    override val logLevel = LogLevel.VERBOSE
+}
+```
+
+## 测试最佳实践
+
+1. **测试命名**: 使用描述性名称，说明测试场景
+2. **Given-When-Then**: 清晰的测试结构
+3. **单一职责**: 每个测试只验证一个行为
+4. **独立性**: 测试之间互不依赖
+5. **快速执行**: 避免耗时操作，使用 Mock
+
+## 覆盖率目标
+- **业务逻辑**: 80%+ 单元测试覆盖率
+- **UI 组件**: 关键流程的 UI 测试
+- **网络层**: Mock 测试所有 API 调用

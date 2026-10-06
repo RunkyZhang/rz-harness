@@ -1,0 +1,68 @@
+---
+description: SFA 原生微信小程序 TypeScript 规则，适用于 merchant-wechatapp
+globs:
+  - "**/*.ts"
+  - "**/*.js"
+  - "**/*.json"
+  - "**/*.wxml"
+  - "**/*.wxss"
+  - "**/project.config.json"
+  - "**/project.private.config.json"
+alwaysApply: false
+---
+
+# 微信小程序前端规则
+
+## 适用范围
+
+适用于 `$SFA_REPO_FRONTEND_MERCHANT_WECHATAPP` / `merchant-wechatapp`。
+
+给人工 review 的说明默认中文；页面路径、API path、字段名、命令、环境变量 key、微信 API 名称保持原样。
+
+## Rule Profile
+
+- `frontend-merchant-wechatapp` 默认启用本文件的 `wechat-miniprogram-ts` profile。
+- 该仓是原生微信小程序 + TypeScript + Vant Weapp，不得套用 `rules/frontend-vue2.mdc` 或 `legacy-sfa-web`。
+- 涉及微信开发者工具、体验版、提审、线上配置、扫码、定位、手机号授权时，必须记录人工确认或明确 `BLOCKED`。
+
+## 变更前必须确认
+
+- 先读 `changes/<change-id>/spec.md`、`plan.md` 和 `docs/contracts/<change-id>-api.md`。
+- 前端字段必须以后端 contract 为准。
+- `[ASSUMP]` 和阻塞性 `[QUESTION]` 不得进入实现。
+- 修改路径必须落在 spec 的 `allowed_paths` 内。
+- 不得绕过 `miniprogram/services` 直接在页面中硬编码后端 URL。
+- 修改小程序页面前必须读取 `docs/baseline/frontend-merchant-wechatapp.md`。
+
+## 受保护路径
+
+默认禁止修改，除非 spec 明确列入 allowed paths 并说明原因：
+
+- `project.config.json`
+- `project.private.config.json`
+- `miniprogram/config/env.ts`
+- `miniprogram/config/constants.ts`
+- `package-lock.json`
+
+不得把 appid、体验版二维码、token、cookie、手机号授权 code、定位信息、生产接口密钥或真实用户个人信息写入 harness 文档、evidence、截图或 memory。
+
+## 实现规则
+
+- 新增 API 调用优先放在 `miniprogram/services/*.ts`，页面只消费 service。
+- 新增或修改接口字段时，同步 `miniprogram/services/types.ts`，并和后端 contract 逐字段核对。
+- 页面状态必须覆盖加载、空态、失败态和重复提交保护；授权、定位、扫码等微信能力失败时要有可恢复提示。
+- UI 修改需同时检查 `.wxml`、`.wxss`、`.json` 和 `.ts`，避免只改逻辑不改页面声明。
+- `wx.*` 异步能力不得静默吞错；错误路径至少记录用户可见反馈或可追踪的受控日志。
+- 调试日志和临时 mock 数据不得进入提交；合并前运行 `scripts/temp-hardcode-scan.sh <changed-files...>`。
+- 页面不得直接调用 `wx.request` 或硬编码接口 host；合并前运行 `scripts/architecture-drift-gate.sh <repo-root> <changed-files...>`，命中时优先改回 `miniprogram/services`。
+
+## 验证建议
+
+最窄优先：
+
+```bash
+npm run tsc
+npm run lint
+```
+
+涉及页面、扫码、定位、授权、手机号或发布链路时，必须补微信开发者工具 / 体验版 / 真机人工确认记录。无法执行时写 `BLOCKED`，不得声称小程序 smoke 通过。

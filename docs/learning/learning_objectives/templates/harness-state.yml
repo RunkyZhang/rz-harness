@@ -1,0 +1,28 @@
+change_id: example-change-id
+current_stage: intake
+stage_owner: main-agent
+last_verified_at: 2026-01-01T00:00:00+08:00
+
+stage_gate:
+  last_command: scripts/change-stage-gate.sh changes/example-change-id intake
+  last_result: NOT_RUN
+  next_required_command: scripts/change-stage-gate.sh changes/example-change-id solution-confirm
+
+artifacts:
+  spec: REQUIRED
+  technical_solution: REQUIRED_BEFORE_CODE_START
+  ai_test_plan: REQUIRED_BEFORE_CODE_START
+  environment_readiness: REQUIRED_BEFORE_E2E
+  test_agent_verification: REQUIRED_BEFORE_FINAL
+  ai_test_report: REQUIRED_BEFORE_PRE_RELEASE
+  review: REQUIRED_BEFORE_PR
+
+blocking_items:
+  - none
+
+next_action: Record the confirmed stage and run the matching change-stage gate.
+
+external_docs:
+  prd: N/A
+  technical_solution: N/A
+  test_report: N/A

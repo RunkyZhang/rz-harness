@@ -1,0 +1,51 @@
+---
+globs: *.kt
+description: Kotlin 编码规范和最佳实践
+---
+
+# Kotlin 编码规范
+
+## 语言特性使用
+- **优先使用 Kotlin**: 除非特别说明，所有新代码使用 Kotlin
+- **数据类**: 优先使用 `data class` 而非普通类
+- **扩展函数**: 合理使用扩展函数简化代码
+- **作用域函数**: 适当使用 `let`, `apply`, `with`, `run`, `also`
+- **空安全**: 正确使用 `?`, `!!`, `?.`, `?:`
+
+## API 兼容性
+所有代码必须兼容 Android API 19+，使用版本检查：
+```kotlin
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    // API 21+ 代码
+} else {
+    // API 19-20 兼容代码
+}
+```
+
+## 协程使用
+- 使用 `lifecycleScope` 进行生命周期感知
+- 网络请求使用 `withContext(Dispatchers.IO)`
+- UI 更新使用 `Dispatchers.Main`
+- 正确处理 `CancellationException`
+
+## 命名规范
+- **变量/函数**: camelCase (`userName`, `getUserInfo()`)
+- **常量**: UPPER_SNAKE_CASE (`MAX_RETRY_COUNT`)
+- **类**: PascalCase (`UserManager`, `NetworkHelper`)
+- **包名**: 小写+点分隔 (`com.want.hotkidceo.sfa.business`)
+
+## 示例
+```kotlin
+// 正确的 Kotlin 风格
+class UserManager {
+    companion object {
+        const val MAX_RETRY_COUNT = 3
+    }
+
+    fun getUserInfo(): User? = userRepository.getUser()
+
+    suspend fun loadUserData() = withContext(Dispatchers.IO) {
+        // 网络请求
+    }
+}
+```

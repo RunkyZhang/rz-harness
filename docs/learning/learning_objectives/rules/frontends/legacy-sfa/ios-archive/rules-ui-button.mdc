@@ -1,0 +1,323 @@
+---
+description: iOS 按钮组件规范（尺寸、样式、底部布局）
+alwaysApply: false
+---
+# iOS 按钮组件规范
+
+## 按钮尺寸规范
+
+### 高度分类
+按钮高度分为三类，宽度根据页面布局适配：
+
+| 类型 | 高度 | 适用场景 |
+|------|------|---------|
+| 大号按钮 | **44pt** | 页面底部主操作区、全屏宽度主要操作 |
+| 中号按钮 | **32pt** | 双按钮组合、表单操作区 |
+| 小号按钮 | **28pt** | 三按钮组合、列表行内操作、卡片内操作 |
+
+### 圆角规范
+- **默认 cornerRadius**：`4pt`（所有按钮统一使用）
+
+### 宽度规范
+- 宽度根据页面布局适配，不固定
+- 底部全宽按钮：左右各保留 **16pt** 边距
+- 多按钮并排：等宽分布，间距 **8pt**
+
+---
+
+## 按钮样式规范
+
+### 正常样式（主操作）
+蓝底白字，用于主要确认、提交等操作：
+
+```objective-c
+UIButton *primaryButton = [UIButton buttonWithType:UIButtonTypeCustom];
+primaryButton.backgroundColor = Color_blue;
+[primaryButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+primaryButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+primaryButton.layer.cornerRadius = 4.0f;
+[primaryButton setTitle:@"确认" forState:UIControlStateNormal];
+```
+
+### 异常样式（危险操作）
+红底白字，用于删除、警告等危险操作：
+
+```objective-c
+UIButton *dangerButton = [UIButton buttonWithType:UIButtonTypeCustom];
+dangerButton.backgroundColor = Color_red;
+[dangerButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+dangerButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+dangerButton.layer.cornerRadius = 4.0f;
+[dangerButton setTitle:@"删除" forState:UIControlStateNormal];
+```
+
+### 取消样式（次要操作）
+白底黑字，带边框，用于取消、返回等次要操作：
+
+- **大/中号按钮** borderWidth：`1.5pt`
+- **小号按钮** borderWidth：`1pt`
+
+```objective-c
+// 大/中号取消按钮（borderWidth = 1.5）
+UIButton *cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+cancelButton.backgroundColor = [UIColor whiteColor];
+cancelButton.layer.borderColor = Color_border.CGColor;
+cancelButton.layer.borderWidth = 1.5f;
+[cancelButton setTitleColor:ColorText_0 forState:UIControlStateNormal];
+cancelButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+cancelButton.layer.cornerRadius = 4.0f;
+[cancelButton setTitle:@"取消" forState:UIControlStateNormal];
+
+// 小号取消按钮（borderWidth = 1）
+UIButton *smallCancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+smallCancelButton.backgroundColor = [UIColor whiteColor];
+smallCancelButton.layer.borderColor = Color_border.CGColor;
+smallCancelButton.layer.borderWidth = 1.0f;
+[smallCancelButton setTitleColor:ColorText_0 forState:UIControlStateNormal];
+smallCancelButton.titleLabel.font = [UIFont systemFontOfSize:12.0f];
+smallCancelButton.layer.cornerRadius = 4.0f;
+[smallCancelButton setTitle:@"取消" forState:UIControlStateNormal];
+```
+
+---
+
+## 带图标的按钮（图文混排）
+
+### 适用场景
+图标在左、文字在右的按钮（如"+ 添加竞品"），使用 `UIButton+HYBHelperBlockKit` 提供的方法设置内边距和对齐方式。
+
+### 实现方式
+调用 `- (void)setContentPadding:(CGFloat)padding aligmentMode:(UIButtonImageAligmentMode)aligmentMode` 方法：
+- **默认参数**：padding = `3`，aligmentMode = `UIButtonImageAligmentModeLeft`
+
+```objective-c
+UIButton *addButton = [UIButton buttonWithType:UIButtonTypeCustom];
+addButton.backgroundColor = Color_blue;
+[addButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+addButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+addButton.layer.cornerRadius = 4.0f;
+[addButton setTitle:@"添加竞品" forState:UIControlStateNormal];
+[addButton setImage:[UIImage imageNamed:@"icon_add_white"] forState:UIControlStateNormal];
+
+// 设置图标与文字的间距和排列方式（图标在左，间距3pt）
+[addButton setContentPadding:3 aligmentMode:UIButtonImageAligmentModeLeft];
+```
+
+---
+
+## 特殊文字链接按钮（需询问确认后使用）
+
+### 适用场景
+文字+箭头图标组合的轻量链接入口（如"详情 >"），不使用普通 `UIButton`，而是用 `UILabel` + `UIImageView` + 透明 `UIButton` 叠加实现，以便更灵活地控制文字和图标的布局。
+
+> **注意**：此类按钮样式特殊，使用前需向设计确认是否采用此方案。
+
+### 实现方式
+
+```objective-c
+// 文字标签
+UILabel *detailLabel = [[UILabel alloc] init];
+detailLabel.backgroundColor = [UIColor clearColor];
+detailLabel.text = @"详情";
+detailLabel.textAlignment = NSTextAlignmentRight;
+detailLabel.font = [UIFont systemFontOfSize:12];
+detailLabel.textColor = Color_blue;
+[self addSubview:detailLabel];
+
+// 箭头图标
+UIImageView *arrowImgView = [[UIImageView alloc] init];
+arrowImgView.contentMode = UIViewContentModeScaleAspectFit;
+arrowImgView.image = [UIImage imageNamed:@"icon_arrow_right_blue"];
+[self addSubview:arrowImgView];
+
+// 透明点击区域覆盖在标签+图标上方
+UIButton *detailButton = [UIButton buttonWithType:UIButtonTypeCustom];
+[detailButton addTarget:self action:@selector(detailButtonClick) forControlEvents:UIControlEventTouchUpInside];
+[self addSubview:detailButton];
+
+// 约束（参考 SFAMakeWangHomeLittleTitleView）
+[arrowImgView mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.centerY.mas_equalTo(detailLabel);
+    make.right.mas_offset(-14);
+    make.width.mas_equalTo(6);
+    make.height.mas_equalTo(10);
+}];
+
+[detailLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.centerY.mas_equalTo(arrowImgView);
+    make.right.mas_equalTo(arrowImgView.mas_left).mas_offset(-3);
+    make.height.mas_equalTo(15);
+}];
+
+[detailButton mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.right.mas_offset(0);
+    make.width.mas_equalTo(60);
+    make.height.mas_equalTo(30);
+    make.centerY.mas_equalTo(detailLabel);
+}];
+```
+
+---
+
+## 底部按钮布局模式
+
+### 间距规范
+- **按钮到屏幕边缘边距**：16pt
+- **按钮之间水平间距**：8pt
+- **距 Safe Area 底部**：12pt
+
+### 模式1：单个主操作按钮（高度 44）
+```objective-c
+UIButton *confirmButton = [UIButton buttonWithType:UIButtonTypeCustom];
+confirmButton.backgroundColor = Color_blue;
+[confirmButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+confirmButton.titleLabel.font = [UIFont systemFontOfSize:16.0f];
+confirmButton.layer.cornerRadius = 4.0f;
+[confirmButton setTitle:@"确认提交" forState:UIControlStateNormal];
+
+[confirmButton mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.height.mas_equalTo(44.0f);
+    make.left.mas_equalTo(containerView.mas_left).with.offset(16.0f);
+    make.right.mas_equalTo(containerView.mas_right).with.offset(-16.0f);
+    make.bottom.mas_equalTo(containerView.mas_safeAreaLayoutGuideBottom).with.offset(-12.0f);
+}];
+```
+
+### 模式2：取消 + 主操作组合（高度 32）
+```objective-c
+UIButton *cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+cancelButton.backgroundColor = [UIColor whiteColor];
+cancelButton.layer.borderColor = Color_border.CGColor;
+cancelButton.layer.borderWidth = 1.5f;
+[cancelButton setTitleColor:ColorText_0 forState:UIControlStateNormal];
+cancelButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+cancelButton.layer.cornerRadius = 4.0f;
+[cancelButton setTitle:@"取消" forState:UIControlStateNormal];
+
+UIButton *confirmButton = [UIButton buttonWithType:UIButtonTypeCustom];
+confirmButton.backgroundColor = Color_blue;
+[confirmButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+confirmButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+confirmButton.layer.cornerRadius = 4.0f;
+[confirmButton setTitle:@"确认" forState:UIControlStateNormal];
+
+[cancelButton mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.height.mas_equalTo(32.0f);
+    make.left.mas_equalTo(containerView.mas_left).with.offset(16.0f);
+    make.bottom.mas_equalTo(containerView.mas_safeAreaLayoutGuideBottom).with.offset(-12.0f);
+}];
+
+[confirmButton mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.height.mas_equalTo(32.0f);
+    make.left.mas_equalTo(cancelButton.mas_right).with.offset(8.0f);
+    make.right.mas_equalTo(containerView.mas_right).with.offset(-16.0f);
+    make.bottom.mas_equalTo(containerView.mas_safeAreaLayoutGuideBottom).with.offset(-12.0f);
+    make.width.mas_equalTo(cancelButton.mas_width);
+}];
+```
+
+### 模式3：三按钮组合（高度 28）
+```objective-c
+UIButton *leftButton = [UIButton buttonWithType:UIButtonTypeCustom];
+leftButton.backgroundColor = [UIColor whiteColor];
+leftButton.layer.borderColor = Color_border.CGColor;
+leftButton.layer.borderWidth = 1.0f;
+[leftButton setTitleColor:ColorText_0 forState:UIControlStateNormal];
+leftButton.titleLabel.font = [UIFont systemFontOfSize:12.0f];
+leftButton.layer.cornerRadius = 4.0f;
+
+UIButton *centerButton = [UIButton buttonWithType:UIButtonTypeCustom];
+centerButton.backgroundColor = [UIColor whiteColor];
+centerButton.layer.borderColor = Color_border.CGColor;
+centerButton.layer.borderWidth = 1.0f;
+[centerButton setTitleColor:ColorText_0 forState:UIControlStateNormal];
+centerButton.titleLabel.font = [UIFont systemFontOfSize:12.0f];
+centerButton.layer.cornerRadius = 4.0f;
+
+UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeCustom];
+rightButton.backgroundColor = Color_blue;
+[rightButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+rightButton.titleLabel.font = [UIFont systemFontOfSize:12.0f];
+rightButton.layer.cornerRadius = 4.0f;
+
+NSArray *buttons = @[leftButton, centerButton, rightButton];
+[buttons mas_distributeViewsAlongAxis:MASAxisTypeHorizontal
+                    withFixedSpacing:8.0f
+                         leadSpacing:16.0f
+                         tailSpacing:16.0f];
+[buttons mas_makeConstraints:^(MASConstraintMaker *make) {
+    make.height.mas_equalTo(28.0f);
+    make.bottom.mas_equalTo(containerView.mas_safeAreaLayoutGuideBottom).with.offset(-12.0f);
+}];
+```
+
+---
+
+## 检查清单
+
+在按钮相关代码提交前，【必须】确认：
+
+### 尺寸与圆角
+- [ ] **[P0]** 按钮高度是否使用三档标准之一（44 / 32 / 28）？
+- [ ] **[P0]** cornerRadius 是否统一为 4pt？
+- [ ] **[P0]** 底部间距是否基于 Safe Area 设置？
+
+### 样式
+- [ ] **[P0]** 主操作是否使用蓝底白字（Color_blue）？
+- [ ] **[P0]** 危险操作是否使用红底白字（Color_red）？
+- [ ] **[P0]** 取消/次要操作是否使用白底黑字+边框（Color_border）？
+- [ ] **[P0]** 颜色是否全部使用 ColorRules.h 中的标准色宏，禁止硬编码？
+- [ ] **[P1]** 大/中号取消按钮 borderWidth 是否为 1.5，小号是否为 1？
+
+### 图文混排按钮
+- [ ] **[P1]** 图文按钮是否调用了 `setContentPadding:aligmentMode:` 方法？
+- [ ] **[P1]** 默认参数是否为 padding=3、UIButtonImageAligmentModeLeft？
+
+### 特殊链接按钮
+- [ ] **[P1]** 使用文字链接按钮前是否已与设计确认？
+- [ ] **[P1]** 是否使用 UILabel + UIImageView + 透明 UIButton 叠加实现？
+
+### 功能
+- [ ] **[P1]** 是否为按钮设置了合适的点击事件？
+- [ ] **[P2]** 是否考虑了按钮的禁用状态（Color_bgView 背景，ColorText_disable 文字）？
+
+---
+
+## 常见错误避免
+
+❌ **错误示例**
+```objective-c
+// 硬编码颜色
+button.backgroundColor = [UIColor blueColor];
+button.backgroundColor = UIColorHex(@"#416FFC");
+
+// 错误的圆角
+button.layer.cornerRadius = 5.0f;
+
+// 错误的高度
+make.height.mas_equalTo(40.0f);
+
+// 取消按钮未设置边框
+cancelButton.backgroundColor = [UIColor whiteColor];
+// 缺少 layer.borderColor 和 layer.borderWidth
+```
+
+✅ **正确示例**
+```objective-c
+// 主操作按钮
+UIButton *primaryButton = [UIButton buttonWithType:UIButtonTypeCustom];
+primaryButton.backgroundColor = Color_blue;
+[primaryButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+primaryButton.layer.cornerRadius = 4.0f;
+
+// 取消按钮（中号，borderWidth = 1.5）
+UIButton *cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+cancelButton.backgroundColor = [UIColor whiteColor];
+cancelButton.layer.borderColor = Color_border.CGColor;
+cancelButton.layer.borderWidth = 1.5f;
+[cancelButton setTitleColor:ColorText_0 forState:UIControlStateNormal];
+cancelButton.layer.cornerRadius = 4.0f;
+
+// 图文按钮
+[addButton setContentPadding:3 aligmentMode:UIButtonImageAligmentModeLeft];
+```
