@@ -162,13 +162,17 @@
   </ul>
   <h3>按需打开的字典</h3>
   <ul>
-    <li>仓说明书：<code>config/baselines/</code>。只读本次改到的仓。写 <code>allowed_paths</code>、选样板、第一次改业务代码之前要读。Reviewer 审查该仓 diff 时对照分层、样板和受保护路径。<code>mapSystem</code> 还要遵守 <code>config/baselines/frontend-map-system.md</code> 的 Node 版本、登录和临时路由。</li>
+    <li>仓说明书：<code>config/baselines/</code>。只读本次改到的仓。写 <code>allowed_paths</code>、选样板、第一次改业务代码之前要读。Reviewer 审查该仓 diff 时对照分层、样板和受保护路径。目标仓的运行约定（Node 版本、登录、路由等）见该仓 <code>config/baselines/&lt;repo&gt;.md</code>，按其执行。</li>
     <li>模版：<code>templates/</code>，字典 <code>templates/template_directory.md</code></li>
     <li>门禁：<code>gates/</code>，字典 <code>gates/gate_directory.md</code></li>
     <li>脚本：<code>scripts/</code>，字典 <code>scripts/script_directory.md</code></li>
     <li>skill：<code>skills/</code>，字典 <code>skills/skill_directory.md</code></li>
     <li>给人看的文档：<code>docs/</code>。给模型生成代码时参考的规则：<code>rules/</code></li>
   </ul>
+  <h3>知识沉淀（已知坑）</h3>
+  <p>团队踩过的坑 / 故障模式记在 <code>docs/pitfalls/</code>，每条一个 <code>RZ-PIT-*.md</code>（模板 <code>templates/pitfalls_TEMPLATE.md</code>）。收口时确有踩过的坑就按模板记一条，没有就在 <code>pre-pr.md</code> 写 N/A。目的是让经验从单个 change 沉淀回团队知识库，而不是随变更包删除。</p>
+  <p>需要引用已知坑时，在 spec / 变更包写 <code>knowledge_refs:</code> 块列出 <code>RZ-PIT-NNN</code>；由 <code>gates/knowledge-reference-gate.sh</code> 校验引用是否有效（悬空引用会 FAIL）。</p>
+  <p>另两类知识条目 <code>docs/samples/</code>（可复用样板）、<code>docs/decision-log/</code>（决策记录）RZ 暂未建，命中再补。</p>
   <h3>Hook</h3>
   <p>Hook 是 runtime 的功能：到了某个事件点，runtime 一定会去跑脚本，不靠模型记得。Gate 是检查内容；hook 是触发时机。接线按 <code>hooks/hook_setup.md</code>。本仓不提交各 runtime 的接线文件。</p>
   <figure>
@@ -561,7 +565,7 @@
     <li>行为或契约变更：实现前要有 spec 和契约。宣称跑过的检查必须落 evidence。</li>
     <li>Java 后端行为变更：<code>backend-test-plan.md</code> 或明确 N/A。只编译不够。</li>
     <li>Swagger 对外 VO：仅当后端仓有活动的 <code>rules/backends/*/manifest.yml</code> profile 时，扫该 profile 的响应根；新增对外 <code>*VO.java</code> 用 <code>@ApiModel</code> 和每字段 <code>@ApiModelProperty</code>。不含导出模型和基础设施 DTO。pre-commit 跑 <code>swagger-model-documentation-gate.sh</code>。</li>
-    <li>前端 / UI：先判复杂度。PRD UI 要 <code>ui-rule-checklist.md</code> 和 <code>ui-rule-gate.sh</code>。复杂 UI 要可运行页面和 <code>ui-confirmation.md</code>。<code>mapSystem</code> 用 <code>scripts/frontend-dev-server.sh frontend-map-system 9527</code>（Node 14.21.3、产品组登录、临时路由；<code>HomeIndex</code> 重定向即失败）。</li>
+    <li>前端 / UI：先判复杂度。PRD UI 要 <code>ui-rule-checklist.md</code> 和 <code>ui-rule-gate.sh</code>。复杂 UI 要可运行页面和 <code>ui-confirmation.md</code>。目标仓的启动方式 / Node 版本 / 登录 / 路由约定见该仓 <code>config/baselines/&lt;repo&gt;.md</code>，按其执行。</li>
     <li>DB：带 ER 的数据模型、可执行 SQL、规范化检查、自包含注释、字段来源。真实库写入要用户第二次确认。</li>
     <li>飞书 PRD：<code>scripts/technical-solution-feishu-sync.sh</code> 同步到飞书子文档，改后重同步，否则技术方案关卡不过。流程图、ER、状态图用白板，不用 Mermaid。</li>
     <li>复杂行为或能力边界：写 <code>capability-spec.md</code> / <code>behavior-spec.md</code>，并在 verification-map 里映射。普通 CRUD 写 N/A。</li>

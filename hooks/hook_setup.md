@@ -1,6 +1,6 @@
 # 各 runtime 如何接到 `hooks/hook_adapter.sh`
 
-> 本仓**不提交**各 runtime 的接线文件：`.cursor/hooks.json`、`.codex/hooks.json`、`.opencode/plugins/*.js`。  
+> 本仓**不提交**各 runtime 的接线文件：`.cursor/hooks.json`、`.codex/hooks.json`、`.opencode/plugins/*.ts`（OpenCode V2）。  
 > **两层：** `hooks/hook_adapter.sh` 只路由；`hooks/harness-sensor-runner.sh` 做事（标本同名脚本的 RZ 本地化）。  
 > 各 runtime 在事件点 spawn **adapter**，并传入 **不同的两个参数**（runtime + event），stdin 一包 JSON。adapter 再 `exec` runner。怎么接线写在本文，本机按文创建。
 
@@ -80,7 +80,9 @@ OpenCode 没有 `hooks.json`：上面两行参数写在 plugin 的 `spawnSync(sc
 
 ## OpenCode
 
-OpenCode **不读** `hooks.json`。官方机制是 plugin（JavaScript / TypeScript），启动时加载 `.opencode/plugins/`。plugin 里 spawn `hooks/hook_adapter.sh`，并传入不同参数：
+> **V1 的 plugin API 在 V2 不运行。** V2 用 `Plugin.define({ id, setup })`，hook 通过 `ctx.tool.hook("execute.before", ...)` 注册，回调收到一个可变的 `event`（`event.tool` / `event.input`）。deny 仍然是 `throw`。见 [V2 plugin 迁移指南](https://opencode.ai/v2/docs/build/plugins/migrate-v1)。
+
+OpenCode **不读** `hooks.json`。官方机制是 plugin（TypeScript / JavaScript）；V2 自动加载 `.opencode/plugins/` 下的文件。plugin 里 spawn `hooks/hook_adapter.sh`，并传入不同参数：
 
 | 工具 | `spawnSync` 的 argv |
 |---|---|
@@ -89,31 +91,28 @@ OpenCode **不读** `hooks.json`。官方机制是 plugin（JavaScript / TypeScr
 
 不要直接调 runner，方便以后改路由。
 
-1. 在项目根创建 `.opencode/plugins/rz-hook-adapter.js`（本机文件，不提交）：
+1. 在项目根创建 `.opencode/plugins/rz-hook-adapter.ts`（本机文件，不提交；V2 也接受 `.js`）：
 
-```javascript
+```typescript
+import { Plugin } from "@opencode/plugin"
 import { existsSync } from "node:fs"
 import { spawnSync } from "node:child_process"
 import path from "node:path"
-import { fileURLToPath } from "node:url"
 
-function resolveHarnessRoot(pluginDir) {
+function resolveHarnessRoot(workspaceDir: string): string {
   if (process.env.RZ_HARNESS_ROOT) {
     return process.env.RZ_HARNESS_ROOT
   }
-  const candidates = [
-    path.resolve(pluginDir, "../.."),
-    path.resolve(pluginDir, ".."),
-  ]
+  const candidates = [workspaceDir, path.resolve(workspaceDir, "..")]
   for (const candidate of candidates) {
     if (existsSync(path.join(candidate, "hooks/hook_adapter.sh"))) {
       return candidate
     }
   }
-  return path.resolve(pluginDir, "../..")
+  return workspaceDir
 }
 
-function runAdapter(root, event, payload) {
+function runAdapter(root: string, event: string, payload: unknown) {
   const script = path.join(root, "hooks/hook_adapter.sh")
   const result = spawnSync(script, ["opencode", event], {
     input: JSON.stringify(payload),
@@ -133,38 +132,33 @@ function runAdapter(root, event, payload) {
   }
 }
 
-function mapBefore(input, output) {
-  const tool = String(input.tool || "").toLowerCase()
-  const args = output.args || {}
-  if (tool === "bash" || tool === "shell") {
-    return {
-      event: "beforeShellExecution",
-      payload: {
-        hook_event_name: "beforeShellExecution",
-        command: args.command || args.cmd || "",
-        cwd: args.directory || args.cwd || process.cwd(),
-      },
-    }
-  }
-  if (tool === "write" || tool === "edit") {
-    return {
-      event: "afterFileEdit",
-      payload: {
-        hook_event_name: "afterFileEdit",
-        file_path: args.filePath || args.path || args.file_path || "",
-        cwd: process.cwd(),
-      },
-    }
-  }
-  return null
-}
-
-export const RzHookAdapter = async () => {
-  const pluginDir = path.dirname(fileURLToPath(import.meta.url))
-  const root = resolveHarnessRoot(pluginDir)
-  return {
-    "tool.execute.before": async (input, output) => {
-      const mapped = mapBefore(input, output)
+export default Plugin.define({
+  id: "rz-hook-adapter",
+  async setup(ctx) {
+    const root = resolveHarnessRoot(ctx.location.directory)
+    await ctx.tool.hook("execute.before", (event) => {
+      const tool = String(event.tool || "").toLowerCase()
+      const input = (event.input ?? {}) as Record<string, unknown>
+      let mapped: { event: string; payload: Record<string, unknown> } | null = null
+      if (tool === "bash" || tool === "shell") {
+        mapped = {
+          event: "beforeShellExecution",
+          payload: {
+            hook_event_name: "beforeShellExecution",
+            command: input.command ?? input.cmd ?? "",
+            cwd: input.directory ?? input.cwd ?? ctx.location.directory,
+          },
+        }
+      } else if (tool === "write" || tool === "edit") {
+        mapped = {
+          event: "afterFileEdit",
+          payload: {
+            hook_event_name: "afterFileEdit",
+            file_path: input.filePath ?? input.path ?? input.file_path ?? "",
+            cwd: ctx.location.directory,
+          },
+        }
+      }
       if (!mapped) {
         return
       }
@@ -172,9 +166,9 @@ export const RzHookAdapter = async () => {
       if (result.permission === "deny") {
         throw new Error(result.agentMessage || result.userMessage || "rz hook_adapter denied this tool call")
       }
-    },
-  }
-}
+    })
+  },
+})
 ```
 
 2. 工作区是 **rz-harness** 时，plugin 会沿目录找到 `hooks/hook_adapter.sh`。工作区是业务仓时，还要：
@@ -183,9 +177,9 @@ export const RzHookAdapter = async () => {
 export RZ_HARNESS_ROOT=/绝对路径/rz-harness
 ```
 
-3. 重启 OpenCode。deny 时 plugin `throw`，该次工具不执行。
+3. 重启 OpenCode（或 `opencode service restart`）。deny 时 plugin `throw`，该次工具不执行。
 
-官方：[OpenCode Plugins](https://opencode.ai/docs/plugins/)
+官方：[OpenCode Plugins](https://opencode.ai/v2/docs/plugins/) · [Build a plugin](https://opencode.ai/v2/docs/build/plugins/) · [V1 → V2 插件迁移](https://opencode.ai/v2/docs/build/plugins/migrate-v1)
 
 ---
 

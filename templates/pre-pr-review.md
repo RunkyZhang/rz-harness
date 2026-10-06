@@ -2,7 +2,7 @@
 
 > 面向人工 review 的说明、风险、结论默认使用中文；代码标识、命令、API 路径、字段名、错误码、YAML key、日志 key 和引用原文保持原样。
 >
-> **RZ 尚未引入的脚本**（`workstream-dispatch-gate`、`codegraph-preflight`/`codegraph-evidence-gate`、`gitnexus-*`、`agent-task-brief`/`agent-review-package`/`agent-output-contract-gate`、`parallel-worktree-gate`）：本文相关检查项**默认按 `N/A` 处理**，不要去找这些脚本；命中场景再从标本 `learning_objectives/scripts/` copy 并本地化。
+> **RZ 尚未引入的脚本**：清单见 `gates/gate_directory.md` 的「尚未引入」节（唯一权威，本文件不再另抄）。本文相关检查项**默认按 `N/A` 处理**，不要去找这些脚本；命中场景再按该节说明从标本拷贝并本地化。
 
 ## Spec 一致性
 
@@ -175,7 +175,7 @@
 
 > 闭环：本次 change 产生的知识必须沉淀回团队知识库，否则经验死在 change 文件夹里。（`docs/samples/`、`docs/decision-log/`、`rules/`、`docs/standards/` RZ 未建 → 相关项暂 N/A；`docs/pitfalls/` 已建。）
 
-- [ ] 本次有无 **pitfall**（踩过的坑 / 故障模式）？有则按 `templates/pitfalls_TEMPLATE.md` 新增 `docs/pitfalls/RZ-PIT-*.md`，无则勾选并说明 N/A。
+- [ ] 本次有无 **pitfall**（踩过的坑 / 故障模式）？有则按 `templates/pitfalls_TEMPLATE.md` 复制为 `docs/pitfalls/RZ-PIT-*.md`，无则勾选并说明 N/A。
 - [ ] 本次有无可复用 **sample**（值得模仿的样板）？`docs/samples/` RZ 未建 → 本项 N/A（命中再建）。
 - [ ] 本次有无 **decision**（技术选型 / 架构决策）？`docs/decision-log/` RZ 未建 → 本项 N/A（命中再建）。
 - [ ] 本次有无 **guideline**（应当固化的推荐 / 禁止做法）？`rules/`、`docs/standards/` RZ 未建 → 本项 N/A（命中再建）。
