@@ -4,7 +4,7 @@ set -u
 service="${1:-}"
 action="${2:-}"
 state_dir="${RZ_LIFECYCLE_STATE_DIR:-${TMPDIR:-/tmp}/sfa-harness}"
-maven_bin="${RZ_LIFECYCLE_MAVEN_BIN:-mvn}"
+maven_bin="${RZ_BACKEND_MAVEN_COMMAND:-${RZ_LIFECYCLE_MAVEN_BIN:-mvn}}"
 java_bin="${RZ_LIFECYCLE_JAVA_BIN:-java}"
 curl_bin="${RZ_LIFECYCLE_CURL_BIN:-curl}"
 ps_bin="${RZ_LIFECYCLE_PS_BIN:-ps}"
@@ -22,34 +22,103 @@ emit_failure() {
   exit "$exit_code"
 }
 
+# 服务名 -> repo / 启动模块 / 端口。jar 由 resolve_jar_* 动态解析，不写死版本。
 service_profile() {
   case "$service" in
     backend-sales-management)
       repo="${RZ_REPO_SFA_SALES_MANAGEMENT:-}"
       module="sfa-sales-management-interfaces"
-      jar="$repo/$module/target/sfa-sales-management-interfaces-1.0-SNAPSHOT.jar"
       port="${RZ_LOCAL_BACKEND_SALES_MANAGEMENT_PORT:-31010}"
-      health_url="http://127.0.0.1:$port/actuator/health"
+      ;;
+    backend-sfa-backend)
+      repo="${RZ_REPO_SFA_BACKEND:-}"
+      module="wantwant-sfa-backend-webapi"
+      port="${RZ_LOCAL_BACKEND_SFA_BACKEND_PORT:-9171}"
+      ;;
+    backend-sfa-root)
+      repo="${RZ_REPO_SFA_ROOT:-}"
+      module="wantwant-sfa-root-webapi"
+      port="${RZ_LOCAL_BACKEND_SFA_ROOT_PORT:-9170}"
+      ;;
+    backend-sfa-base)
+      repo="${RZ_REPO_SFA_BASE:-}"
+      module="sfa-base-interfaces"
+      port="${RZ_LOCAL_BACKEND_SFA_BASE_PORT:-34040}"
+      ;;
+    backend-sfa-data-fusion)
+      repo="${RZ_REPO_SFA_DATA_FUSION:-}"
+      module="sfa-data-fusion-interfaces"
+      port="${RZ_LOCAL_BACKEND_SFA_DATA_FUSION_PORT:-32020}"
+      ;;
+    backend-arch-open)
+      repo="${RZ_REPO_ARCH_OPEN:-}"
+      module="arch-open-interfaces"
+      port="${RZ_LOCAL_BACKEND_ARCH_OPEN_PORT:-41010}"
+      ;;
+    backend-arch-event)
+      repo="${RZ_REPO_ARCH_EVENT:-}"
+      module="arch-event-interfaces"
+      port="${RZ_LOCAL_BACKEND_ARCH_EVENT_PORT:-43030}"
+      ;;
+    backend-arch-notification)
+      repo="${RZ_REPO_ARCH_NOTIFICATION:-}"
+      module="arch-notification-interfaces"
+      port="${RZ_LOCAL_BACKEND_ARCH_NOTIFICATION_PORT:-42020}"
       ;;
     *)
       emit_failure SERVICE_PROFILE "unsupported service: $service" 2
       ;;
   esac
 
+  health_url="http://127.0.0.1:$port/actuator/health"
   pid_file="$state_dir/$service.pid"
+  jar=""
+}
+
+# 构建 JDK：按 repo 名取 RZ_JAVA_HOME_<REPO_ID>，回退 RZ_BACKEND_JAVA_HOME
+resolve_java_home() {
+  local repo_key java_home_var
+  repo_key="$(basename "$repo" | tr '[:lower:]-' '[:upper:]_')"
+  java_home_var="RZ_JAVA_HOME_${repo_key}"
+  java_home="${!java_home_var:-${RZ_BACKEND_JAVA_HOME:-}}"
+}
+
+# 在 target 下找启动 jar（排除 sources/javadoc）。
+resolve_jar_if_exists() {
+  local target="$repo/$module/target"
+  jar=""
+  [[ -d "$target" ]] || return 0
+  jar="$(find "$target" -maxdepth 1 -name "${module}-*.jar" \
+    ! -name "*-sources.jar" ! -name "*-javadoc.jar" 2>/dev/null | head -1)"
+}
+
+resolve_jar() {
+  resolve_jar_if_exists
+  [[ -n "$jar" ]] || emit_failure PACKAGE "jar was not found under $repo/$module/target"
 }
 
 run_build() {
   [[ -d "$repo" ]] || emit_failure PRECHECK "repo not found: $repo"
-  (cd "$repo" && "$maven_bin" -pl "$module" -am -DskipTests package) || \
-    emit_failure PACKAGE "build failed"
-  [[ -f "$jar" ]] || emit_failure PACKAGE "jar was not created: $jar"
+  resolve_java_home
+  local -a maven_args=()
+  if [[ -n "${RZ_BACKEND_MAVEN_ARGS:-}" ]]; then
+    read -r -a maven_args <<< "${RZ_BACKEND_MAVEN_ARGS}"
+  fi
+  if [[ -n "$java_home" ]]; then
+    (cd "$repo" && JAVA_HOME="$java_home" PATH="$java_home/bin:$PATH" \
+      "$maven_bin" "${maven_args[@]}" -pl "$module" -am -DskipTests package) || \
+      emit_failure PACKAGE "build failed"
+  else
+    (cd "$repo" && "$maven_bin" "${maven_args[@]}" -pl "$module" -am -DskipTests package) || \
+      emit_failure PACKAGE "build failed"
+  fi
+  resolve_jar
 }
 
 pid_matches_target() {
   local command_line
   command_line="$("$ps_bin" -p "$1" -o command= 2>/dev/null || true)"
-  [[ "$command_line" == *"$jar"* ]]
+  [[ -n "$jar" && "$command_line" == *"$jar"* ]]
 }
 
 wait_for_exit() {
@@ -65,6 +134,7 @@ wait_for_exit() {
 stop_owned_process() {
   [[ -f "$pid_file" ]] || return 0
 
+  resolve_jar_if_exists
   local pid
   pid="$(<"$pid_file")"
   pid_matches_target "$pid" || emit_failure STOP_OLD "pid file does not belong to target jar"
@@ -78,17 +148,32 @@ start_process() {
     emit_failure START "could not capture start time"
   [[ -n "$started_at" ]] || emit_failure START "could not capture start time"
 
-  nohup "$java_bin" -jar "$jar" --server.port="$port" --spring.profiles.active=local \
-    --spring.rabbitmq.listener.simple.auto-startup=false \
-    --spring.rabbitmq.listener.direct.auto-startup=false \
-    --management.health.rabbit.enabled=false \
-    --spring.cloud.nacos.discovery.register-enabled=false \
-    --xxl.job.admin.addresses= >"$log_file" 2>&1 &
+  resolve_java_home
+  local java_opts="${RZ_BACKEND_JAVA_OPTS:-}"
+  local profile="${RZ_BACKEND_SPRING_PROFILE:-local}"
+
+  # java_opts 故意不加引号，按空格拆成多个 JVM 参数。
+  if [[ -n "$java_home" ]]; then
+    nohup env JAVA_HOME="$java_home" PATH="$java_home/bin:$PATH" \
+      "$java_bin" $java_opts -jar "$jar" --server.port="$port" --spring.profiles.active="$profile" \
+      --spring.rabbitmq.listener.simple.auto-startup=false \
+      --spring.rabbitmq.listener.direct.auto-startup=false \
+      --management.health.rabbit.enabled=false \
+      --spring.cloud.nacos.discovery.register-enabled=false \
+      --xxl.job.admin.addresses= >"$log_file" 2>&1 &
+  else
+    nohup "$java_bin" $java_opts -jar "$jar" --server.port="$port" --spring.profiles.active="$profile" \
+      --spring.rabbitmq.listener.simple.auto-startup=false \
+      --spring.rabbitmq.listener.direct.auto-startup=false \
+      --management.health.rabbit.enabled=false \
+      --spring.cloud.nacos.discovery.register-enabled=false \
+      --xxl.job.admin.addresses= >"$log_file" 2>&1 &
+  fi
   printf '%s\n' "$!" >"$pid_file"
 }
 
 read_jar_mtime() {
-  jar_mtime="$("$stat_bin" -f %m "$jar" 2>/dev/null)" || \
+  jar_mtime="$("$stat_bin" -f %m "$jar" 2>/dev/null || "$stat_bin" -c %Y "$jar" 2>/dev/null)" || \
     emit_failure PACKAGE "could not read jar modification time: $jar"
   [[ -n "$jar_mtime" ]] || emit_failure PACKAGE "could not read jar modification time: $jar"
 }
@@ -126,6 +211,7 @@ verify_started_process() {
 status_service() {
   [[ -f "$pid_file" ]] || emit_failure CHECK_PROCESS "PID file not found: $pid_file"
 
+  resolve_jar_if_exists
   local pid
   pid="$(<"$pid_file")"
   pid_matches_target "$pid" || emit_failure CHECK_PROCESS "pid file does not belong to target jar"
@@ -147,9 +233,9 @@ check_web_stack() {
 mkdir -p "$state_dir" || emit_failure PRECHECK "state directory cannot be created: $state_dir"
 
 if [[ "$service" == "check-web-stack" ]]; then
-  [[ "$action" == "--backend" && "${3:-}" == "backend-sales-management" ]] || \
-    emit_failure CHECK_WEB_STACK "expected --backend backend-sales-management"
-  service="backend-sales-management"
+  [[ "$action" == "--backend" && -n "${3:-}" ]] || \
+    emit_failure CHECK_WEB_STACK "expected --backend <service>"
+  service="$3"
   log_file="$state_dir/$service.log"
   service_profile
   check_web_stack

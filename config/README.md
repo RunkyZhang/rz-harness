@@ -31,17 +31,16 @@
 
 | 文件 | 说明 | 归属 |
 |---|---|---|
-| `config/runtime_local.sh` | 本机参数（仓路径 / 凭据**来源** / DB / 端口 / 工具命令）；既是配置入口，也是你的本机值 | 使用者专属 |
+| `config/runtime_local.sh` | 本机参数（仓路径 / 凭据 / DB / 端口 / 工具命令）；既是配置入口，也是你的本机值 | 使用者专属；**已 gitignore（含明文凭据）** |
 | `config/git-registry.md` | 你的仓清单（**权威来源**） | 使用者专属，随你的仓库版本化 |
 | `config/baselines/` | 每个业务仓的说明书 | 使用者专属，随你的仓库版本化 |
 
 ## 关于明文机密
 
 - **永远不要**把明文密码 / token / cookie 写进会进 git 的文件、spec、evidence 或状态卡。
-- 明文机密只放系统钥匙串；`config/runtime_local.sh` 只写凭据**来源**。
-- 当前 demo 阶段 `config/` 纳入 git，尤其不要把明文写进本目录。
+- 明文机密只放**系统钥匙串**或**已 gitignore 的 `config/runtime_local.sh`**。
+- `config/runtime_local.sh` 已移出版本管理（含 Nacos 等明文凭据）；`config/` 其它文件仍可正常版本化。
 
 ## 当前阶段说明
 
-demo 开发阶段 `config/` **全部纳入 git** 做版本管理，`.gitignore` 暂不忽略本目录内文件。
-正式使用时，建议把含密钥 / 本机路径的文件移出版本管理。
+`config/` 除 `runtime_local.sh` 外纳入 git；`runtime_local.sh` 含本机路径与明文凭据，已加入 `.gitignore`，**禁止提交**。

@@ -3,7 +3,7 @@
 日期：2026-05-19  
 仓库路径：`$RZ_REPO_MAP_SYSTEM`（本机值见 `config/runtime_local.sh`）  
 当前分支：`harness/harness-self-test-20260519`  
-仓库类型：Vue2 管理后台  
+仓库类型：Vue2 H5 Web  
 试点角色：首个 Fullstack CRUD lane 的前端主仓
 
 ## 1. 仓库识别
@@ -71,7 +71,7 @@ npm run dev -- --host 0.0.0.0 --port 9527
 http://localhost:9527/sfamap/<route>
 ```
 
-不要使用 `http://localhost:9527/sfamap/#/<route>` 作为 `mapSystem` 管理后台默认验证 URL，除非当前路由实现明确使用 hash。
+不要使用 `http://localhost:9527/sfamap/#/<route>` 作为 `mapSystem` H5 Web 默认验证 URL，除非当前路由实现明确使用 hash。
 
 新增页面路由要求：
 

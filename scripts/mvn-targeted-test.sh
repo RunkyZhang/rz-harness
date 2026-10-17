@@ -32,6 +32,16 @@ test_class="${4:-}"
 
 cd "$repo"
 
+# 构建 JDK：按 repo 名取 RZ_JAVA_HOME_<REPO_ID>，回退 RZ_BACKEND_JAVA_HOME
+repo_id="$(basename "$repo")"
+repo_key="$(printf '%s' "$repo_id" | tr '[:lower:]-' '[:upper:]_')"
+repo_java_var="RZ_JAVA_HOME_${repo_key}"
+java_home="${!repo_java_var:-${RZ_BACKEND_JAVA_HOME:-}}"
+if [[ -n "$java_home" ]]; then
+  export JAVA_HOME="$java_home"
+  export PATH="$JAVA_HOME/bin:$PATH"
+fi
+
 maven_cmd="${RZ_BACKEND_MAVEN_COMMAND:-mvn}"
 read -r -a maven_args <<< "${RZ_BACKEND_MAVEN_ARGS:-}"
 
