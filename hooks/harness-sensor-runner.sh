@@ -203,6 +203,10 @@ strip_shell_quotes() {
 is_low_risk_shell_target() {
   local target
   target="$(strip_shell_quotes "$1")"
+  # 数字目标是文件描述符（如 2>&1、>&2），不是文件路径。
+  if [[ "$target" =~ ^[0-9]+$ ]]; then
+    return 0
+  fi
   case "$target" in
     /dev/null) return 0 ;;
     node_modules|node_modules/*|./node_modules|./node_modules/*|*/node_modules|*/node_modules/*) return 0 ;;
@@ -270,6 +274,11 @@ for (let index = 0; index < command.length; index += 1) {
   }
 
   if (char === '|' || char === '&') {
+    // `2>&1` / `>&2` 是文件描述符复制，把 & 并入前面的重定向 token，避免误判为文件重定向。
+    if (char === '&' && tokens.length > 0 && /^[0-9]*>$/.test(tokens[tokens.length - 1])) {
+      tokens[tokens.length - 1] += char;
+      continue;
+    }
     pushToken();
     if (next === char) {
       tokens.push(char + next);

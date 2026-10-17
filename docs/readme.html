@@ -129,6 +129,7 @@
   <a href="#lane">lane</a>
   <a href="#mandatory">强制工作流</a>
   <a href="#change">变更包</a>
+  <a href="#doctor">Harness 自检</a>
   <a href="#files">文件列表</a>
   <a href="#protect">受保护行为</a>
   <a href="#agents">子 Agent</a>
@@ -165,6 +166,7 @@
     <li>模版：<code>templates/</code>，字典 <code>templates/template_directory.md</code></li>
     <li>门禁：<code>gates/</code>，字典 <code>gates/gate_directory.md</code></li>
     <li>脚本：<code>scripts/</code>，字典 <code>scripts/script_directory.md</code></li>
+    <li>控制面自检：<code>scripts/harness-doctor.sh</code>。只读检查字典 / 路径 / 引用 / 接线是否漂移；不是 gate。</li>
     <li>skill：<code>skills/</code>，字典 <code>skills/skill_directory.md</code></li>
     <li>给人看的文档：<code>docs/</code>。本页是完整说明；已知坑在 <code>docs/pitfalls/</code>。</li>
     <li>给模型生成代码时参考的规则：<code>rules/</code>（索引 <code>rules/README.md</code>）。按技术栈加载，约束生成出来的代码。</li>
@@ -640,6 +642,31 @@
   <h3>证据</h3>
   <p><code>evidence.md</code> 是可复查的命令痕迹，不是口头「测过了」。表头：<code>Check | Command / Source | Result | Summary</code>。Result 取 <code>PASS / FAIL / BLOCKED / N/A</code>。每跑一条关键命令就追加，不要覆盖整表，不要等收口再补。长输出只留摘要和 <code>artifacts/</code> 路径。</p>
   <p>它不是验收裁决（那是 Tester 的 <code>test-agent-verification.md</code>），也没有单独的 evidence gate。Reviewer 关卡要求 <code>review.md</code> 引用 evidence。禁止写入 token、cookie、DB password、客户资料、未脱敏 SQL、原始私密 prompt。</p>
+</section>
+
+<section id="doctor">
+  <h2>Harness 自检（doctor）</h2>
+  <p><code>scripts/harness-doctor.sh</code> 是控制面的<strong>只读体检</strong>，不是 gate。它不判定某个 change 是否放行，也不修改文件；它检查控制面自身有没有漂移。</p>
+  <table>
+    <thead><tr><th>检查项</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><td>核心文件</td><td><code>AGENTS.md</code>、<code>docs/AGENTS_totally_for_ai_and_human.md</code>、<code>docs/readme.html</code>、<code>docs/usage.html</code>、<code>config/</code>、<code>changes/</code> 控制面文件</td></tr>
+      <tr><td>字典 ↔ 文件</td><td><code>gates/</code>、<code>scripts/</code>、<code>templates/</code>、<code>skills/</code> 里的实际文件是否都在各自字典登记</td></tr>
+      <tr><td>仓清单 ↔ 本机变量</td><td><code>config/git-registry.md</code> 的 <code>path_env</code> 是否都在 <code>config/runtime_local.sh</code> 有对应 <code>export</code></td></tr>
+      <tr><td>baseline 引用</td><td><code>config/git-registry.md</code> 引用的 <code>config/baselines/*.md</code> 是否存在</td></tr>
+      <tr><td>Hook 接线</td><td>是否至少有一个 runtime 接线；OpenCode plugin 是否误 import <code>@opencode/plugin</code>；hook 脚本是否可执行</td></tr>
+      <tr><td>凭据边界</td><td><code>config/runtime_local.sh</code> 是否被 <code>.gitignore</code> 忽略</td></tr>
+      <tr><td>后端规则</td><td><code>rules/backends/backend_rules.md</code> 引用的 <code>*-reference.md</code> 是否存在</td></tr>
+    </tbody>
+  </table>
+  <p>用法：</p>
+  <ul>
+    <li><code>scripts/harness-doctor.sh</code>：全量；</li>
+    <li><code>--quick</code>：只查核心与接线，适合 session start；</li>
+    <li><code>--strict</code>：WARN 也算失败；</li>
+    <li><code>--json</code>：输出机器可读摘要。</li>
+  </ul>
+  <div class="note">建议在 pre-merge、CI、每日 cron、修改控制面文件后跑。它和 gate 的区别：<strong>doctor 是体检，漏跑几次不会误放行；gate 是放行判定，漏跑一次就可能放过不合格变更。</strong></div>
 </section>
 
 <section id="files">

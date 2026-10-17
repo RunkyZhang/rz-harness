@@ -35,6 +35,13 @@
 > - 脚本工本在 `scripts/`。快速定位见 `scripts/script_directory.md`
 > - skill工具在 `skills/`。快速定位和使用规则见 `skills/skill_directory.md`
 
+### Harness 自检（doctor）
+> `scripts/harness-doctor.sh` 是控制面的**只读体检**，不是 gate。它检查：核心文件、字典↔实际文件（gates / scripts / templates / skills）、`config/git-registry.md` 的 `path_env` ↔ `config/runtime_local.sh`、baseline 引用、hook 接线、OpenCode plugin 导入、`runtime_local.sh` 是否被 gitignore。
+
+- 跑法：`--quick`（核心 / 接线）、默认全量、`--strict`（WARN 也失败）、`--json`（机器可读）。
+- 何时跑：pre-merge / CI / 每日 cron / session start `--quick` / 修改控制面文件后。
+- 它不是放行判定：漏跑几次不会误放行，跑一次覆盖当前全部漂移。
+
 ### 子 Agent
 > 角色人设。（见「子 Agent」）
 

@@ -32,6 +32,7 @@
 | 任务路线 | `lanes/` |
 | 子 Agent 人设 + 派发协议 | `subagents/` + `subagents/dispatch_subagent.md` |
 | hook 接线 | `hooks/hook_setup.md` |
+| 控制面自检（字典 / 路径 / 引用 / 接线） | `scripts/harness-doctor.sh`（`--quick` / `--strict` / `--json`） |
 | 给人看的详解（机制 / 图 / 目录职责） | `docs/readme.html` |
 
 ## 领域名词
@@ -85,6 +86,7 @@
 - **fail-closed**：判定不了时默认 FAIL，不许“找不到就跳过”。
 - 参数见 `gates/gate_directory.md`。gate 只裁决不干活；命令证据记 `evidence.md`。
 - gate 是**拉式**的（要人 / agent 跑）；自动跑靠 hook（见 `hooks/hook_setup.md`）。
+- 控制面改动后、pre-merge 前跑 `scripts/harness-doctor.sh`（只读自检：字典↔文件、`path_env`↔变量、baseline 引用、hook 接线）。它不是 gate；漏跑不会误放行，跑一次覆盖当前漂移。
 
 ## 7. 工作流
 

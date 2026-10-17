@@ -16,3 +16,4 @@
 | `local-service-lifecycle.sh` | 要声明本地后端可验收 | `start` / `status` / `check-web-stack`。只有 HEALTH=UP 且 web-stack 通过才算可用 |
 | `technical-solution-feishu-sync.sh` | PRD 来源是飞书，方案确认后或方案又改了 | 把技术方案同步到飞书子文档并回读 |
 | `harness-telemetry-record.sh` | 要记本机控制面事件 | 写入忽略的 `.harness/telemetry/`。不进变更包，不替代 evidence |
+| `harness-doctor.sh` | 控制面自检：pre-merge / CI / 每日 cron / session start `--quick` | 只读检查：核心文件、字典↔实际文件、`path_env`↔`runtime_local.sh`、baseline 引用、hook 接线、OpenCode plugin 导入、`runtime_local.sh` 是否被 gitignore。不是 gate，不修改文件 |
