@@ -3,6 +3,8 @@
 > 面向人工 review 的计划默认中文；代码标识、命令、API 路径、字段名、错误码、YAML key、日志 key 和引用原文保持原样。
 >
 > **RZ 尚未引入的脚本**：清单见 `gates/gate_directory.md` 的「尚未引入」节（唯一权威，本文件不再另抄）。本文相关步骤**默认按 `N/A` 处理**，不要去找这些脚本；命中场景再按该节说明从标本拷贝并本地化。
+>
+> **本文件分两部分**：上半部分（「输入」到「风险」）是**已确认基线**，生成后不改（除非重新确认）；下半部分（文末「执行账本」）**可变**，任务开始 / 完成 / 阻塞时更新。
 
 ## 输入
 
@@ -158,7 +160,7 @@ style_profile: config/baselines/<frontend-repo>-style-profile.md
 
 **Handoff:**
 - Task brief: `agent-task-brief` RZ 未引入 → N/A
-- Progress ledger: `.harness/agent-work/<change-id>/progress-ledger.md`
+- Progress ledger: `plan.md` 下半部分的「执行账本」（Status / Owner / Evidence）
 
 - [ ] **Step 1: 写失败测试或等价门禁 fixture**
 
@@ -280,3 +282,17 @@ changes/status-card.sh changes/<change-id>
 | PC E2E Smoke 缺少账号、登录态、测试数据或浏览器环境 | 记录为 `BLOCKED`，不得声称 E2E 通过；进入人工 SIT 前补齐条件或明确风险 |
 | 本地前端默认访问测试环境，无法命中本地后端 | 使用 active backend 生成的 harness-only `local-routing.yml` 和本地 proxy；只声明本次真实启动的后端项目，其他请求 fallback |
 | AI 测试报告未人工确认却进入预发 | `ai-test-report-gate.sh` fail-closed；状态卡必须显示 `AI测试待确认` |
+
+---
+
+## 下半部分：执行账本（可变）
+
+> 任务级实时状态。任务开始 / 完成 / 阻塞时更新；压缩或换线程后，从第一个非 `DONE` 的任务继续。
+> 状态只用 `PLANNED / IN_PROGRESS / DONE / BLOCKED`。Evidence 只写路径，不贴长命令；长输出放 `changes/<change-id>/artifacts/`。
+> S 档 `plan.md` 可 `N/A`，此时用 `status-card.md` + `evidence.md`。
+
+| # | Task | Status | Owner | Evidence | Notes |
+| --- | --- | --- | --- | --- | --- |
+| 1 | `<task>` | `PLANNED` | 主 Agent | `<changes/<change-id>/evidence.md#...>` | `<风险 / 阻塞 / 决策>` |
+| 2 | `<task>` | `PLANNED` | 主 Agent | `<...>` | `<...>` |
+| 3 | `<task>` | `PLANNED` | 主 Agent | `<...>` | `<...>` |

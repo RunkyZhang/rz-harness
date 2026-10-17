@@ -639,6 +639,14 @@
   </figure>
   <p>收集脚本 <code>changes/status-card.sh</code> 只读、不裁决，自动推断上限是「允许开工」；「实现中」和「已收口」由主 Agent 在实现开始和收口时手动置位。不要覆盖 Agent Roster。禁止写入 token、cookie、DB password。</p>
   <p>这些时候要刷新：有人问「现在到哪了」；阶段切换；阻塞出现或解除；人工确认前后；Tester / Reviewer 返回；审查之后又改了代码；进入预发前；派发、完成或阻塞子 Agent。</p>
+  <h3>执行账本（plan.md 下半部分）</h3>
+  <p><code>plan.md</code> 分两部分：上半部分（「输入」到「风险」）是<strong>已确认基线</strong>，生成后不改（除非重新确认）；下半部分是<strong>执行账本</strong>（可变），任务开始 / 完成 / 阻塞时更新。账本字段：<code>Task / Status / Owner / Evidence / Notes</code>，状态只用 <code>PLANNED / IN_PROGRESS / DONE / BLOCKED</code>；Evidence 只写路径。</p>
+  <ul>
+    <li>与状态卡分工：状态卡是<strong>阶段级</strong>（走到哪），账本是<strong>任务级</strong>（哪条做完）。</li>
+    <li>与 handoff 分工：handoff 是压缩 / 换线程时的<strong>会话级</strong>恢复包（为什么、失败尝试），账本平时就更新。</li>
+    <li>压缩 / 换线程后：先读账本，从第一个非 <code>DONE</code> 任务继续；再读 <code>handoff.md</code> 了解原因和失败尝试。</li>
+    <li>S 档 <code>plan.md</code> 可 N/A，此时用状态卡 + evidence。</li>
+  </ul>
   <h3>证据</h3>
   <p><code>evidence.md</code> 是可复查的命令痕迹，不是口头「测过了」。表头：<code>Check | Command / Source | Result | Summary</code>。Result 取 <code>PASS / FAIL / BLOCKED / N/A</code>。每跑一条关键命令就追加，不要覆盖整表，不要等收口再补。长输出只留摘要和 <code>artifacts/</code> 路径。</p>
   <p>它不是验收裁决（那是 Tester 的 <code>test-agent-verification.md</code>），也没有单独的 evidence gate。Reviewer 关卡要求 <code>review.md</code> 引用 evidence。禁止写入 token、cookie、DB password、客户资料、未脱敏 SQL、原始私密 prompt。</p>
@@ -681,7 +689,7 @@
       <tr><td>4</td><td><code>requirement-intake.md</code></td><td>M/L 要结构化收需求时</td><td>主 Agent</td><td><code>requirement-intake-gate.sh</code>。可无</td></tr>
       <tr><td>5</td><td><code>contract.md</code></td><td>M/L 建包有空壳；契约冻结时填写</td><td>主 Agent；前端只读这份</td><td>未冻不得实现。只用变更包内这一条路径</td></tr>
       <tr><td>6</td><td><code>technical-solution.md</code></td><td>M/L 空壳；方案阶段填写并确认</td><td>主 Agent</td><td><code>CONFIRMED</code> 且 <code>allowed_next_stage</code> 不是 none</td></tr>
-      <tr><td>7</td><td><code>plan.md</code></td><td>方案后、开工前</td><td>主 Agent</td><td>无单独过门。不要和状态卡写成两套步骤</td></tr>
+      <tr><td>7</td><td><code>plan.md</code></td><td>方案后、开工前</td><td>主 Agent</td><td>上半部分已确认基线（不改）；下半部分执行账本（Status / Owner / Evidence，可变）。无单独过门，不要和状态卡写成两套步骤</td></tr>
       <tr><td>8</td><td><code>verification-map.md</code></td><td>同 plan</td><td>主 Agent</td><td><code>verification-map-gate.sh</code>。每条约束怎么验</td></tr>
       <tr><td>9</td><td><code>skill-usage.md</code></td><td>用到 skill 时；M 强制有此文件</td><td>主 Agent</td><td><code>skill-usage-gate.sh</code>。未用写 N/A</td></tr>
       <tr><td>10</td><td><code>agent-dispatch-plan.md</code></td><td>派子 Agent 前</td><td>主 Agent</td><td>派前对照 <code>subagents/dispatch_subagent.md</code>。不派也可 N/A</td></tr>

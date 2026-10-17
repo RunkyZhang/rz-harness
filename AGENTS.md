@@ -124,6 +124,7 @@
 
 - `changes/<change-id>/` 是这次需求的本机工作目录；**整包不进 git**；`changes/` 根下 `change-scaffold.sh`、`status-card.sh`、`change-whitelist-spec.md` 是控制面，要进 git。
 - 建包：`changes/change-scaffold.sh --tier S|M|L <change-id>` —— 建目录 + `artifacts/`、按档拷模板、生成空 `evidence.md`；M/L 另拷 `agent-dispatch-plan.md` 空壳（不调 `agent-dispatch-plan.sh`）。不派实现 Agent 时，该文件写 `N/A`。
+- **执行账本（`plan.md` 下半部分）**：上半部分（输入 → 风险）是**已确认基线**，生成后不改（除非重新确认）；下半部分是任务级账本：`Status`（`PLANNED / IN_PROGRESS / DONE / BLOCKED`）+ `Owner` + `Evidence`，任务开始 / 完成 / 阻塞时更新。压缩或换线程后从第一个非 `DONE` 任务继续；S 档可 `N/A`。
 - **状态卡** `status-card.md`：给人看的单一入口；**只主 Agent 写**（子 Agent 不得改）；跑 `changes/status-card.sh` 后更新（不覆盖 Roster）。建包后立刻写「阶段（通常 `需求理解`）/ 下一步 / 是否允许进入下一阶段 / 当前阻塞 / 需人工确认」，Roster 从主 Agent 那行起填。**刷新时机**：阶段切换、阻塞出现或解除、人工确认前后、Tester / Reviewer 返回、代码又变致旧结论失效、进预发前、派发 / 完成 / 阻塞子 Agent、用户问进度。阶段枚举见 `templates/status-card.md`（唯一权威）；脚本推断上限「允许开工」，「实现中」「已收口」由主 Agent 手写。禁止写入 token / cookie / DB password。
 - **证据** `evidence.md`：**只主 Agent 写**（子 Agent 不得改；Tester 的复测结论写在 `test-agent-verification.md`）；scaffold 当场生成空表，首行是建包记录 `Scaffold … PASS`；每跑一条关键命令追加 `Check | Command / Source | Result | Summary`，`Result` 取 `PASS / FAIL / BLOCKED / N/A`；只记摘要，长输出放 `artifacts/`。**禁止**写入 token / cookie / DB password / 客户资料 / 未脱敏 SQL 结果 / 原始私密 prompt。`review.md` 必须引用 `evidence.md`，否则 `gates/reviewer-gate.sh` FAIL。
 - **白名单**：`changes/change-whitelist-spec.md` 定义允许出现的文件，`gates/change-artifacts-gate.sh` 检查根目录有没有名单外文件；大文件（截图 / 录屏 / trace / 长日志）放包内 `artifacts/`，不放包根或仓库根 `artifacts/`。
