@@ -43,6 +43,8 @@ language: Java 8
 build_jdk: 8
 local_port: 31010
 swagger_url: http://localhost:31010/swagger-ui.html
+start_module: sfa-sales-management-interfaces
+health_path: /actuator/health
 api_model_documentation_profile: swagger2-java-response-model
 framework:
   - Spring Boot 2.2.5.RELEASE
@@ -77,6 +79,8 @@ language: Java 8
 build_jdk: 8
 local_port: 9171
 swagger_url: http://localhost:9171/doc.html
+start_module: wantwant-sfa-backend-webapi
+health_path: /actuator/health
 framework:
   - Spring Boot 2.2.5.RELEASE
 build_tool: Maven
@@ -108,6 +112,8 @@ language: Java
 build_jdk: 8
 local_port: 9170
 swagger_url: http://localhost:9170/doc.html
+start_module: wantwant-sfa-root-webapi
+health_path: /actuator/health
 build_tool: Maven
 role: App / 移动端 root API 转发层（标本描述）
 ```
@@ -125,6 +131,8 @@ language: Java 8
 build_jdk: 8
 local_port: N/A（不是服务）
 swagger_url: —（不是服务）
+start_module: —（不是服务）
+health_path: —（不是服务）
 framework:
   - Spring Boot 2.2.5.RELEASE
   - Spring Cloud Alibaba（Nacos / Sentinel）
@@ -159,6 +167,8 @@ language: Java 8
 build_jdk: 8
 local_port: 32020
 swagger_url: http://localhost:32020/swagger-ui.html
+start_module: sfa-data-fusion-interfaces
+health_path: /actuator/health
 framework:
   - Spring Boot 2.2.5.RELEASE
   - Spring Cloud Hoxton.SR3
@@ -201,6 +211,8 @@ language: Java 8
 build_jdk: 8
 local_port: 42020
 swagger_url: http://localhost:42020/swagger-ui.html
+start_module: arch-notification-interfaces
+health_path: /actuator/health
 framework:
   - Spring Boot 2.2.5.RELEASE
   - Spring Cloud Hoxton.SR3
@@ -236,6 +248,8 @@ baseline：`config/baselines/backend-arch-notification.md`。
 `sfa-base`、`arch-open`、`arch-event` 见 `config/baselines/backend-sfa-base.md`、`config/baselines/backend-arch-open.md`、`config/baselines/backend-arch-event.md`（均为 Java 8 / `build_jdk: 8`）。
 
 Swagger / 端口：`sfa-base` 34040 → http://localhost:34040/swagger-ui.html；`arch-open` 41010 → http://localhost:41010/swagger-ui.html；`arch-event` 43030 → http://localhost:43030/swagger-ui.html。
+
+启动模块：`sfa-base-interfaces`、`arch-open-interfaces`、`arch-event-interfaces`；health 统一 `/actuator/health`。
 
 ---
 

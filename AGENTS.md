@@ -115,7 +115,7 @@
 3. **不可豁免**：口头「ok」不能跳过档位需要或条件命中的关卡（含飞书同步）；状态卡持续更新；代码再变则旧结论作废，重跑 Tester 再重跑 Reviewer；主 Agent 不得代裁 Tester / Reviewer。
 4. **M/L 默认必做**：全栈 `technical-solution.md` 需 `CONFIRMED`（必须覆盖模板列出的每一块 PRD 面；**前端 / APP / 导出 / 分析 / 跨仓在范围内时，只写后端无效**）；Test Strategy 写 `ai-test-plan.md`，**主 Agent 不得代写正文**，用户确认后只写 `test_plan_status: CONFIRMED`；按 `skills/skill_directory.md` 记 `skill-usage.md`（未用写 N/A）并跑 `gates/skill-usage-gate.sh`。
 5. **命中才做**：行为 / 契约变更（spec + 契约 + evidence）｜Java 行为变更（`backend-test-plan.md` 或 N/A，仅编译不够）｜Swagger 对外 VO（**仅当有活动 `rules/backends/*/manifest.yml` profile**：只扫该 profile 的响应根；新增对外 `*VO.java` 用 `@ApiModel` + 每字段 `@ApiModelProperty`；不追溯既往；不含导出模型与基础设施 DTO；pre-commit 跑 `gates/swagger-model-documentation-gate.sh`）｜前端 / UI（PRD UI 需 `ui-rule-checklist.md` + `gates/ui-rule-gate.sh`，规则缺口停下等用户；复杂 UI 需可运行页面 + `ui-confirmation.md`；目标仓的启动方式 / Node 版本 / 登录 / 路由约定见 `config/baselines/<repo>.md`，按其执行）｜DB（带 ER 数据模型 + 可执行 SQL + 规范化检查 + 自包含注释 + 字段来源）｜飞书 PRD（`scripts/technical-solution-feishu-sync.sh` 同步 + 改后重同步 + `gates/technical-solution-feishu-sync-gate.sh`；流程图 / ER / 状态图用白板不用 Mermaid）｜复杂行为（`capability-spec.md` / `behavior-spec.md` + verification-map 映射）。
-6. **环境与就绪**：真实 E2E 前填 `environment-readiness.md` + gate；本地后端「可验收」只在 `scripts/local-service-lifecycle.sh` 的 HEALTH=UP + check-web-stack 后声明（Maven / nohup / 端口单独成功不算）。
+6. **环境与就绪**：真实 E2E 前填 `environment-readiness.md` + gate；本地后端接口验收以 `scripts/local-service-lifecycle.sh` 的 `HEALTH=UP` 为准，页面冒烟另需 `check-web-stack` 成功（Maven / nohup / 端口单独成功不算）。
 7. **验收与审查**：业务代码审查前跑 `scripts/code-comment-log-quality.sh`；Tester / AI 测试报告 / Reviewer 见停止点 7 / 8 / 9。
 
 ## 8. 变更包

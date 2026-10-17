@@ -159,14 +159,12 @@ start_process() {
       --spring.rabbitmq.listener.simple.auto-startup=false \
       --spring.rabbitmq.listener.direct.auto-startup=false \
       --management.health.rabbit.enabled=false \
-      --spring.cloud.nacos.discovery.register-enabled=false \
       --xxl.job.admin.addresses= >"$log_file" 2>&1 &
   else
     nohup "$java_bin" $java_opts -jar "$jar" --server.port="$port" --spring.profiles.active="$profile" \
       --spring.rabbitmq.listener.simple.auto-startup=false \
       --spring.rabbitmq.listener.direct.auto-startup=false \
       --management.health.rabbit.enabled=false \
-      --spring.cloud.nacos.discovery.register-enabled=false \
       --xxl.job.admin.addresses= >"$log_file" 2>&1 &
   fi
   printf '%s\n' "$!" >"$pid_file"
@@ -184,7 +182,7 @@ port_listening() {
 
 wait_for_listener() {
   local attempt
-  for attempt in $(seq 1 30); do
+  for attempt in $(seq 1 120); do
     port_listening "$port" && return 0
     "$sleep_bin" 1
   done
@@ -193,7 +191,7 @@ wait_for_listener() {
 
 wait_for_health() {
   local body attempt
-  for attempt in $(seq 1 30); do
+  for attempt in $(seq 1 120); do
     body="$("$curl_bin" -fsS --max-time 2 "$health_url" 2>/dev/null || true)"
     [[ "$body" == *'"status":"UP"'* ]] && return 0
     "$sleep_bin" 1

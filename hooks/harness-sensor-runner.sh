@@ -245,6 +245,10 @@ for (let index = 0; index < command.length; index += 1) {
       quote = null;
       continue;
     }
+    // 引号内的 < / > 是字面量，不是重定向；跳过以免误报（如 grep "<section"）。
+    if (char === '<' || char === '>') {
+      continue;
+    }
     token += char;
     continue;
   }

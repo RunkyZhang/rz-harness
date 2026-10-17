@@ -113,7 +113,7 @@
 <header class="top">
   <div class="wrap" style="padding-bottom:28px">
     <h1>RZ AI Harness 说明</h1>
-    <p>给人看的控制面说明书（完整版）。仓库根目录 <code>AGENTS.md</code> 是给 Agent 的精简入口，只放硬规则与索引；本页是给人看的完整版，包含 <code>AGENTS.md</code> 省略的机制、图、目录职责、术语与产物清单。硬规则以 <code>AGENTS.md</code> 为准，细节以本页为准；改硬规则先改 <code>AGENTS.md</code>，改细节直接改本页。</p>
+    <p>给人看的控制面说明书（完整版）。仓库根目录 <code>AGENTS.md</code> 是给 Agent 的精简入口，只放硬规则与索引；本页是给人看的完整版，包含 <code>AGENTS.md</code> 省略的机制、图、目录职责、术语与产物清单。硬规则以 <code>AGENTS.md</code> 为准，细节以本页为准；改硬规则先改 <code>AGENTS.md</code>，改细节直接改本页。日常怎么做需求见 <a href="usage.html">使用手册 usage.html</a>。</p>
   </div>
 </header>
 <div class="wrap">
@@ -571,7 +571,7 @@
     <li>复杂行为或能力边界：写 <code>capability-spec.md</code> / <code>behavior-spec.md</code>，并在 verification-map 里映射。普通 CRUD 写 N/A。</li>
   </ul>
   <h3>⑤ 环境与就绪</h3>
-  <p>真实 E2E 前填写 <code>environment-readiness.md</code> 并跑 <code>environment-readiness-gate.sh</code>：环境、系统、拓扑、账号来源、数据、写库边界、回滚、设备、阻塞、无可复用凭据。本地后端「可验收」只在 <code>scripts/local-service-lifecycle.sh</code> 的 HEALTH=UP 且 check-web-stack 成功之后才能说。Maven、nohup、端口单独成功都不算。</p>
+  <p>真实 E2E 前填写 <code>environment-readiness.md</code> 并跑 <code>environment-readiness-gate.sh</code>：环境、系统、拓扑、账号来源、数据、写库边界、回滚、设备、阻塞、无可复用凭据。本地后端接口验收以 <code>scripts/local-service-lifecycle.sh</code> 的 <code>HEALTH=UP</code> 为准；页面冒烟（PC E2E）另需 <code>check-web-stack</code> 成功。Maven、nohup、端口单独成功都不算。</p>
   <h3>⑥ 验收与审查</h3>
   <ul>
     <li>业务代码审查前跑 <code>scripts/code-comment-log-quality.sh</code>。</li>
@@ -764,7 +764,7 @@
 </section>
 
 <footer>
-  本页路径 <code>docs/readme.html</code>。流程图共 7 张：Hook、Guides/Sensors、用户拍板节奏、十五步工作流、lane 选择、状态卡阶段、子 Agent 时机。给 Agent 的精简入口是仓库根目录 <a href="../AGENTS.md">AGENTS.md</a>；本页是给人看的完整版。
+  本页路径 <code>docs/readme.html</code>。流程图共 7 张：Hook、Guides/Sensors、用户拍板节奏、十五步工作流、lane 选择、状态卡阶段、子 Agent 时机。给 Agent 的精简入口是仓库根目录 <a href="../AGENTS.md">AGENTS.md</a>；本页是给人看的完整版。人类操作流程见 <a href="usage.html">usage.html</a>。
 </footer>
 </div>
 </body>

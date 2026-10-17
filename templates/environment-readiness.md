@@ -41,8 +41,10 @@ credential_storage_policy: no-secrets-in-repo
 | Standard ID | System | Repo ID | Local command or launch method | Env profile | Port or entry | Upstream dependencies | Health check | Status | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | SYS-001 | PC Web | `frontend-map-system` | `scripts/frontend-dev-server.sh frontend-map-system 9527` | `local frontend + selected API` | `http://localhost:9527` | `backend API / proxy / VPN` | `<login page / route / screenshot>` | `READY/PENDING/BLOCKED/N/A` | `<path or N/A>` |
-| SYS-002 | Backend API | `<backend repo id>` | `<mvn command / IDE run / N/A>` | `<local/test/pre-release>` | `<local URL or env entry>` | `<Nacos/DB/Redis/MQ/OSS/VPN>` | `<health endpoint / compile / smoke API>` | `READY/PENDING/BLOCKED/N/A` | `<path or N/A>` |
+| SYS-002 | Backend API | `<backend repo id>` | `scripts/local-service-lifecycle.sh <service> restart` | `<local/test/pre-release>` | `<local URL or env entry>` | `<Nacos/DB/Redis/MQ/OSS/VPN>` | `<health endpoint / compile / smoke API>` | `READY/PENDING/BLOCKED/N/A` | `<path or N/A>` |
 | SYS-003 | Local proxy | `Harness` | `node scripts/harness-local-proxy.mjs changes/<change-id>/local-routing.yml` | `local` | `<proxy URL>` | `<active backend routes>` | `gates/local-routing-gate.sh` | `READY/PENDING/BLOCKED/N/A` | `<path or N/A>` |
+
+> Nacos：只读 / 只改测试环境（namespace `sfa`）；任何 Nacos 配置变更必须在 `evidence.md` 记录（改了什么、为什么、如何验证）。
 
 ## 本地联调拓扑
 

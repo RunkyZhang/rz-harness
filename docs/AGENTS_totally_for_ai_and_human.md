@@ -392,7 +392,7 @@
 
 **⑤ 环境与就绪**
 - 真实 E2E 前：填 `environment-readiness.md` 并跑 `gates/environment-readiness-gate.sh <change-dir>`（环境 / 系统 / 拓扑 / 账号来源 / 数据 / 写库边界 / 回滚 / 设备 / 阻塞 / **无可复用凭据**）。（见「停止点」#4）
-- 本地后端「可验收」只在 `scripts/local-service-lifecycle.sh` 的 HEALTH=UP + check-web-stack 成功后声明（Maven / nohup / 端口单独成功都不算）。
+- 本地后端「可验收」：后端接口验收以 `scripts/local-service-lifecycle.sh` 的 `HEALTH=UP` 为准；**页面冒烟（PC E2E）**另需 `check-web-stack` 成功。Maven / nohup / 端口单独成功都不算。
 
 **⑥ 验收与审查**
 - **业务代码审查前**：跑 `scripts/code-comment-log-quality.sh`。
