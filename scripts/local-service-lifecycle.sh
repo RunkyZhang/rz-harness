@@ -88,7 +88,7 @@ resolve_jar_if_exists() {
   local target="$repo/$module/target"
   jar=""
   [[ -d "$target" ]] || return 0
-  jar="$(find "$target" -maxdepth 1 -name "${module}-*.jar" \
+  jar="$(find "$target" -maxdepth 1 -name "${module}*.jar" \
     ! -name "*-sources.jar" ! -name "*-javadoc.jar" 2>/dev/null | head -1)"
 }
 
@@ -106,10 +106,10 @@ run_build() {
   fi
   if [[ -n "$java_home" ]]; then
     (cd "$repo" && JAVA_HOME="$java_home" PATH="$java_home/bin:$PATH" \
-      "$maven_bin" "${maven_args[@]}" -pl "$module" -am -DskipTests package) || \
+      "$maven_bin" ${maven_args[@]+"${maven_args[@]}"} -pl "$module" -am -DskipTests package) || \
       emit_failure PACKAGE "build failed"
   else
-    (cd "$repo" && "$maven_bin" "${maven_args[@]}" -pl "$module" -am -DskipTests package) || \
+    (cd "$repo" && "$maven_bin" ${maven_args[@]+"${maven_args[@]}"} -pl "$module" -am -DskipTests package) || \
       emit_failure PACKAGE "build failed"
   fi
   resolve_jar
