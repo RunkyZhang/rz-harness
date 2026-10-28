@@ -48,3 +48,6 @@ config/runtime_local.sh
 # 只忽略 changes/<change-id>/ 子目录；changes/ 根下的
 # change-scaffold.sh、status-card.sh、change-whitelist-spec.md 仍可提交。
 /changes/*/
+
+# 本机运行时临时目录（飞书同步 payload、telemetry、agent-work 等），不进版本控制。
+/.harness/

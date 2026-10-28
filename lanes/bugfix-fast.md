@@ -26,7 +26,7 @@
 5. 列出 3-5 个可证伪假设。
 6. 验证最可能假设，一次只改一个变量。
 7. 能写回归测试时，先写失败测试，再修复。
-8. 每个目标仓第一次改业务文件前，从远程主干拉 `harness/<change-id>`；跑 S 三重开工门禁：`gates/confidence-gate.sh <spec-file>`、`gates/assumption-leak-gate.sh <spec-file> <changed-file...>`、`gates/allowed-paths.sh <spec-file> <changed-file...>`。**不要**跑 `business-code-start-gate.sh`。脏仓先写 `dirty-worktree-ledger.md` 并跑 `gates/business-dirty-worktree-gate.sh <repo> [--ledger <ledger>]`。
+8. 每个目标仓第一次改业务文件前，执行 `git switch -c harness/<change-id> --no-track origin/master`（或 `origin/main`）。上游不得是主干。跑 S 三重开工门禁：`gates/confidence-gate.sh <spec-file>`、`gates/assumption-leak-gate.sh <spec-file> <changed-file...>`、`gates/allowed-paths.sh <spec-file> <changed-file...>`。**不要**跑 `business-code-start-gate.sh`。脏仓先写 `dirty-worktree-ledger.md` 并跑 `gates/business-dirty-worktree-gate.sh <repo> [--ledger <ledger>]`。
 9. 修复后重跑原始反馈环和最窄验证命令。
 10. 修复后如第 8 步门禁未重跑，再跑一遍上述三重门禁。
 11. Reviewer 只读审查。

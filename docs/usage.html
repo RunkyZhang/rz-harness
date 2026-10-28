@@ -246,7 +246,7 @@ PRD：&lt;文件路径 / 飞书链接 / 正文&gt;
 
 <section id="step4">
   <h2>5. 实现与 UI</h2>
-  <p>runtime 会：切 <code>harness/&lt;change-id&gt;</code> 分支（不在 master 改）、跑开工门禁、改 <code>allowed_paths</code> 内的代码、记 <code>evidence.md</code>、跑编译/单测/静态检查。</p>
+  <p>runtime 会：用 <code>git switch -c harness/&lt;change-id&gt; --no-track origin/master</code> 切分支（不跟踪 master、不在 master 改）、跑开工门禁、改 <code>allowed_paths</code> 内的代码、记 <code>evidence.md</code>、跑编译/单测/静态检查；不自行 <code>switch</code>/<code>checkout</code> 到 <code>main</code>/<code>master</code>，也不在主干上 <code>commit</code>/<code>merge</code>/<code>rebase</code>/<code>pull</code>/<code>push</code>，合并和推送主线由人做。</p>
   <p>你要做：</p>
   <ul>
     <li>需要登录 / 写库 / 起服务时提供信息；</li>

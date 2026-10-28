@@ -415,7 +415,8 @@ dangerous_command_reason() {
   local command="$1"
   local policy_command normalized lower sep end not_sep
   local re_git_reset re_git_clean re_git_checkout re_git_restore re_git_push_force re_git_push_delete
-  local re_git_branch_delete re_find_delete re_xargs_rm re_shred re_chmod_777
+  local re_git_branch_delete re_git_branch_tracks_main re_git_set_upstream_main re_git_push_main re_git_push_delete_flag
+  local re_find_delete re_xargs_rm re_shred re_chmod_777
   policy_command="$(strip_heredoc_bodies_for_policy "$command")"
   normalized="$(normalize_shell_command "$policy_command")"
   lower="$(lower_shell_command "$policy_command")"
@@ -427,9 +428,13 @@ dangerous_command_reason() {
   re_git_clean="${sep}git[[:space:]]+clean[[:space:]]+${not_sep}*-${not_sep}*f${not_sep}*d"
   re_git_checkout="${sep}git[[:space:]]+checkout[[:space:]]+--${end}"
   re_git_restore="${sep}git[[:space:]]+restore[[:space:]]+\\.${end}"
-  re_git_push_force="${sep}git[[:space:]]+push[[:space:]]+${not_sep}*(--force|-f|--force-with-lease)"
+  re_git_push_force="${sep}git[[:space:]]+push[[:space:]]+${not_sep}*(--force|-f|--force-with-lease|--mirror|--all)"
   re_git_push_delete="${sep}git[[:space:]]+push[[:space:]]+${not_sep}*[[:space:]]:[^[:space:];|&]+"
+  re_git_push_delete_flag="${sep}git[[:space:]]+push[[:space:]]+${not_sep}*--delete"
   re_git_branch_delete="${sep}git[[:space:]]+branch[[:space:]]+-d"
+  re_git_branch_tracks_main="${sep}git[[:space:]]+(-c[[:space:]]+[^[:space:];|&]+[[:space:]]+)?(checkout[[:space:]]+-b|switch[[:space:]]+-c)[[:space:]]+[^[:space:];|&]+[[:space:]]+(origin/(master|main|head)|master|main)${end}"
+  re_git_set_upstream_main="${sep}git[[:space:]]+(-c[[:space:]]+[^[:space:];|&]+[[:space:]]+)?branch[[:space:]]+(--set-upstream-to([[:space:]]+|=)|-u[[:space:]]+)(origin/)?(master|main|head)${end}"
+  re_git_push_main="${sep}git[[:space:]]+(-c[[:space:]]+[^[:space:];|&]+[[:space:]]+)?push[[:space:]].*[[:space:]:+](refs/heads/)?(master|main)${end}"
   re_find_delete="${sep}find[[:space:]]+(\\.|[^;&|[:space:]]+)${not_sep}*[[:space:]]-delete${end}"
   re_xargs_rm="${sep}xargs[[:space:]]${not_sep}*rm${end}"
   re_shred="${sep}shred[[:space:]]+"
@@ -455,13 +460,28 @@ dangerous_command_reason() {
     return 0
   fi
 
-  if [[ "$lower" =~ $re_git_push_delete ]]; then
+  if [[ "$lower" =~ $re_git_push_delete || "$lower" =~ $re_git_push_delete_flag ]]; then
     printf 'destructive shell command requires explicit human approval outside the agent loop: %s\n' "$command"
     return 0
   fi
 
   if [[ "$lower" =~ $re_git_branch_delete ]]; then
     printf 'destructive shell command requires explicit human approval outside the agent loop: %s\n' "$command"
+    return 0
+  fi
+
+  if [[ "$lower" =~ $re_git_branch_tracks_main && "$lower" != *"--no-track"* ]]; then
+    printf 'branch creation must not track a protected branch; use git switch -c <branch> --no-track origin/master: %s\n' "$command"
+    return 0
+  fi
+
+  if [[ "$lower" =~ $re_git_set_upstream_main ]]; then
+    printf 'refusing to set upstream to a protected branch: %s\n' "$command"
+    return 0
+  fi
+
+  if [[ "$lower" =~ $re_git_push_main ]]; then
+    printf 'refusing to push to a protected branch: %s\n' "$command"
     return 0
   fi
 
@@ -632,6 +652,83 @@ business_repo_root_for_path() {
   return 1
 }
 
+repo_root_for_git_command() {
+  local command="$1" cwd="$2" git_c="" var_name="" re_git_c re_git_c_q
+  re_git_c_q='git[[:space:]]+-C[[:space:]]+"([^"]+)"'
+  re_git_c='git[[:space:]]+-C[[:space:]]+([^[:space:];|&]+)'
+  if [[ "$command" =~ $re_git_c_q ]]; then
+    git_c="${BASH_REMATCH[1]}"
+  elif [[ "$command" =~ $re_git_c ]]; then
+    git_c="${BASH_REMATCH[1]}"
+    git_c="${git_c#\"}"
+    git_c="${git_c%\"}"
+    git_c="$(printf '%s' "$git_c" | tr -d "'")"
+  else
+    business_repo_root_for_path "$cwd" || true
+    return 0
+  fi
+  case "$git_c" in
+    \$RZ_REPO_*|\${RZ_REPO_*})
+      var_name="${git_c#\$}"
+      var_name="${var_name#\{}"
+      var_name="${var_name%\}}"
+      load_local_repo_config_once
+      git_c="${!var_name:-}"
+      [[ -n "$git_c" ]] || { business_repo_root_for_path "$cwd" || true; return 0; }
+      ;;
+  esac
+  git_c="${git_c/#\~/$HOME}"
+  business_repo_root_for_path "$(path_from_cwd "$git_c" "$cwd")" || true
+}
+
+protected_branch_name() {
+  case "$1" in
+    main|master|origin/main|origin/master) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+branch_guard_reason() {
+  local command="$1" cwd="$2" lower repo_root branch upstream sep end
+  lower="$(lower_shell_command "$command")"
+  repo_root="$(repo_root_for_git_command "$command" "$cwd" || true)"
+  [[ -n "$repo_root" ]] || return 1
+  sep='(^|[[:space:];|&])'
+  end='([[:space:];|&]|$)'
+
+  if [[ "$lower" =~ ${sep}git[[:space:]]+(-c[[:space:]]+[^[:space:];|&]+[[:space:]]+)?(switch|checkout)[[:space:]]+([^[:space:];|&]+[[:space:]]+)*(main|master)${end} ]]; then
+    printf 'refusing to switch/checkout protected branch in business repo: %s\n' "$repo_root"
+    return 0
+  fi
+
+  if [[ "$lower" =~ ${sep}git[[:space:]]+(-c[[:space:]]+[^[:space:];|&]+[[:space:]]+)?(commit|merge|rebase|cherry-pick|pull|push|reset|revert)${end} ]]; then
+    branch="$(git -C "$repo_root" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+    if [[ -z "$branch" ]]; then
+      printf 'cannot determine current branch for business repo: %s\n' "$repo_root"
+      return 0
+    fi
+    if protected_branch_name "$branch"; then
+      printf 'refusing to run mutating git command on protected branch %s in %s\n' "$branch" "$repo_root"
+      return 0
+    fi
+    upstream="$(git -C "$repo_root" rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null || true)"
+    if protected_branch_name "$upstream"; then
+      printf 'refusing to run mutating git command: upstream is protected %s in %s\n' "$upstream" "$repo_root"
+      return 0
+    fi
+  fi
+
+  if [[ "$lower" =~ ${sep}git[[:space:]]+(-c[[:space:]]+[^[:space:];|&]+[[:space:]]+)?branch[[:space:]]+(-f|--force)[[:space:]]+(main|master)${end} ]]; then
+    printf 'refusing to force-move protected branch in %s\n' "$repo_root"
+    return 0
+  fi
+  if [[ "$lower" =~ ${sep}git[[:space:]]+update-ref[[:space:]]+(-d[[:space:]]+)?refs/heads/(main|master)${end} ]]; then
+    printf 'refusing to update protected ref in %s\n' "$repo_root"
+    return 0
+  fi
+  return 1
+}
+
 field_value() {
   local file="$1" key="$2"
   awk -v key="$key" '
@@ -735,6 +832,11 @@ check_shell_command() {
   lower="$(lower_shell_command "$command")"
   cwd="$(first_json_value cwd working_directory tool_input.cwd tool_input.working_directory input.cwd input.working_directory arguments.cwd arguments.working_directory || true)"
   cwd="${cwd:-$PWD}"
+  reason="$(branch_guard_reason "$command" "$cwd" || true)"
+  if [[ -n "$reason" ]]; then
+    emit_deny "HARNESS/PROTECTED_BRANCH" "$reason"
+    return
+  fi
   reason="$(technical_solution_feishu_block_reason "$command" "$cwd" || true)"
   if [[ -n "$reason" ]]; then
     emit_deny "HARNESS/TECH_SOLUTION_FEISHU_SYNC_REQUIRED" "$reason"

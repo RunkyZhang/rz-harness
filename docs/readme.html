@@ -354,7 +354,7 @@
       <tr><td>2</td><td>技术方案（仅 M/L）</td><td>拍板 + gate</td><td>主 Agent 写 <code>technical-solution.md</code>。确认后写 <code>confirmation_status: CONFIRMED</code>，以及 <code>confirmed_by</code> / <code>confirmed_at</code>，<code>allowed_next_stage</code> 不能是 <code>none</code></td><td>审方案，对话里确认或要求改</td><td><code>technical-solution-gate.sh</code>。未过不得写业务代码。S 为 N/A</td></tr>
       <tr><td>3</td><td>AI 测试方案（仅 M/L）</td><td>拍板 + gate</td><td>Test Strategy 写 <code>ai-test-plan.md</code>。用户确认后主 Agent 只改 <code>test_plan_status: CONFIRMED</code></td><td>审测试方案</td><td><code>ai-test-plan-gate.sh</code>。未过不得实现。S 为 N/A</td></tr>
       <tr><td>4</td><td>环境就绪</td><td>自动关卡，仅真 E2E</td><td>主 Agent 写 <code>environment-readiness.md</code>，账号只写来源</td><td>不用参与</td><td><code>environment_status: READY</code>。真 E2E 前必须 READY</td></tr>
-      <tr><td>5</td><td>Code start</td><td>自动关卡</td><td>从远程主干 <code>origin/master</code> 或 <code>origin/main</code> 拉 <code>harness/&lt;id&gt;</code>。脏仓先写 <code>dirty-worktree-ledger.md</code></td><td>不用参与</td><td>S 三重：confidence、assumption-leak、allowed-paths。M/L 再加 business-code-start。脏仓再加 business-dirty-worktree。未过不得改业务文件</td></tr>
+      <tr><td>5</td><td>Code start</td><td>自动关卡</td><td>用 <code>git switch -c harness/&lt;id&gt; --no-track origin/master</code>（或 <code>origin/main</code>）从远程主干拉；禁止 <code>git checkout -b ... origin/master</code>（会把 upstream 设成主干）。脏仓先写 <code>dirty-worktree-ledger.md</code></td><td>不用参与</td><td>S 三重：confidence、assumption-leak、allowed-paths。M/L 再加 business-code-start。脏仓再加 business-dirty-worktree。未过不得改业务文件</td></tr>
       <tr><td>6</td><td>复杂 UI 确认</td><td>拍板，条件触发</td><td>主 Agent 写 <code>ui-confirmation.md</code>。用户看过可运行页面后，判定表写成 <code>Status: CONFIRMED</code>，人工确认表加一行 Decision=<code>CONFIRMED</code></td><td>看可运行页面。PC smoke 不能替代</td><td><code>ui-confirmation-gate.sh</code>。规则缺口走 <code>ui-rule-gate.sh</code>。未确认不得声称 UI 通过</td></tr>
       <tr><td>7</td><td>Tester 验收（仅 M/L）</td><td>独立角色</td><td>Tester 写 <code>test-agent-verification.md</code>。主 Agent 只修代码、补证据，不得代裁，不得自称 <code>GOAL_ACHIEVED</code></td><td>不用参与；BLOCKED 才升级</td><td>仅 <code>GOAL_ACHIEVED</code> 放行。此后改代码必须重跑。S 可 N/A</td></tr>
       <tr><td>8</td><td>AI 测试报告</td><td>拍板 + gate。L 强制；M 在提测/预发时要</td><td>主 Agent 写 <code>ai-test-report.md</code>。确认后写 <code>confirmation_status: CONFIRMED</code>。进预发还要 <code>recommendation: 允许进入预发</code></td><td>审报告、残余风险、是否进预发</td><td><code>ai-test-report-gate.sh</code>。未确认不得进测试/预发</td></tr>
@@ -548,7 +548,8 @@
   <ul>
     <li>读当前变更；<code>source config/runtime_local.sh</code>；确认允许的仓库和路径。路径空不要猜。</li>
     <li>区分三标签。未决的假设和问题不得进实现。优先用目标仓样板。</li>
-    <li>每个业务仓第一次改代码：从 <code>origin/master</code> 或 <code>origin/main</code> 切 <code>harness/&lt;change-id&gt;</code>，记下基线分支和 commit。不在主干改。</li>
+    <li>每个业务仓第一次改代码：<code>git switch -c harness/&lt;change-id&gt; --no-track origin/master</code>（或 <code>origin/main</code>），记下基线 commit。禁止 <code>git checkout -b harness/&lt;change-id&gt; origin/master</code>：它会把 upstream 设成主干，普通 push 可能改写 master。推送只用 <code>git push -u origin HEAD:harness/&lt;change-id&gt;</code>。</li>
+    <li>runtime 不自行 <code>switch</code>/<code>checkout</code> 到 <code>main</code>/<code>master</code>，也不在主干上 <code>commit</code>/<code>merge</code>/<code>rebase</code>/<code>pull</code>/<code>push</code>；合并和推送主线由人做。</li>
     <li>S/M/L 都跑：<code>confidence-gate.sh</code>、<code>assumption-leak-gate.sh</code>、<code>allowed-paths.sh</code>。</li>
     <li>M/L 再加：<code>business-code-start-gate.sh</code>（它会校验技术方案已经确认）。S 不要跑这个 gate。</li>
     <li>脏仓再加：<code>business-dirty-worktree-gate.sh</code>。参数见 <code>gates/gate_directory.md</code>。</li>
@@ -699,7 +700,7 @@
       <tr><td>14</td><td><code>environment-readiness.md</code></td><td>L 建包即有空壳；真 E2E 前填写。M 非 E2E 可不建</td><td>主 Agent</td><td><code>environment_status: READY</code>。不查 CONFIRMED，不探活</td></tr>
       <tr><td>15</td><td><code>dirty-worktree-ledger.md</code></td><td>业务仓已有未提交改动</td><td>主 Agent</td><td><code>business-dirty-worktree-gate.sh</code>。无脏仓则不建</td></tr>
       <tr><td>16</td><td><code>agent-candidate-confirmation.md</code></td><td>派 Backend / Frontend / Mobile</td><td>主 Agent，用户确认后回写</td><td>不派则不建</td></tr>
-      <tr><td>17</td><td>业务仓分支 <code>harness/&lt;change-id&gt;</code></td><td>第一次改该仓业务文件前</td><td>主 Agent，用 git 拉，不是 md</td><td>停在主干则不得改业务文件。business-code-start 仅 M/L</td></tr>
+      <tr><td>17</td><td>业务仓分支 <code>harness/&lt;change-id&gt;</code></td><td>第一次改该仓业务文件前</td><td>主 Agent，用 git 拉，不是 md</td><td>停在主干或 upstream 是主干则不得改业务文件；runtime 不自行操作主干。business-code-start 仅 M/L</td></tr>
       <tr><td>18</td><td><code>ui-rule-checklist.md</code></td><td>PRD UI / 交互编码，写代码前</td><td>主 Agent</td><td><code>ui-rule-gate.sh</code>。规则缺口未确认不得实现</td></tr>
       <tr><td>19</td><td><code>ui-confirmation.md</code></td><td>复杂 UI，页面可运行后</td><td>主 Agent；用户看过再写 CONFIRMED</td><td><code>ui-confirmation-gate.sh</code>。PC smoke 不能替代</td></tr>
       <tr><td>20</td><td><code>data-model.md</code> / <code>data-model-sql.md</code></td><td>改 DB</td><td>主 Agent</td><td>真实库写要用户二次确认。高危 SQL 禁止</td></tr>
@@ -725,6 +726,7 @@
   <h2>受保护行为</h2>
   <ul>
     <li>不允许把代码提交到 <code>master</code> 或 <code>main</code>。</li>
+    <li>runtime 不自行 <code>switch</code>/<code>checkout</code> 到 <code>main</code>/<code>master</code>，也不在主干上 <code>commit</code>/<code>merge</code>/<code>rebase</code>/<code>pull</code>/<code>push</code>；合并和推送主线由人做。</li>
     <li>未经 spec 明确许可，不要改：生产配置、密钥、<code>.env*</code>、部署清单、DB 迁移、Nacos 生产配置、发布脚本，以及 allowed paths 之外的无关模块。</li>
     <li>真实 SIT / UAT / 生产库默认只读。真实写入、DDL、任务触发的数据变更或会修改数据的 API，需要目标环境、精确 SQL 或 API、预期行数、回滚或清理计划，以及明确的第二次用户确认。</li>
     <li>高危 SQL 全局禁止：<code>DROP DATABASE</code>、<code>DROP TABLE</code>、<code>TRUNCATE</code>、宽范围 <code>DELETE</code>、宽范围 <code>UPDATE</code>，或没有精确范围的写入。</li>

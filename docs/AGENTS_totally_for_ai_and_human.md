@@ -78,7 +78,7 @@
            ├─ pre  事件：能硬停（拦 commit / 危险命令）
            └─ post 事件：只能警告、拦下一步，不能撤销
 ```
-目前 hook 会执行的检查在 `hooks/harness-sensor-runner.sh`。检查内容包括危险 shell（`rm -rf`、`git push --force` 等）和不符合规则的 git 命令。
+目前 hook 会执行的检查在 `hooks/harness-sensor-runner.sh`。检查内容包括危险 shell（`rm -rf`、`git push --force` 等）、不符合规则的 git 命令，以及业务仓主干保护（`switch`/`commit`/`merge`/`push` 到 `main`/`master` 会被拦）。
 
 
 ## 领域名词
@@ -188,7 +188,7 @@
 | 2 | 技术方案（仅 M/L） | 拍板 + gate | 主 Agent 写 `technical-solution.md`（全栈）。用户拍板后，主 Agent 改文首 YAML：`confirmation_status: CONFIRMED`、`confirmed_by` / `confirmed_at`、`allowed_next_stage` 非 `none` | 审方案，在对话里确认或要求改 | `technical-solution-gate.sh` | 文件已 `CONFIRMED`；未过不得写业务代码。**S 本停止点 N/A** |
 | 3 | AI 测试方案（仅 M/L） | 拍板 + gate | Test Strategy 写 `ai-test-plan.md`。用户拍板后，主 Agent 写成 `test_plan_status: CONFIRMED` | 审测试方案，在对话里确认或要求改 | `ai-test-plan-gate.sh` | 已 `CONFIRMED`；未过不得实现。**S 本停止点 N/A** |
 | 4 | 环境就绪 | 自动关卡（仅真 E2E） | 主 Agent 写 `environment-readiness.md`；账号只写来源                                                        | 自动点，无需用户参与 | `environment-readiness-gate.sh` | `environment_status: READY`；真 E2E 前必须 READY |
-| 5 | Code start | 自动关卡 | 主 Agent 从业务仓远程主干 `origin/master`（或 `origin/main`）拉 `harness/<id>`；`allowed_paths` 写在 spec；脏仓先写 `dirty-worktree-ledger.md` | 自动点，无需用户参与 | **S：** `confidence-gate.sh`、`assumption-leak-gate.sh`、`allowed-paths.sh`。**M/L 再加** `business-code-start-gate.sh`。脏仓再加 `business-dirty-worktree-gate.sh` | 开工门禁通过（S 三重 / M/L 四重，见「强制工作流」②）；未过不得改业务文件 |
+| 5 | Code start | 自动关卡 | 主 Agent 用 `git switch -c harness/<id> --no-track origin/master`（或 `origin/main`）从业务仓远程主干拉；禁止 `git checkout -b ... origin/master`（会把 upstream 设成主干）；`allowed_paths` 写在 spec；脏仓先写 `dirty-worktree-ledger.md` | 自动点，无需用户参与 | **S：** `confidence-gate.sh`、`assumption-leak-gate.sh`、`allowed-paths.sh`。**M/L 再加** `business-code-start-gate.sh`。脏仓再加 `business-dirty-worktree-gate.sh` | 开工门禁通过（S 三重 / M/L 四重，见「强制工作流」②）；未过不得改业务文件 |
 | 6 | 复杂 UI 确认 | 拍板（条件触发） | 主 Agent 写 `ui-confirmation.md`。用户拍板后，主 Agent 把判定表写成 `Status: CONFIRMED`，并在人工确认表加一行 Decision=`CONFIRMED` | 看可运行页面，在对话里确认。PC smoke 不能替代 | `ui-confirmation-gate.sh`；规则缺口走 `ui-rule-gate.sh` | 已 `CONFIRMED`；未确认不得声称 UI 通过 |
 | 7 | Tester 验收（仅 M/L） | 独立角色 | Tester 写 `test-agent-verification.md`。主 Agent 只修代码、补证据，不得代裁、不得自称 `GOAL_ACHIEVED`                   | 自动点，无需用户参与 | `test-agent-verification-gate.sh` | 仅 `GOAL_ACHIEVED` 才放行。`BLOCKED` 是停不是过。此后改代码必须重跑。**S 可 `N/A`** |
 | 8 | AI 测试报告 | 拍板 + gate（L 强制；M 提测/预发时要） | 主 Agent 写 `ai-test-report.md`。用户拍板后，主 Agent 改「人工确认」YAML：`confirmation_status: CONFIRMED`；进预发还要 `recommendation: 允许进入预发` | 审报告、残余风险、是否进预发，在对话里确认 | `ai-test-report-gate.sh` | 已人工 `CONFIRMED`；未确认不得进测试/预发 |
@@ -299,7 +299,7 @@
 | 14 | `environment-readiness.md`                        | 拷 `templates/environment-readiness.md`（L scaffold；M 命中再拷）                                          | **空壳：** L 建包即有。**填写：** 真 E2E 前（可提前）。M 非 E2E 可不建 | 环境、拓扑、账号**来源**、写库边界 | 主 Agent | `environment-readiness-gate.sh` | `environment_status: READY`。不查 CONFIRMED，不探活 |
 | 15 | `dirty-worktree-ledger.md`                        | 条件命中时主 Agent 拷 `templates/dirty-worktree-ledger.md`；scaffold / gate 都不创建                           | 条件：业务仓已有未提交改动 | 脏 diff 归属，避免覆盖用户工作 | 主 Agent | `business-dirty-worktree-gate.sh` | 无脏仓则不建 |
 | 16 | `agent-candidate-confirmation.md`                 | 条件命中时主 Agent 拷 `templates/agent-candidate-confirmation.md`；scaffold / gate 都不创建                    | 条件：派 Backend / Frontend / Mobile | 允许候选实现 Agent | 主 Agent（用户确认后回写） | 派发前检查 | 不派则不建 |
-| 17 | 业务仓分支 `harness/<change-id>`                       | **git**：从业务仓远程主干 `origin/master`（或 `origin/main`）拉，不是 md                                                              | 第一次改该仓业务文件前 | 实现落点，不是变更包内文件 | 主 Agent | S：`confidence-gate` / `assumption-leak-gate` / `allowed-paths`。M/L 再加 `business-code-start-gate.sh`。脏仓再加 `business-dirty-worktree-gate.sh` | 停在主干则不得改业务文件。`business-code-start-gate` **仅 M/L** |
+| 17 | 业务仓分支 `harness/<change-id>`                       | **git**：`git switch -c harness/<change-id> --no-track origin/master`（或 `origin/main`），不是 md；禁止 `checkout -b ... origin/master` | 第一次改该仓业务文件前 | 实现落点，不是变更包内文件 | 主 Agent | S：`confidence-gate` / `assumption-leak-gate` / `allowed-paths`。M/L 再加 `business-code-start-gate.sh`。脏仓再加 `business-dirty-worktree-gate.sh` | 停在主干或 upstream 是主干则不得改业务文件。`business-code-start-gate` **仅 M/L** |
 | 18 | `ui-rule-checklist.md`                            | 条件命中时主 Agent 拷 `templates/ui-rule-checklist.md`；scaffold / gate 都不创建                               | 条件：PRD UI / 交互编码 | UI 规范逐项、缺口 | 主 Agent | `ui-rule-gate.sh` | 规则缺口未确认不得实现 |
 | 19 | `ui-confirmation.md`                              | 条件命中时主 Agent 拷 `templates/ui-confirmation.md`；scaffold / gate 都不创建                                 | 条件：复杂 UI | 可运行页 / 截图后的确认记录 | 主 Agent；用户看页面后主 Agent 写 `Status: CONFIRMED` | `gates/ui-confirmation-gate.sh` | PC smoke 不能替代 |
 | 20 | `data-model.md` / `data-model-sql.md`             | SQL：条件命中时主 Agent 拷 `templates/data-model-sql.md`。**`data-model.md` 无模板**，对照方案自建。scaffold / gate 都不创建 | 条件：改 DB | ER、字段来源、可执行 SQL | 主 Agent | 无单独过门；真实库写要用户二次确认 | 高危 SQL 禁止 |
@@ -336,7 +336,7 @@
 6. **技术方案**（M/L）：`technical-solution.md` + 用户确认；命中飞书 PRD 时同步到飞书子文档 + 跑 `gates/technical-solution-feishu-sync-gate.sh`。（见「强制工作流」④，「停止点」#2）
 7. **AI 测试方案**（M/L）：独立 Test Strategy 写 `ai-test-plan.md`（见「子 Agent」）。主 Agent 不得代写。用户确认后，主 Agent 写成 `test_plan_status: CONFIRMED`。（见「停止点」#3）
 8. **plan 与 verification-map**（M/L）：方案确认后、开工前填写 `plan.md`、`verification-map.md`。S 可 `N/A`。
-9. **开工门禁**：从业务仓远程主干 `origin/master`（或 `origin/main`）拉 `harness/<change-id>`；过开工门禁。S 三重 / M/L 四重。（见「强制工作流」②），（见「停止点」#5）
+9. **开工门禁**：用 `git switch -c harness/<change-id> --no-track origin/master`（或 `origin/main`）从业务仓远程主干拉分支；禁止 `git checkout -b ... origin/master`。过开工门禁。S 三重 / M/L 四重。（见「强制工作流」②），（见「停止点」#5）
 10. **实现 + 记证据**：只改 `allowed_paths` 内文件；命令记入 `changes/<change-id>/evidence.md`。PRD 有界面时，写代码前先写 `ui-rule-checklist.md`，规则缺口停下等用户。（见「停止点」#6）
     - **常规验证**（进入第 11 步前）：编译、定向测试、窄范围 lint（前端 `scripts/frontend-lint-build.sh` 的 `lint-files`，后端 `scripts/mvn-targeted-test.sh`）；`verification-map.md` 有可执行行时跑 `scripts/verification-run.sh`。跑不了写 `BLOCKED` 和原因。已选 lane 时以该 lane 为准。S 档第 11 步为 `N/A` 时，本节验证在第 13 步前完成。
     - **复杂 UI**：页面可运行后写 `ui-confirmation.md`，用户看过再确认。
@@ -376,7 +376,8 @@
 **② 开工前（写业务代码前）**
 - ★ 读当前变更；`source config/runtime_local.sh`；确认允许的仓库 / 路径。
 - ★ 区分 `[FACT]` / `[ASSUMP]` / `[QUESTION]`（见「需求理解」）；未决的假设 / 问题不得进实现；优先用目标仓样板。
-- ★ 每个业务仓首次改代码：从 `origin/master`（或 `origin/main`）切 `harness/<change-id>`，记基线分支 + commit，**不在主干改**。
+- ★ 每个业务仓首次改代码：`git switch -c harness/<change-id> --no-track origin/master`（或 `origin/main`），记基线 commit；切时没有 upstream，首次 `git push -u origin HEAD:harness/<change-id>` 后 upstream 必须是 `origin/harness/<change-id>`。推送只允许该命令。禁止 `git checkout -b harness/<change-id> origin/master`：它会跟踪主干，普通 `git push` 会改写 `main`/`master`。
+- ★ runtime 不自行操作主干：不得自行 `switch`/`checkout` 到 `main`/`master`，不得在 `main`/`master` 上 `commit`/`merge`/`rebase`/`pull`/`push`；合并和推送主线由人做。hook 按业务仓当前分支和 upstream 拦截。
 - 开工门禁：
   - **S/M/L 都跑**：`gates/confidence-gate.sh <spec-file>`、`gates/assumption-leak-gate.sh <spec-file> <changed-file...>`、`gates/allowed-paths.sh <spec-file> <changed-file...>`。
   - **M/L 再加**：`gates/business-code-start-gate.sh <change-dir> <changed-file...>`（它校验技术方案 + 开工）。
@@ -424,6 +425,7 @@
 
 ## 受保护行为
 - 不允许提交代码到 master 或者 main 分支
+- runtime 不自行操作主干：不得自行 `switch`/`checkout` 到 `main`/`master`，不得在 `main`/`master` 上 `commit`/`merge`/`rebase`/`pull`/`push`；合并和推送主线由人做。hook 按业务仓当前分支和 upstream 拦截。
 - 未经 spec 明确许可不要修改：生产配置、密钥、`.env*`、部署清单、DB 迁移、Nacos 生产配置、发布脚本，或 allowed paths 之外的无关模块。
 - 真实 SIT/UAT/生产 DB 访问默认只读。真实数据写入、DDL、任务触发的数据变更或会修改的 API 需要目标环境、精确 SQL/API、预期行数、回滚/清理计划，以及明确的第二次用户确认。
 - 高危 SQL 全局禁止：`DROP DATABASE`、`DROP TABLE`、`TRUNCATE`、宽范围 `DELETE`、宽范围 `UPDATE`，或没有精确范围的写入。

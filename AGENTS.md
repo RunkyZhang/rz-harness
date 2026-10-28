@@ -8,7 +8,7 @@
 
 ## 1. 全局硬约束（S/M/L 都要）★
 
-- **不在 `main`/`master` 改业务代码，也不提交到 `main`/`master`**；每仓首次改前从 `origin/master`（或 `origin/main`）切 `harness/<change-id>`，记基线 commit。
+- **分支与主干**：每仓首次改前 `git switch -c harness/<change-id> --no-track origin/master`（或 `origin/main`），记基线 commit；禁止 `git checkout -b ... origin/master`（会跟踪主干）。首次推送只用 `git push -u origin HEAD:harness/<change-id>`。runtime 不自行 `switch`/`checkout` 到 `main`/`master`，也不在主干上 `commit`/`merge`/`rebase`/`pull`/`push`；合并和推送主线由人做。
 - 未经 spec 许可不改：生产配置、密钥、`.env*`、部署清单、DB 迁移、Nacos 生产配置、发布脚本、`allowed_paths` 外的模块。
 - 真实 SIT/UAT/生产库**默认只读**；真实写入/DDL/改数据的 API 需：目标环境 + 精确 SQL/API + 预期行数 + 回滚计划 + **用户第二次确认**。
 - 高危 SQL 全局禁止：`DROP DATABASE`、`DROP TABLE`、`TRUNCATE`、宽范围 `DELETE`/`UPDATE`、无精确范围的写入。
@@ -113,7 +113,7 @@
 ### 7.3 强制工作流（M/L 等；★ = 全局，S/M/L 都适用）
 
 1. **开场**：第一条回复列出本次会碰到的关卡（用停止点表，不要手写混合名单）。
-2. **开工前**：★ `source config/runtime_local.sh`、确认允许路径、优先用目标仓样板；★ 三标签未决不进实现；★ 切 `harness/<change-id>` 分支；跑开工门禁（见停止点 5）。
+2. **开工前**：★ `source config/runtime_local.sh`、确认允许路径、优先用目标仓样板；★ 三标签未决不进实现；★ 用 `--no-track` 从 `origin/master`（或 `origin/main`）切 `harness/<change-id>`，上游不得是主干；跑开工门禁（见停止点 5）。
 3. **不可豁免**：口头「ok」不能跳过档位需要或条件命中的关卡（含飞书同步）；状态卡持续更新；代码再变则旧结论作废，重跑 Tester 再重跑 Reviewer；主 Agent 不得代裁 Tester / Reviewer。
 4. **M/L 默认必做**：全栈 `technical-solution.md` 需 `CONFIRMED`（必须覆盖模板列出的每一块 PRD 面；**前端 / APP / 导出 / 分析 / 跨仓在范围内时，只写后端无效**）；Test Strategy 写 `ai-test-plan.md`，**主 Agent 不得代写正文**，用户确认后只写 `test_plan_status: CONFIRMED`；按 `skills/skill_directory.md` 记 `skill-usage.md`（未用写 N/A）并跑 `gates/skill-usage-gate.sh`。
 5. **命中才做**：行为 / 契约变更（spec + 契约 + evidence）｜Java 行为变更（`backend-test-plan.md` 或 N/A，仅编译不够）｜Swagger 对外 VO（**仅当有活动 `rules/backends/*/manifest.yml` profile**：只扫该 profile 的响应根；新增对外 `*VO.java` 用 `@ApiModel` + 每字段 `@ApiModelProperty`；不追溯既往；不含导出模型与基础设施 DTO；pre-commit 跑 `gates/swagger-model-documentation-gate.sh`）｜前端 / UI（PRD UI 需 `ui-rule-checklist.md` + `gates/ui-rule-gate.sh`，规则缺口停下等用户；复杂 UI 需可运行页面 + `ui-confirmation.md`；目标仓的启动方式 / Node 版本 / 登录 / 路由约定见 `config/baselines/<repo>.md`，按其执行）｜DB（带 ER 数据模型 + 可执行 SQL + 规范化检查 + 自包含注释 + 字段来源）｜飞书 PRD（`scripts/technical-solution-feishu-sync.sh` 同步 + 改后重同步 + `gates/technical-solution-feishu-sync-gate.sh`；流程图 / ER / 状态图用白板不用 Mermaid）｜复杂行为（`capability-spec.md` / `behavior-spec.md` + verification-map 映射）。

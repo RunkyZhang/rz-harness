@@ -195,16 +195,38 @@ for repo_root in "${repo_roots[@]}"; do
     "BUSINESS_CODE_START/DETACHED_HEAD" \
     "business repo is not on a named branch: $repo_root" \
     "Switch to a harness/<change-id> branch before editing." \
-    "git -C $repo_root switch -c harness/<change-id>"
+    "git -C $repo_root switch -c harness/<change-id> --no-track origin/master"
   case "$branch" in
     main|master)
       fail \
         "BUSINESS_CODE_START/PROTECTED_BRANCH" \
         "business repo is on protected branch '$branch': $repo_root" \
-        "Create or switch to a harness/<change-id> branch before editing business code." \
-        "git -C $repo_root switch -c harness/<change-id>"
+        "Create a harness/<change-id> branch with --no-track before editing business code." \
+        "git -C $repo_root switch -c harness/<change-id> --no-track origin/master"
       ;;
   esac
+  upstream="$(git -C "$repo_root" rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null || true)"
+  case "$upstream" in
+    main|master|origin/main|origin/master)
+      fail \
+        "BUSINESS_CODE_START/TRACKS_PROTECTED_BRANCH" \
+        "branch '$branch' tracks protected upstream '$upstream': $repo_root" \
+        "Unset that upstream. Push only to the harness branch." \
+        "git -C $repo_root branch --unset-upstream && git -C $repo_root push -u origin HEAD:harness/<change-id>"
+      ;;
+  esac
+  while read -r hbranch hup; do
+    [[ -n "$hbranch" ]] || continue
+    case "$hup" in
+      main|master|origin/main|origin/master)
+        fail \
+          "BUSINESS_CODE_START/OTHER_BRANCH_TRACKS_PROTECTED" \
+          "local harness branch '$hbranch' tracks protected upstream '$hup': $repo_root" \
+          "Unset that upstream. Push only to the harness branch." \
+          "git -C $repo_root branch --unset-upstream $hbranch"
+        ;;
+    esac
+  done < <(git -C "$repo_root" for-each-ref --format='%(refname:short) %(upstream:short)' 'refs/heads/harness/*')
 done
 
 printf 'PASS: business code start gate passed for %s (%s file(s), %s repo(s))\n' "$change_dir" "$#" "${#repo_roots[@]}"
