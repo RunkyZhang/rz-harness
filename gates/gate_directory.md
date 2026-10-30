@@ -45,6 +45,20 @@ S/M/L 都跑：`confidence-gate`（见上节停止点 1）、`assumption-leak-ga
 | `assumption-leak-gate.sh` | `gates/assumption-leak-gate.sh <spec-file> <changed-file>...` | 实现文件不含 `[ASSUMP]` 字面标签；spec 中 ASSUMP 的高信号标识符未泄漏进实现 | spec 三标签已清 |
 | `business-dirty-worktree-gate.sh` | `gates/business-dirty-worktree-gate.sh <repo> [--ledger <ledger.md>]` | 业务仓有脏 diff 时，每个脏文件必须记入台账（含 owner 和 decision），防止静默覆盖用户工作 | 脏仓时先建 `dirty-worktree-ledger.md` |
 
+### 5b. 代码人审（停止点 5b）
+
+实现完成、用户确认代码后、派 Tester / Reviewer 前必跑。
+
+| Gate | 命令 | 检查什么 | 前置依赖 |
+|---|---|---|---|
+| `code-confirmation-gate.sh` | `gates/code-confirmation-gate.sh <change-dir>` | `code-confirmation.md` 存在；`code_confirmation_status: CONFIRMED`，或 `NOT_APPLICABLE` 且 `na_reason` 非空 | 阶段 A 自检（编译 + 定向单测）已过；用户已确认 diff |
+
+阶段边界：
+
+- 阶段 A（完整自检）：编译 + 完整测试（后端模块全量单测 + 本次定向测试，历史失败记基线噪声），不派 Tester / Reviewer。
+- 阶段 B（代码确认，5b）：按用户意见反复调整代码细节；**只要求编译通过，不跑测试**；不派 Tester / Reviewer。
+- 阶段 C（完整验收）：本 gate PASS 后才能跑 Tester / Reviewer / 全量门禁；代码再改回 `CHANGE_REQUESTED`。
+
 ### 6. 实现阶段（条件触发）
 
 | Gate | 命令 | 检查什么 | 前置依赖 |
@@ -92,6 +106,7 @@ S/M/L 都跑：`confidence-gate`（见上节停止点 1）、`assumption-leak-ga
 | 3 测试方案（仅 M/L） | `ai-test-plan-gate` + `verification-map-gate`；S 本停止点 N/A |
 | 4 环境 | `environment-readiness-gate` |
 | 5 开工 | S：`confidence-gate` + `assumption-leak-gate` + `allowed-paths`。M/L 再加 `business-code-start-gate`。脏仓再加 `business-dirty-worktree-gate` |
+| 5b 代码人审 | `code-confirmation-gate`（`CONFIRMED` 或带 `na_reason` 的 `NOT_APPLICABLE`；未过禁止派 Tester / Reviewer） |
 | 6 UI | `ui-rule-gate` + `ui-confirmation-gate`（复杂 UI） |
 | 7 Tester | `test-agent-verification-gate` |
 | 8 报告 | `ai-test-report-gate` |

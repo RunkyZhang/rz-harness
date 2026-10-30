@@ -101,6 +101,7 @@ write_status() {
 copy_template "$spec_template" "spec.md"
 write_status
 write_evidence
+copy_template "code-confirmation.md" "code-confirmation.md"
 
 if [[ "$profile" == "tier-m" || "$profile" == "tier-l" ]]; then
   copy_template "plan-tier-m.md" "plan.md"

@@ -30,6 +30,7 @@ changes/change-scaffold.sh --tier S|M|L <change-id>
 | `agent-dispatch-plan.md` | `agent-dispatch-plan.md` | M/L | 准备派哪些子 Agent。RZ 不调标本 registry 脚本 | 主 Agent；对照 `subagents/dispatch_subagent.md` | 标本 `agent-dispatch-plan-gate.sh` **RZ 未拷** |
 | `skill-usage.md` | `skill-usage.md` | M/L | 用过哪些 skill 或 N/A | 主 Agent | `skill-usage-gate.sh` |
 | `review.md` | `review.md` | M/L | 人审 / PR 前只读审查 | **Reviewer** 填；主 Agent 不得代裁 | `reviewer-gate.sh` |
+| `code-confirmation.md` | `code-confirmation.md` | S/M/L（S 可 `NOT_APPLICABLE`） | 停 5b 代码人审：diff 基线、逐轮意见、用户确认结论 | 主 Agent 写，用户确认 | `code-confirmation-gate.sh`（未确认禁止 Tester / Reviewer） |
 | `environment-readiness.md` | `environment-readiness.md` | L 建包即有；M 命中再拷 | 环境、拓扑、账号**来源**、写库边界 | 主 Agent | `environment-readiness-gate.sh`（查 `READY`，不探活） |
 | `ai-test-report.md` | `ai-test-report.md` | L 建包即有；M 提测再拷 | 测试结论给人确认 | 主 Agent 汇总；用户确认后写 `CONFIRMED` | `ai-test-report-gate.sh` |
 | `decisions.md` | `decisions.md` | L 建包即有；S/M 可后补 | 过程决策记录 | 主 Agent | 无单独过门 |

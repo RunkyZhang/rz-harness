@@ -178,9 +178,9 @@
 
 `status-card.md` 只镜像进度，不是拍板原文。`BLOCKED` 是合法停、升级给用户，不是放行。gate 脚本在 `gates/`；状态卡收集脚本在 `changes/status-card.sh`（只读，不裁决）。
 
-用户平时节奏：**答 QUESTION（1）→ 确认方案（2）→ 确认测试方案（3）→（条件）确认 UI（6）→ 确认测试报告（8）→ 人工 review**。4 / 5 / 7 / 9 平时无需介入。
+用户平时节奏：**答 QUESTION（1）→ 确认方案（2）→ 确认测试方案（3）→ 确认代码（5b，可多轮，只卡编译）→（条件）确认 UI（6）→ 确认测试报告（8）→ 人工 review**。4 / 5 / 7 / 9 平时无需介入。
 
-编号与阶段顺序不一一对应：环境材料（4）可提前准备，强制时点在真实 E2E 前；code-start（5）先于 E2E；验收阶段可同时挂 7 / 8 / 9。契约冻结不是这 9 个里的编号项，未冻不得实现。DB 真实写入二次确认挂在实现阶段内，仍由用户拍板。pre-merge 卫生扫描是检查项，不是决策停止点。
+编号与阶段顺序不一一对应：环境材料（4）可提前准备，强制时点在真实 E2E 前；code-start（5）先于 E2E；代码人审为 5b（未确认不得启动 Tester / Reviewer）；验收阶段可同时挂 7 / 8 / 9。契约冻结不是编号项，未冻不得实现。DB 真实写入二次确认挂在实现阶段内，仍由用户拍板。pre-merge 卫生扫描是检查项，不是决策停止点。
 
 | # | 停止点 | 类型 | 谁写产物                                                                                               | 用户要干嘛 | 谁检查 | 怎样算过 |
 |---|---|---|----------------------------------------------------------------------------------------------------|---|---|---|
@@ -189,6 +189,7 @@
 | 3 | AI 测试方案（仅 M/L） | 拍板 + gate | Test Strategy 写 `ai-test-plan.md`。用户拍板后，主 Agent 写成 `test_plan_status: CONFIRMED` | 审测试方案，在对话里确认或要求改 | `ai-test-plan-gate.sh` | 已 `CONFIRMED`；未过不得实现。**S 本停止点 N/A** |
 | 4 | 环境就绪 | 自动关卡（仅真 E2E） | 主 Agent 写 `environment-readiness.md`；账号只写来源                                                        | 自动点，无需用户参与 | `environment-readiness-gate.sh` | `environment_status: READY`；真 E2E 前必须 READY |
 | 5 | Code start | 自动关卡 | 主 Agent 用 `git switch -c harness/<id> --no-track origin/master`（或 `origin/main`）从业务仓远程主干拉；禁止 `git checkout -b ... origin/master`（会把 upstream 设成主干）；`allowed_paths` 写在 spec；脏仓先写 `dirty-worktree-ledger.md` | 自动点，无需用户参与 | **S：** `confidence-gate.sh`、`assumption-leak-gate.sh`、`allowed-paths.sh`。**M/L 再加** `business-code-start-gate.sh`。脏仓再加 `business-dirty-worktree-gate.sh` | 开工门禁通过（S 三重 / M/L 四重，见「强制工作流」②）；未过不得改业务文件 |
+| 5b | 代码人审（S/M/L） | 拍板 + gate | 主 Agent 先做阶段 A 完整自检（编译 + 完整测试：后端模块全量单测 + 本次定向测试）；阶段 B 把 diff 交给用户反复调整（只要求编译通过，不跑测试），写 `code-confirmation.md`。用户确认后写 `code_confirmation_status: CONFIRMED` | 看 diff，提修改意见，确认代码 | `code-confirmation-gate.sh` | `CONFIRMED`，或 `NOT_APPLICABLE` 且 `na_reason` 非空；未过不得派 Tester / Reviewer。代码再改回 `CHANGE_REQUESTED` |
 | 6 | 复杂 UI 确认 | 拍板（条件触发） | 主 Agent 写 `ui-confirmation.md`。用户拍板后，主 Agent 把判定表写成 `Status: CONFIRMED`，并在人工确认表加一行 Decision=`CONFIRMED` | 看可运行页面，在对话里确认。PC smoke 不能替代 | `ui-confirmation-gate.sh`；规则缺口走 `ui-rule-gate.sh` | 已 `CONFIRMED`；未确认不得声称 UI 通过 |
 | 7 | Tester 验收（仅 M/L） | 独立角色 | Tester 写 `test-agent-verification.md`。主 Agent 只修代码、补证据，不得代裁、不得自称 `GOAL_ACHIEVED`                   | 自动点，无需用户参与 | `test-agent-verification-gate.sh` | 仅 `GOAL_ACHIEVED` 才放行。`BLOCKED` 是停不是过。此后改代码必须重跑。**S 可 `N/A`** |
 | 8 | AI 测试报告 | 拍板 + gate（L 强制；M 提测/预发时要） | 主 Agent 写 `ai-test-report.md`。用户拍板后，主 Agent 改「人工确认」YAML：`confirmation_status: CONFIRMED`；进预发还要 `recommendation: 允许进入预发` | 审报告、残余风险、是否进预发，在对话里确认 | `ai-test-report-gate.sh` | 已人工 `CONFIRMED`；未确认不得进测试/预发 |
@@ -317,6 +318,7 @@
 | 32 | `decisions.md`                                    | 拷 `templates/decisions.md`（L scaffold）                                                             | **空壳：** L 建包即有。**填写：** 过程中有拍板时。S/M 可后补 | 过程决策记录 | 主 Agent | 无单独过门 | L 强制 |
 | 33 | `retro.md`                                        | 收口时主 Agent 拷 `templates/retro.md`；scaffold / gate 都不创建                                             | 收口时，可后补 | 复盘 | 主 Agent | 无单独过门 | 变更包不进 git；大文件仍放包内 `artifacts/` |
 | 34 | `handoff.md`                                      | **无 `templates/handoff.md`**；按 handoff skill 里的章节自建                                                | **随时**：换线程、暂停、上下文压缩 | 留给**下一个主 Agent**的交接单 | 主 Agent | 无 gate | 不是 Explorer / Reviewer 之间的信箱 |
+| 35 | `code-confirmation.md`                            | 拷 `templates/code-confirmation.md`（S/M/L scaffold 空壳）                                                  | **空壳：** 建包即有。**填写：** 阶段 B 逐轮追加；用户确认后写 `CONFIRMED` | 代码人审：diff 基线、逐轮意见、确认结论 | 主 Agent；用户确认 | `code-confirmation-gate.sh` | 未 `CONFIRMED`（或带 `na_reason` 的 `NOT_APPLICABLE`）不得派 Tester / Reviewer |
 
 ## 工作流
 
@@ -338,10 +340,11 @@
 8. **plan 与 verification-map**（M/L）：方案确认后、开工前填写 `plan.md`、`verification-map.md`。S 可 `N/A`。
 9. **开工门禁**：用 `git switch -c harness/<change-id> --no-track origin/master`（或 `origin/main`）从业务仓远程主干拉分支；禁止 `git checkout -b ... origin/master`。过开工门禁。S 三重 / M/L 四重。（见「强制工作流」②），（见「停止点」#5）
 10. **实现 + 记证据**：只改 `allowed_paths` 内文件；命令记入 `changes/<change-id>/evidence.md`。PRD 有界面时，写代码前先写 `ui-rule-checklist.md`，规则缺口停下等用户。（见「停止点」#6）
-    - **常规验证**（进入第 11 步前）：编译、定向测试、窄范围 lint（前端 `scripts/frontend-lint-build.sh` 的 `lint-files`，后端 `scripts/mvn-targeted-test.sh`）；`verification-map.md` 有可执行行时跑 `scripts/verification-run.sh`。跑不了写 `BLOCKED` 和原因。已选 lane 时以该 lane 为准。S 档第 11 步为 `N/A` 时，本节验证在第 13 步前完成。
+    - **阶段 A 完整自检**（进入第 11 步前）：编译 + 完整测试（后端模块全量单测 + 本次定向测试，历史失败记基线噪声）+ 窄范围 lint；`verification-map.md` 有可执行行时跑 `scripts/verification-run.sh`。跑不了写 `BLOCKED` 和原因。
+    - **阶段 B 代码人审（停 5b）**：把 diff 交给用户反复调整（文件增删、方法选择、参数签名、核心逻辑实现方式），**只要求编译通过，不跑测试**；用户确认后写 `code-confirmation.md` 的 `CONFIRMED` 并跑 `gates/code-confirmation-gate.sh`。未过不得进入第 11 步。
     - **复杂 UI**：页面可运行后写 `ui-confirmation.md`，用户看过再确认。
     - **Optional Pack（命中才跑）**：E2E → 按 `lanes/pc-e2e-smoke.md`（**先过停止点 4：环境 READY**）；Impact / Parallel（CodeGraph/GitNexus、多 Agent worktree）→ RZ 未引入 → `N/A`。
-11. **Tester 验收**（M/L）：独立 Tester 对照已确认测试方案，由 Tester 填写 `test-agent-verification.md`。主 Agent 只修代码、补 evidence，不得代填、不得自称 `GOAL_ACHIEVED`。未达到则回到第 10 步改代码再测。`BLOCKED` 升级给用户，不算过。（停止点 7）
+11. **Tester 验收**（M/L）：先确认 `code-confirmation-gate` PASS（停 5b）。独立 Tester 对照已确认测试方案，由 Tester 填写 `test-agent-verification.md`。主 Agent 只修代码、补 evidence，不得代填、不得自称 `GOAL_ACHIEVED`。未达到则回到第 10 步改代码再测。`BLOCKED` 升级给用户，不算过。（停止点 7）
 12. **AI 测试报告**（提测 / 预发）：`ai-test-report.md` + 用户确认。（停止点 8）
 13. **Reviewer 过门**：只读审查，`high_risk_count: 0`。（停止点 9；S 走 `bugfix-fast` 时仍建议 Reviewer）
 14. **人工 review / PR / SIT**。

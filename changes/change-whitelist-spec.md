@@ -45,6 +45,7 @@ historical_policy: warn_only
 - `ai-test-report.md`
 - `verification-run-report.md`
 - `review.md`
+- `code-confirmation.md`
 - `evidence.md`
 - `retro.md`
 - `skill-usage.md`

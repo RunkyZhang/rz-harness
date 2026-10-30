@@ -37,6 +37,7 @@ Agent Label: promo-sku-unit / Backend / Query+Export
 | `Write scope` | 允许写入的文件或 `READ_ONLY` |
 | `Forbidden actions` | 禁止改动的路径、禁止真实环境写、禁止回滚用户改动 |
 | `Verification` | 必跑命令或明确 N/A 原因 |
+| `Code confirmation` | 派 `Tester` / `Reviewer` 前必须 `gates/code-confirmation-gate.sh changes/<change-id>` PASS；否则不得派发 |
 | `Output contract` | 结果文件、最终回复格式、状态枚举 |
 
 禁止派发含糊 prompt，例如只写“帮我看看后端”或“做一下前端”。
@@ -90,8 +91,10 @@ Agent Label: promo-sku-unit / Backend / Query+Export
 
 以下情况必须把既有 Agent 结论标记为 `STALE`，并重新走对应验证：
 
-- Tester 后业务代码变化：重新 Tester 验收。
-- Reviewer 后业务代码变化：重新 Tester 验收，再重新 Reviewer 和 `gates/reviewer-gate.sh`。
+- 派 Tester / Reviewer 前：`code-confirmation-gate` 必须 PASS（`code_confirmation_status: CONFIRMED`，或带 `na_reason` 的 `NOT_APPLICABLE`）。
+- 新 session / 换 runtime 接手：先读 `status-card.md`（阶段是否为 `代码待确认`）→ `code-confirmation.md` → `handoff.md`，不从零重跑；暂停时主 Agent 必须在 `handoff.md` 写明确认状态与「未确认勿派 Tester」。
+- Tester 后业务代码变化：`code_confirmation_status` 回 `CHANGE_REQUESTED` → 重新走代码人审（停 5b）→ 再重新 Tester 验收。
+- Reviewer 后业务代码变化：同样先回 `CHANGE_REQUESTED` 重走 5b，再重新 Tester 验收，再重新 Reviewer 和 `gates/reviewer-gate.sh`。
 - 技术方案确认后正文变化且 PRD 来源为飞书：重新 Feishu sync，再跑 `technical-solution-gate.sh`。
 - AI test plan 确认后需求范围变化：重新生成或修订 `ai-test-plan.md` 并重新用户确认。
 

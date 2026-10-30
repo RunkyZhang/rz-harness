@@ -6,7 +6,7 @@
 | Item | Value |
 | --- | --- |
 | Lane | `TODO` |
-| 当前阶段 | `需求理解 / 方案确认 / 允许开工 / 实现中 / AI测试待确认 / 预发待发布 / 已收口`（**阶段枚举的唯一权威来源**；其它文档引用本行，不要另列） |
+| 当前阶段 | `需求理解 / 方案确认 / 允许开工 / 实现中 / 代码待确认 / AI测试待确认 / 预发待发布 / 已收口`（**阶段枚举的唯一权威来源**；其它文档引用本行，不要另列） |
 | 下一步 | `<主 Agent 下一步要做什么>` |
 | 是否允许进入下一阶段 | `YES / NO` |
 | 当前阻塞 | `<无 / 阻塞原因>` |
@@ -23,6 +23,7 @@
 | Workstream dispatch | `NOT_APPLICABLE / PENDING / PASS / DEGRADED / BLOCKED` | `changes/<change-id>/status-card.md` Workstream Dispatch 表 | 全栈/多仓需求必须先拆 backend / PC / 小程序等工作线。标本 `workstream-dispatch-gate.sh` RZ 未拷 |
 | Agent dispatch plan | `NOT_APPLICABLE / PENDING / PASS / DEGRADED / BLOCKED` | `changes/<change-id>/agent-dispatch-plan.md` / `subagents/dispatch_subagent.md` | 派发子 Agent 前填写计划；RZ 未拷 `agent-dispatch-plan-gate.sh`。candidate implementation 需要 `agent-candidate-confirmation.md` |
 | AI 测试方案确认 | `PENDING / CONFIRMED / CHANGE_REQUESTED / BLOCKED / NOT_APPLICABLE` | `changes/<change-id>/ai-test-plan.md` | M/L：未 `CONFIRMED` 不得进入业务代码。S：本行 `NOT_APPLICABLE` |
+| Code confirmation | `PENDING / CHANGE_REQUESTED / CONFIRMED / NOT_APPLICABLE` | `changes/<change-id>/code-confirmation.md` | 停 5b：未 `CONFIRMED`（或带 `na_reason` 的 `NOT_APPLICABLE`）不得派 Tester / Reviewer；代码再改回 `CHANGE_REQUESTED` |
 | Environment readiness | `PENDING / READY / BLOCKED / NOT_APPLICABLE` | `changes/<change-id>/environment-readiness.md` | 真实 E2E 前必须 READY |
 | UI rule checklist | `NOT_APPLICABLE / PENDING / READY / BLOCKED` | `changes/<change-id>/ui-rule-checklist.md` | PRD UI 编码前必须过规范缺口检查 |
 | Complex UI | `NOT_APPLICABLE / PENDING / CONFIRMED / BLOCKED` | `changes/<change-id>/ui-confirmation.md` | 复杂 UI 未确认不得声明通过 |

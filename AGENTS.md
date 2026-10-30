@@ -64,7 +64,7 @@
 ## 5. 停止点（何时必须停）
 
 > 两类：**用户拍板类**（等用户确认；确认后主 Agent 回写产物 → 改状态卡 → 跑 gate）；**自动关卡 / 独立角色类**（gate / Tester / Reviewer 放行，`BLOCKED` 才升级）。
-> 用户节奏：答 QUESTION(1) → 确认方案(2) → 确认测试方案(3) →（条件）确认 UI(6) → 确认报告(8) → 人审。4/5/7/9 平时不用参与。
+> 用户节奏：答 QUESTION(1) → 确认方案(2) → 确认测试方案(3) → **确认代码(5b，可多轮)** →（条件）确认 UI(6) → 确认报告(8) → 人审。4/5/7/9 平时不用参与。
 
 | # | 停止点 | 类型 | 谁写 | 怎样算过 |
 |---|---|---|---|---|
@@ -73,12 +73,13 @@
 | 3 | AI 测试方案（M/L） | 拍板 + gate | Test Strategy | `test_plan_status: CONFIRMED` → `gates/ai-test-plan-gate.sh` |
 | 4 | 环境就绪（真 E2E） | 自动关卡 | 主 Agent | `environment_status: READY` → `gates/environment-readiness-gate.sh` |
 | 5 | Code start | 自动关卡 | 主 Agent | **S**：confidence + assumption-leak + allowed-paths；**M/L 再加** business-code-start；脏仓先写 `dirty-worktree-ledger.md` 再加 dirty-worktree gate。未过不得改业务文件 |
+| 5b | **代码人审**（S/M/L 都适用） | 拍板 + gate | 主 Agent | 阶段 A 完整自检通过（编译 + 完整测试：后端模块全量单测 + 本次定向测试）→ 阶段 B 交 diff 给用户逐轮确认（只要求编译通过，不跑测试）→ `code_confirmation_status: CONFIRMED` → `gates/code-confirmation-gate.sh`。未过不得派 Tester / Reviewer |
 | 6 | 复杂 UI | 拍板（条件触发） | 主 Agent | 判定表 `Status: CONFIRMED`，且人工确认表有一行 Decision=`CONFIRMED`（PC smoke 不能替代） |
 | 7 | Tester（M/L） | 独立角色 | Tester | `GOAL_ACHIEVED`；**`BLOCKED` 是停不是过**；改代码后重跑 |
 | 8 | AI 测试报告 | 拍板 + gate（L 强制；M 提测 / 预发时才要） | 主 Agent | 人工 `CONFIRMED`；进预发 + `recommendation: 允许进入预发` |
 | 9 | Reviewer（M/L 强制；S 建议） | 独立角色 | Reviewer | `high_risk_count: 0`；代码又变则审查过期 |
 
-> 停止点编号与流程步骤顺序**不一一对应**：环境材料（停 4）可提前，**真 E2E 前必须 READY**；契约冻结不在 9 个编号内，**未冻不得实现**。
+> 停止点编号与流程步骤顺序**不一一对应**：环境材料（停 4）可提前，**真 E2E 前必须 READY**；契约冻结不在编号内，**未冻不得实现**；代码人审为 `5b`，**未确认不得启动 Tester / Reviewer**。
 
 ## 6. gate 约定
 
@@ -92,7 +93,7 @@
 
 ### 7.1 整体工作流（15 步索引）
 
-定 id（不用 `demo` / `tbd`）→ 选 lane → 建包 → **spec**(停1) → 契约 → **技术方案**(停2) → **测试方案**(停3) → plan+verification-map → **开工门禁**(停5) → 实现+证据(停6，条件触发) → **Tester**(停7) → **报告**(停8) → **Reviewer**(停9) → 人审/PR/SIT → retro
+定 id（不用 `demo` / `tbd`）→ 选 lane → 建包 → **spec**(停1) → 契约 → **技术方案**(停2) → **测试方案**(停3) → plan+verification-map → **开工门禁**(停5) → 实现 → **自检**(阶段A) → **代码人审**(停5b) → UI 确认(停6，条件触发) → **Tester**(停7) → **报告**(停8) → **Reviewer**(停9) → 人审/PR/SIT → retro
 
 - 有匹配 lane 时，步骤菜单用该 lane；本索引只核对停止点有没有被跳过。
 - **S 档可 `N/A`**：契约 / 技术方案 / 测试方案 / plan+verification-map / Tester / 报告（仍须 spec、`allowed_paths`、evidence）。
@@ -115,6 +116,7 @@
 1. **开场**：第一条回复列出本次会碰到的关卡（用停止点表，不要手写混合名单）。
 2. **开工前**：★ `source config/runtime_local.sh`、确认允许路径、优先用目标仓样板；★ 三标签未决不进实现；★ 用 `--no-track` 从 `origin/master`（或 `origin/main`）切 `harness/<change-id>`，上游不得是主干；跑开工门禁（见停止点 5）。
 3. **不可豁免**：口头「ok」不能跳过档位需要或条件命中的关卡（含飞书同步）；状态卡持续更新；代码再变则旧结论作废，重跑 Tester 再重跑 Reviewer；主 Agent 不得代裁 Tester / Reviewer。
+3b. **代码人审（停 5b）**：实现完成后先做阶段 A 完整自检（编译 + **完整测试**：后端模块全量单测 `mvn -pl <module> test` + 本次定向测试，历史失败记基线噪声），把 diff（基线 commit + 文件清单 + 关键片段）交给用户。**5b 期间只要求编译通过，不跑测试**：按用户意见反复调整代码（不要多建文件 / 不要多加方法 / 使用指定方法 / 参数签名 / 核心逻辑实现方式等细节），直到用户确认。确认后写 `code-confirmation.md` 的 `code_confirmation_status: CONFIRMED` 并跑 `gates/code-confirmation-gate.sh`，才进入阶段 C。阶段 C 代码再改，状态回 `CHANGE_REQUESTED`、退回 5b，Tester / Reviewer 旧结论作废。`code-confirmation.md` 有独立生命周期：建包生成 → 阶段 A 记录 → 阶段 B 逐轮追加 → 派发前 gate 拦截 → 暂停/换线程写 `handoff.md` → 新 session 接手先读 `status-card.md` + 本文件 + `handoff.md` → 收口保留最终状态。S 档可 `NOT_APPLICABLE`，但必须在 `na_reason` 写用户豁免来源。
 4. **M/L 默认必做**：全栈 `technical-solution.md` 需 `CONFIRMED`（必须覆盖模板列出的每一块 PRD 面；**前端 / APP / 导出 / 分析 / 跨仓在范围内时，只写后端无效**）；Test Strategy 写 `ai-test-plan.md`，**主 Agent 不得代写正文**，用户确认后只写 `test_plan_status: CONFIRMED`；按 `skills/skill_directory.md` 记 `skill-usage.md`（未用写 N/A）并跑 `gates/skill-usage-gate.sh`。
 5. **命中才做**：行为 / 契约变更（spec + 契约 + evidence）｜Java 行为变更（`backend-test-plan.md` 或 N/A，仅编译不够）｜Swagger 对外 VO（**仅当有活动 `rules/backends/*/manifest.yml` profile**：只扫该 profile 的响应根；新增对外 `*VO.java` 用 `@ApiModel` + 每字段 `@ApiModelProperty`；不追溯既往；不含导出模型与基础设施 DTO；pre-commit 跑 `gates/swagger-model-documentation-gate.sh`）｜前端 / UI（PRD UI 需 `ui-rule-checklist.md` + `gates/ui-rule-gate.sh`，规则缺口停下等用户；复杂 UI 需可运行页面 + `ui-confirmation.md`；目标仓的启动方式 / Node 版本 / 登录 / 路由约定见 `config/baselines/<repo>.md`，按其执行）｜DB（带 ER 数据模型 + 可执行 SQL + 规范化检查 + 自包含注释 + 字段来源）｜飞书 PRD（`scripts/technical-solution-feishu-sync.sh` 同步 + 改后重同步 + `gates/technical-solution-feishu-sync-gate.sh`；流程图 / ER / 状态图用白板不用 Mermaid）｜复杂行为（`capability-spec.md` / `behavior-spec.md` + verification-map 映射）。
 6. **环境与就绪**：真实 E2E 前填 `environment-readiness.md` + gate；本地后端接口验收以 `scripts/local-service-lifecycle.sh` 的 `HEALTH=UP` 为准，页面冒烟另需 `check-web-stack` 成功（Maven / nohup / 端口单独成功不算）。
@@ -125,10 +127,10 @@
 - `changes/<change-id>/` 是这次需求的本机工作目录；**整包不进 git**；`changes/` 根下 `change-scaffold.sh`、`status-card.sh`、`change-whitelist-spec.md` 是控制面，要进 git。
 - 建包：`changes/change-scaffold.sh --tier S|M|L <change-id>` —— 建目录 + `artifacts/`、按档拷模板、生成空 `evidence.md`；M/L 另拷 `agent-dispatch-plan.md` 空壳（不调 `agent-dispatch-plan.sh`）。不派实现 Agent 时，该文件写 `N/A`。
 - **执行账本（`plan.md` 下半部分）**：上半部分（输入 → 风险）是**已确认基线**，生成后不改（除非重新确认）；下半部分是任务级账本：`Status`（`PLANNED / IN_PROGRESS / DONE / BLOCKED`）+ `Owner` + `Evidence`，任务开始 / 完成 / 阻塞时更新。压缩或换线程后从第一个非 `DONE` 任务继续；S 档可 `N/A`。
-- **状态卡** `status-card.md`：给人看的单一入口；**只主 Agent 写**（子 Agent 不得改）；跑 `changes/status-card.sh` 后更新（不覆盖 Roster）。建包后立刻写「阶段（通常 `需求理解`）/ 下一步 / 是否允许进入下一阶段 / 当前阻塞 / 需人工确认」，Roster 从主 Agent 那行起填。**刷新时机**：阶段切换、阻塞出现或解除、人工确认前后、Tester / Reviewer 返回、代码又变致旧结论失效、进预发前、派发 / 完成 / 阻塞子 Agent、用户问进度。阶段枚举见 `templates/status-card.md`（唯一权威）；脚本推断上限「允许开工」，「实现中」「已收口」由主 Agent 手写。禁止写入 token / cookie / DB password。
+- **状态卡** `status-card.md`：给人看的单一入口；**只主 Agent 写**（子 Agent 不得改）；跑 `changes/status-card.sh` 后更新（不覆盖 Roster）。建包后立刻写「阶段（通常 `需求理解`）/ 下一步 / 是否允许进入下一阶段 / 当前阻塞 / 需人工确认」，Roster 从主 Agent 那行起填。**刷新时机**：阶段切换、阻塞出现或解除、人工确认前后、`code-confirmation` 状态变化、Tester / Reviewer 返回、代码又变致旧结论失效、进预发前、派发 / 完成 / 阻塞子 Agent、用户问进度。阶段枚举见 `templates/status-card.md`（唯一权威）；脚本推断上限「允许开工」，「实现中」「已收口」由主 Agent 手写。禁止写入 token / cookie / DB password。
 - **证据** `evidence.md`：**只主 Agent 写**（子 Agent 不得改；Tester 的复测结论写在 `test-agent-verification.md`）；scaffold 当场生成空表，首行是建包记录 `Scaffold … PASS`；每跑一条关键命令追加 `Check | Command / Source | Result | Summary`，`Result` 取 `PASS / FAIL / BLOCKED / N/A`；只记摘要，长输出放 `artifacts/`。**禁止**写入 token / cookie / DB password / 客户资料 / 未脱敏 SQL 结果 / 原始私密 prompt。`review.md` 必须引用 `evidence.md`，否则 `gates/reviewer-gate.sh` FAIL。
 - **白名单**：`changes/change-whitelist-spec.md` 定义允许出现的文件，`gates/change-artifacts-gate.sh` 检查根目录有没有名单外文件；大文件（截图 / 录屏 / trace / 长日志）放包内 `artifacts/`，不放包根或仓库根 `artifacts/`。
-- **M/L 12 个根文件**：spec / status-card / evidence / plan / contract / technical-solution / verification-map / ai-test-plan / test-agent-verification / agent-dispatch-plan / skill-usage / review；**L 再加** environment-readiness / ai-test-report / decisions。产物全集约 34 项，见 `templates/template_directory.md`；scaffold 只按档预建 S 3 / M 12 / L 15 个，其余（backend-test-plan / ui-* / data-model / local-routing / smoke / dirty-worktree-ledger / pre-pr / handoff 等）条件命中时手建。
+- **M/L 13 个根文件**：spec / status-card / evidence / plan / contract / technical-solution / verification-map / ai-test-plan / test-agent-verification / agent-dispatch-plan / skill-usage / review / code-confirmation；**L 再加** environment-readiness / ai-test-report / decisions。产物全集约 34 项，见 `templates/template_directory.md`；scaffold 只按档预建 S 4 / M 13 / L 16 个，其余（backend-test-plan / ui-* / data-model / local-routing / smoke / dirty-worktree-ledger / pre-pr / handoff 等）条件命中时手建。
 
 ## 9. 子 Agent
 
@@ -139,4 +141,4 @@
 
 ## 10. 完成定义
 
-spec / plan / 契约与 M/L 技术方案一致；无未决假设 / 问题进代码；需要时 `ai-test-plan.md` 已确认；E2E 环境就绪清楚；Tester `GOAL_ACHIEVED`（或记录 `BLOCKED` 并升级）；Reviewer 过 `gates/reviewer-gate.sh`；残余风险与回滚已记录。
+spec / plan / 契约与 M/L 技术方案一致；无未决假设 / 问题进代码；需要时 `ai-test-plan.md` 已确认；代码经用户确认（`code-confirmation-gate` PASS）；E2E 环境就绪清楚；Tester `GOAL_ACHIEVED`（或记录 `BLOCKED` 并升级）；Reviewer 过 `gates/reviewer-gate.sh`；残余风险与回滚已记录。

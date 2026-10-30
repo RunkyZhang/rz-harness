@@ -308,9 +308,9 @@
 <section id="stops">
   <h2>停止点</h2>
   <p>停止点和下面 15 个步骤的编号不是一一对应。停止点分两类：用户拍板（口头确认后由主 Agent 写入对应文件，再跑 gate，用户不用改 YAML）；自动关卡或独立角色（gate、Tester、Reviewer）。<code>BLOCKED</code> 是合法停、升级给人，不是放行。状态卡只镜像进度，不是拍板原文。</p>
-  <p>用户平时要做的：答 QUESTION（1）→ 确认方案（2）→ 确认测试方案（3）→ 条件触发时确认 UI（6）→ 确认测试报告（8）→ 人工 review。4 / 5 / 7 / 9 平时不用逐项参与。</p>
+  <p>用户平时要做的：答 QUESTION（1）→ 确认方案（2）→ 确认测试方案（3）→ <strong>确认代码（5b，可多轮，只卡编译）</strong>→ 条件触发时确认 UI（6）→ 确认测试报告（8）→ 人工 review。4 / 5 / 7 / 9 平时不用逐项参与。</p>
   <figure>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 150" width="980" role="img" aria-label="用户拍板节奏">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 150" width="1160" role="img" aria-label="用户拍板节奏">
       <defs>
         <marker id="as" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#c45c32"/></marker>
         <style>
@@ -320,33 +320,37 @@
           .ua { stroke:#c45c32; stroke-width:1.6; fill:none; marker-end:url(#as); }
         </style>
       </defs>
-      <rect class="ub" x="8" y="36" width="140" height="70" rx="10"/>
-      <text class="uh" x="78" y="64" text-anchor="middle">1 答 QUESTION</text>
-      <text class="us" x="78" y="86" text-anchor="middle">spec 三标签</text>
-      <path class="ua" d="M148 71 H168"/>
-      <rect class="ub" x="168" y="36" width="140" height="70" rx="10"/>
-      <text class="uh" x="238" y="64" text-anchor="middle">2 确认方案</text>
-      <text class="us" x="238" y="86" text-anchor="middle">仅 M/L</text>
-      <path class="ua" d="M308 71 H328"/>
-      <rect class="ub" x="328" y="36" width="150" height="70" rx="10"/>
-      <text class="uh" x="403" y="64" text-anchor="middle">3 确认测试方案</text>
-      <text class="us" x="403" y="86" text-anchor="middle">仅 M/L</text>
-      <path class="ua" d="M478 71 H498"/>
-      <rect class="ub" x="498" y="36" width="140" height="70" rx="10"/>
-      <text class="uh" x="568" y="64" text-anchor="middle">6 确认 UI</text>
-      <text class="us" x="568" y="86" text-anchor="middle">条件触发</text>
-      <path class="ua" d="M638 71 H658"/>
-      <rect class="ub" x="658" y="36" width="150" height="70" rx="10"/>
-      <text class="uh" x="733" y="64" text-anchor="middle">8 确认测试报告</text>
-      <text class="us" x="733" y="86" text-anchor="middle">提测 / 预发</text>
-      <path class="ua" d="M808 71 H828"/>
-      <rect class="ub" x="828" y="36" width="140" height="70" rx="10"/>
-      <text class="uh" x="898" y="64" text-anchor="middle">人工 review</text>
-      <text class="us" x="898" y="86" text-anchor="middle">PR / SIT</text>
+      <rect class="ub" x="8" y="36" width="148" height="70" rx="10"/>
+      <text class="uh" x="82" y="64" text-anchor="middle">1 答 QUESTION</text>
+      <text class="us" x="82" y="86" text-anchor="middle">spec 三标签</text>
+      <path class="ua" d="M156 71 H172"/>
+      <rect class="ub" x="172" y="36" width="148" height="70" rx="10"/>
+      <text class="uh" x="246" y="64" text-anchor="middle">2 确认方案</text>
+      <text class="us" x="246" y="86" text-anchor="middle">仅 M/L</text>
+      <path class="ua" d="M320 71 H336"/>
+      <rect class="ub" x="336" y="36" width="148" height="70" rx="10"/>
+      <text class="uh" x="410" y="64" text-anchor="middle">3 确认测试方案</text>
+      <text class="us" x="410" y="86" text-anchor="middle">仅 M/L</text>
+      <path class="ua" d="M484 71 H500"/>
+      <rect class="ub" x="500" y="36" width="148" height="70" rx="10"/>
+      <text class="uh" x="574" y="64" text-anchor="middle">5b 确认代码</text>
+      <text class="us" x="574" y="86" text-anchor="middle">可多轮，只卡编译</text>
+      <path class="ua" d="M648 71 H664"/>
+      <rect class="ub" x="664" y="36" width="148" height="70" rx="10"/>
+      <text class="uh" x="738" y="64" text-anchor="middle">6 确认 UI</text>
+      <text class="us" x="738" y="86" text-anchor="middle">条件触发</text>
+      <path class="ua" d="M812 71 H828"/>
+      <rect class="ub" x="828" y="36" width="148" height="70" rx="10"/>
+      <text class="uh" x="902" y="64" text-anchor="middle">8 确认测试报告</text>
+      <text class="us" x="902" y="86" text-anchor="middle">提测 / 预发</text>
+      <path class="ua" d="M976 71 H992"/>
+      <rect class="ub" x="992" y="36" width="148" height="70" rx="10"/>
+      <text class="uh" x="1066" y="64" text-anchor="middle">人工 review</text>
+      <text class="us" x="1066" y="86" text-anchor="middle">PR / SIT</text>
     </svg>
     <figcaption>图 3　需要人出面的节奏。环境就绪（4）、开工（5）、Tester（7）、Reviewer（9）是自动关卡或独立角色。</figcaption>
   </figure>
-  <p>环境材料可以提前准备，强制时点在真实 E2E 之前。Code start 先于 E2E。验收阶段可以同时挂 Tester、测试报告、Reviewer。契约冻结不在这 9 个编号里，未冻不得实现。真实库写入的二次确认挂在实现阶段，仍由用户拍板。合并前卫生扫描是检查项，不是决策停止点。</p>
+  <p>环境材料可以提前准备，强制时点在真实 E2E 之前。Code start 先于 E2E，代码人审（5b）在 Tester 之前：未确认代码不得派 Tester / Reviewer。验收阶段可以同时挂 Tester、测试报告、Reviewer。契约冻结不是编号项，未冻不得实现。真实库写入的二次确认挂在实现阶段，仍由用户拍板。合并前卫生扫描是检查项，不是决策停止点。</p>
   <table>
     <thead><tr><th>#</th><th>停止点</th><th>类型</th><th>谁写</th><th>用户做什么</th><th>怎样算过</th></tr></thead>
     <tbody>
@@ -355,6 +359,7 @@
       <tr><td>3</td><td>AI 测试方案（仅 M/L）</td><td>拍板 + gate</td><td>Test Strategy 写 <code>ai-test-plan.md</code>。用户确认后主 Agent 只改 <code>test_plan_status: CONFIRMED</code></td><td>审测试方案</td><td><code>ai-test-plan-gate.sh</code>。未过不得实现。S 为 N/A</td></tr>
       <tr><td>4</td><td>环境就绪</td><td>自动关卡，仅真 E2E</td><td>主 Agent 写 <code>environment-readiness.md</code>，账号只写来源</td><td>不用参与</td><td><code>environment_status: READY</code>。真 E2E 前必须 READY</td></tr>
       <tr><td>5</td><td>Code start</td><td>自动关卡</td><td>用 <code>git switch -c harness/&lt;id&gt; --no-track origin/master</code>（或 <code>origin/main</code>）从远程主干拉；禁止 <code>git checkout -b ... origin/master</code>（会把 upstream 设成主干）。脏仓先写 <code>dirty-worktree-ledger.md</code></td><td>不用参与</td><td>S 三重：confidence、assumption-leak、allowed-paths。M/L 再加 business-code-start。脏仓再加 business-dirty-worktree。未过不得改业务文件</td></tr>
+      <tr><td>5b</td><td>代码人审（S/M/L）</td><td>拍板 + gate</td><td>主 Agent 先做阶段 A 完整自检（编译 + 完整测试）；阶段 B 把 diff 交给用户反复调整（只要求编译通过，不跑测试），写 <code>code-confirmation.md</code>。用户确认后写 <code>code_confirmation_status: CONFIRMED</code></td><td>看 diff、提修改意见、确认代码</td><td><code>code-confirmation-gate.sh</code>。<code>CONFIRMED</code>，或 <code>NOT_APPLICABLE</code> 且 <code>na_reason</code> 非空。未过不得派 Tester / Reviewer</td></tr>
       <tr><td>6</td><td>复杂 UI 确认</td><td>拍板，条件触发</td><td>主 Agent 写 <code>ui-confirmation.md</code>。用户看过可运行页面后，判定表写成 <code>Status: CONFIRMED</code>，人工确认表加一行 Decision=<code>CONFIRMED</code></td><td>看可运行页面。PC smoke 不能替代</td><td><code>ui-confirmation-gate.sh</code>。规则缺口走 <code>ui-rule-gate.sh</code>。未确认不得声称 UI 通过</td></tr>
       <tr><td>7</td><td>Tester 验收（仅 M/L）</td><td>独立角色</td><td>Tester 写 <code>test-agent-verification.md</code>。主 Agent 只修代码、补证据，不得代裁，不得自称 <code>GOAL_ACHIEVED</code></td><td>不用参与；BLOCKED 才升级</td><td>仅 <code>GOAL_ACHIEVED</code> 放行。此后改代码必须重跑。S 可 N/A</td></tr>
       <tr><td>8</td><td>AI 测试报告</td><td>拍板 + gate。L 强制；M 在提测/预发时要</td><td>主 Agent 写 <code>ai-test-report.md</code>。确认后写 <code>confirmation_status: CONFIRMED</code>。进预发还要 <code>recommendation: 允许进入预发</code></td><td>审报告、残余风险、是否进预发</td><td><code>ai-test-report-gate.sh</code>。未确认不得进测试/预发</td></tr>
@@ -460,7 +465,7 @@
       <text class="st" x="16" y="492">代码再变：Tester 重跑；Reviewer 之后代码又变，审查过期，重跑 Tester 再重跑 Reviewer。</text>
       <text class="st" x="16" y="530">用户说「开始 / 下一步 / 确认 / ok」只推进到下一个已经满足的关卡，不能跳关。</text>
     </svg>
-    <figcaption>图 4　十五步索引。第二行从右往左读：5 的下一步是 6。绿色虚线是 Tester 失败后的返回。</figcaption>
+    <figcaption>图 4　十五步索引。第二行从右往左读：5 的下一步是 6。第 10 步内含阶段 A 自检与停 5b 代码人审；绿色虚线是 Tester 失败后的返回。</figcaption>
   </figure>
   <ol>
     <li><strong>定 change-id</strong>：用业务含义命名。</li>
@@ -474,12 +479,13 @@
     <li><strong>开工门禁</strong>：从远程主干拉 <code>harness/&lt;change-id&gt;</code>。S 三重，M/L 四重。不在主干上改。（停止点 5）</li>
     <li><strong>实现 + 记证据</strong>：只改 <code>allowed_paths</code> 内文件，命令记入 evidence。PRD 有界面时，写代码前先写 <code>ui-rule-checklist.md</code>，规则缺口停下等用户。（停止点 6）
       <ul>
-        <li><strong>常规验证</strong>（进入 Tester 前）：编译、定向测试、窄范围 lint。前端用 <code>scripts/frontend-lint-build.sh</code> 的 <code>lint-files</code>，后端用 <code>scripts/mvn-targeted-test.sh</code>。<code>verification-map.md</code> 有可执行行时跑 <code>scripts/verification-run.sh</code>。跑不了写 <code>BLOCKED</code> 和原因。已选 lane 时以该 lane 的验证命令为准。S 档没有 Tester 时，这项改在 Reviewer 之前完成。</li>
+        <li><strong>阶段 A 完整自检</strong>（进入 Tester 前）：编译 + 完整测试（后端模块全量单测 + 本次定向测试，历史失败记基线噪声）+ 窄范围 lint。前端用 <code>scripts/frontend-lint-build.sh</code> 的 <code>lint-files</code>，后端用 <code>scripts/mvn-targeted-test.sh</code>。<code>verification-map.md</code> 有可执行行时跑 <code>scripts/verification-run.sh</code>。跑不了写 <code>BLOCKED</code> 和原因。已选 lane 时以该 lane 的验证命令为准。S 档没有 Tester 时，这项改在 Reviewer 之前完成。</li>
+        <li><strong>阶段 B 代码人审（停 5b）</strong>：把 diff 交给用户反复调整（文件、方法、参数、核心逻辑实现），<strong>只要求编译通过</strong>；确认后写 <code>code-confirmation.md</code> 的 <code>CONFIRMED</code> 并跑 <code>gates/code-confirmation-gate.sh</code>。</li>
         <li><strong>复杂 UI</strong>：页面可运行后写 <code>ui-confirmation.md</code>，用户看过再确认。</li>
         <li><strong>Optional Pack</strong>：E2E 按 <code>lanes/pc-e2e-smoke.md</code>。Impact / Parallel（CodeGraph、GitNexus、多 Agent worktree）本仓未引入，写 N/A。</li>
       </ul>
     </li>
-    <li><strong>Tester 验收</strong>（M/L）：Tester 填写 <code>test-agent-verification.md</code>。主 Agent 不得代填、不得自称 <code>GOAL_ACHIEVED</code>。未达到则回到第 10 步。<code>BLOCKED</code> 升级给用户。（停止点 7）</li>
+    <li><strong>Tester 验收</strong>（M/L）：先确认 <code>code-confirmation-gate</code> PASS（停 5b）。Tester 填写 <code>test-agent-verification.md</code>。主 Agent 不得代填、不得自称 <code>GOAL_ACHIEVED</code>。未达到则回到第 10 步。<code>BLOCKED</code> 升级给用户。（停止点 7）</li>
     <li><strong>AI 测试报告</strong>（提测 / 预发）：<code>ai-test-report.md</code> 加用户确认。（停止点 8）</li>
     <li><strong>Reviewer 过门</strong>：只读审查，<code>high_risk_count: 0</code>。S 走 bugfix-fast 时仍建议 Reviewer。（停止点 9）审查前跑 <code>scripts/code-comment-log-quality.sh</code>。</li>
     <li><strong>人工 review / PR / SIT</strong>。合并前卫生扫描见受保护行为。</li>
@@ -718,6 +724,7 @@
       <tr><td>32</td><td><code>decisions.md</code></td><td>L 建包即有；过程中有拍板时填。S/M 可后补</td><td>主 Agent</td><td>L 强制</td></tr>
       <tr><td>33</td><td><code>retro.md</code></td><td>收口时，可后补</td><td>主 Agent</td><td>变更包不进 git</td></tr>
       <tr><td>34</td><td><code>handoff.md</code></td><td>换线程、暂停、上下文压缩时</td><td>主 Agent</td><td>留给下一个主 Agent。不是 Explorer 和 Reviewer 之间的信箱</td></tr>
+      <tr><td>35</td><td><code>code-confirmation.md</code></td><td>建包即有；阶段 B 逐轮追加，用户确认后写 <code>CONFIRMED</code></td><td>主 Agent；用户确认</td><td><code>code-confirmation-gate.sh</code>。未确认不得派 Tester / Reviewer</td></tr>
     </tbody>
   </table>
 </section>
